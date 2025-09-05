@@ -2,12 +2,21 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Privacy Policy | Prompt Booster'
+    title: 'Privacy Policy | Prompt Booster',
 };
 
-export default function PrivacyPage({
-    params: { locale }
-}: { params: { locale: string } }) {
+// 型（any 不使用。Promise 許容で .next/types と互換）
+type PageParams = { locale: string };
+type PageSearchParams = Record<string, string | string[]>;
+
+type PageProps = {
+    params?: Promise<PageParams>;
+    searchParams?: Promise<PageSearchParams>;
+};
+
+// Server Component のまま async にして params を await
+export default async function PrivacyPage(_props: PageProps) {
+    const { locale } = _props.params ? await _props.params : { locale: 'en' };
     const isJA = locale === 'ja';
 
     return (

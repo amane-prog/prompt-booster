@@ -1,36 +1,38 @@
+'use client'; // ← このページが hooks を使うなら必ず最上段に
+
+import { useEffect, useState } from 'react';
+import type { Metadata } from 'next'; // 使っていれば
+
+type PageParams = { locale: string };
+type PageSearchParams = Record<string, string | string[]>;
+
+// .next/types の期待に合わせて Promise を許容（anyは使わない）
 type PageProps = {
-  params?: Record<string, string | string[]>;
-  searchParams?: Record<string, string | string[]>;
+    params?: Promise<PageParams>;
+    searchParams?: Promise<PageSearchParams>;
 };
-// app/[locale]/billing/portal/page.tsx
-'use client'
 
-import { useEffect, useState } from 'react'
+// 汎用ガード（any 不使用）
+function isPromise<T>(v: unknown): v is Promise<T> {
+    return !!v && typeof v === 'object' && 'then' in (v as Record<string, unknown>);
+}
 
-export default function BillingPortalLocalePage(_props: PageProps) {
-    const [err, setErr] = useState<string | null>(null)
+export default function LocaleTopPage(_props: PageProps) {
+    const [locale, setLocale] = useState<string>('en');
+    const [sp, setSp] = useState<PageSearchParams>({});
 
     useEffect(() => {
-        (async () => {
-            try {
-                const r = await fetch('/api/stripe/portal', { method: 'POST' })
-                const j = await r.json().catch(() => ({}))
-                if (r.ok && j?.url) {
-                    location.href = j.url
-                } else {
-                    setErr(j?.error ?? `Open portal failed (${r.status})`)
-                }
-            } catch (e) {
-                setErr(e instanceof Error ? e.message : 'portal error')
-            }
-        })()
-    }, [])
+        const p = _props.params as unknown;
+        if (isPromise<PageParams>(p)) {
+            p.then(v => { if (v?.locale) setLocale(v.locale); }).catch(() => { });
+        }
 
-    return (
-        <main className="mx-auto max-w-lg px-4 py-16">
-            <h1 className="mb-2 text-lg font-semibold">Billing Portal</h1>
-            <p>Redirecting to Stripe…</p>
-            {err && <p className="mt-2 text-sm text-red-600">{err}</p>}
-        </main>
-    )
+        const s = _props.searchParams as unknown;
+        if (isPromise<PageSearchParams>(s)) {
+            s.then(obj => { if (obj && typeof obj === 'object') setSp(obj); }).catch(() => { });
+        }
+    }, [_props.params, _props.searchParams]);
+
+    // ここで locale / sp を使ってUIを描画
+    return <main>home ({locale})</main>;
 }

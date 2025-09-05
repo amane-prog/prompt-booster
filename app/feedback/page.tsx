@@ -1,7 +1,11 @@
+// app/feedback/page.tsx
+
+// .next/types の checkFields が Promise<any> を期待しているので Promise 互換に調整
 type PageProps = {
-  params?: Record<string, string | string[]>;
-  searchParams?: Record<string, string | string[]>;
+    params?: Promise<Record<string, string | string[]>>;
+    searchParams?: Promise<Record<string, string | string[]>>;
 };
+
 export default function FeedbackPage(_props: PageProps) {
     return (
         <div className="mx-auto max-w-2xl p-6">
@@ -16,7 +20,7 @@ export default function FeedbackPage(_props: PageProps) {
                 target="_blank"
             >
                 <textarea
-                    name="entry.123456" // ・ｽ・ｽ ・ｽt・ｽH・ｽ[・ｽ・ｽ・ｽﾉ搾ｿｽ・ｽ墲ｹ・ｽﾄ修・ｽ・ｽ
+                    name="entry.123456" // ← Google Forms の input name を差し替え
                     required
                     className="min-h-40 w-full rounded-lg border p-3"
                     placeholder="Your message..."

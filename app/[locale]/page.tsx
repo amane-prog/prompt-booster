@@ -1,10 +1,12 @@
+'use client';
+type PageParams = { locale: string };
+type PageSearchParams = Record<string, string | string[]>;
+
 type PageProps = {
-  params?: Record<string, string | string[]>;
-  searchParams?: Record<string, string | string[]>;
+  params?: Promise<PageParams>;
+  searchParams?: Promise<PageSearchParams>;
 };
 // app/[locale]/page.tsx
-'use client';
-
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import ExecuteFab from '@/components/ExecuteFab';

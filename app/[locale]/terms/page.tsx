@@ -2,12 +2,19 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Terms of Service | Prompt Booster'
+    title: 'Terms of Service | Prompt Booster',
 };
 
-export default function TermsPage({
-    params: { locale }
-}: { params: { locale: string } }) {
+type PageParams = { locale: string };
+type PageSearchParams = Record<string, string | string[]>;
+
+type PageProps = {
+    params?: Promise<PageParams>;
+    searchParams?: Promise<PageSearchParams>;
+};
+
+export default async function TermsPage(_props: PageProps) {
+    const { locale } = _props.params ? await _props.params : { locale: 'en' };
     const isJA = locale === 'ja';
 
     return (
