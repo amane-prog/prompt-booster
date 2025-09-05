@@ -6,22 +6,21 @@ import { Redis } from '@upstash/redis'
 export const runtime = 'nodejs'
 
 const FREE_DAILY_LIMIT = Number(process.env.FREE_DAILY_LIMIT ?? 3)
-const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL
-const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN
-const redis = UPSTASH_URL && UPSTASH_TOKEN ? new Redis({ url: UPSTASH_URL, token: UPSTASH_TOKEN }) : null
+
+function getRedis(): Redis | null {
+    const url = process.env.UPSTASH_REDIS_REST_URL
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN
+    if (!url || !token) return null
+    try {
+        return new Redis({ url, token })
+    } catch {
+        return null
+    }
+}
 
 type PlanTier = 'free' | 'pro' | 'pro_plus'
-
-type BillingRow = {
-    pro_until: string | null
-    plan_tier: PlanTier | null
-}
-
-type TopupRow = {
-    remain?: number | null
-    amount?: number | null
-    expire_at: string
-}
+type BillingRow = { pro_until: string | null; plan_tier: PlanTier | null }
+type TopupRow = { remain?: number | null; amount?: number | null; expire_at: string }
 
 function jstDateString(): string {
     const now = new Date()
@@ -31,6 +30,7 @@ function jstDateString(): string {
 
 export async function GET(req: NextRequest) {
     try {
+        const redis = getRedis()
         const sb = await supabaseServer()
         const { data: authData } = await sb.auth.getUser().catch(
             () => ({ data: { user: null } } as { data: { user: { id: string } | null } })
@@ -52,13 +52,10 @@ export async function GET(req: NextRequest) {
             if (active) {
                 planTier = billing?.plan_tier === 'pro_plus' ? 'pro_plus' : 'pro'
                 proUntil = billing?.pro_until ?? null
-            } else {
-                planTier = 'free'
-                proUntil = null
             }
         }
 
-        // Free 縺ｮ谿句屓謨ｰ・・ro/Pro+ 縺ｯ null・・
+        // Free 残数計算
         let freeRemaining: number | null = null
         if (planTier === 'free') {
             if (userId && redis) {
@@ -80,12 +77,12 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        // 笘・Pro/Pro+ 縺ｮ譛域ｬ｡繧ｵ繝悶せ繧ｯ谿区焚
+        // Pro/Pro+ の月間残数
         let subCap: number | null = null
         let subUsed: number | null = null
         let subRemaining: number | null = null
         if (planTier !== 'free' && userId) {
-            subCap = 1000 // tier 縺ｧ螟峨∴繧九↑繧峨％縺薙〒蛻・ｲ・
+            subCap = 1000
             if (redis) {
                 const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
                 const key = `pb:m:${userId}:${cycleId}`
@@ -99,7 +96,7 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        // Top-up 谿矩ｫ假ｼ域怏蜉ｹ譛滄剞蜀・・縺ｿ繝ｻFIFO逕ｨ縺ｫ譛滄剞譏・・ｼ・
+        // Top-up
         let topupRemain = 0
         let topups: { remain: number; expire_at: string }[] = []
         if (userId) {
@@ -113,9 +110,7 @@ export async function GET(req: NextRequest) {
 
             const rows = (rowsRaw ?? []) as TopupRow[]
             const normalized = rows.map((r: TopupRow) => {
-                const rem = typeof r.remain === 'number'
-                    ? r.remain
-                    : (typeof r.amount === 'number' ? r.amount : 0)
+                const rem = typeof r.remain === 'number' ? r.remain : (typeof r.amount === 'number' ? r.amount : 0)
                 return { remain: rem, expire_at: r.expire_at }
             })
 
@@ -129,13 +124,9 @@ export async function GET(req: NextRequest) {
             freeRemaining,
             isPro: planTier !== 'free',
             remain: freeRemaining,
-
-            // 繧ｵ繝悶せ繧ｯ谿区焚・・ro/Pro+ 逕ｨ・・
             subCap,
             subUsed,
             subRemaining,
-
-            // Top-up
             topupRemain,
             topups,
         })
@@ -151,7 +142,6 @@ export async function GET(req: NextRequest) {
                 topupRemain: 0,
                 topups: [],
                 error: msg,
-
                 subCap: null,
                 subUsed: null,
                 subRemaining: null,
