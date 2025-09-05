@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { supabaseServer } from '@/lib/supabaseServer';
 
-export const runtime = 'nodejs' as const;
+export const runtime = 'nodejs';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY!;
 const PORTAL_CONFIGURATION_ID = process.env.STRIPE_PORTAL_CONFIGURATION_ID || undefined;
@@ -28,7 +28,7 @@ export async function POST() {
             return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
         }
 
-        // Origin allowlist（CSRF緩和）
+        // Origin allowlist�E�ESRF緩和！E
         const hdrs = await headers();
         const origin = computeOrigin(hdrs);
         const allowed = new Set([
@@ -39,11 +39,11 @@ export async function POST() {
             return NextResponse.json({ error: 'forbidden origin' }, { status: 403 });
         }
 
-        // 返却先はロケール付きに（言語一貫性）
+        // 返却先�Eロケール付きに�E�言語一貫性�E�E
         const loc = hdrs.get('cookie')?.match(/NEXT_LOCALE=([^;]+)/)?.[1] ?? 'ja';
         const returnUrl = `${origin}/${encodeURIComponent(loc)}/settings/billing`;
 
-        // 1) DBに保存済みの customerId を優先
+        // 1) DBに保存済みの customerId を優允E
         let customerId: string | null = null;
         const { data: billingRow } = await sb
             .from('user_billing')
@@ -54,7 +54,7 @@ export async function POST() {
             customerId = billingRow.stripe_customer_id as string;
         }
 
-        // 2) 無ければ Stripe から発見/作成 → DB保存
+        // 2) 無ければ Stripe から発要E作�E ↁEDB保孁E
         if (!customerId) {
             let found: Stripe.Customer | null = null;
             try {
@@ -85,11 +85,11 @@ export async function POST() {
             );
         }
 
-        // 3) Portal セッション作成
+        // 3) Portal セチE��ョン作�E
         const session = await stripe.billingPortal.sessions.create({
             customer: customerId!,
             return_url: returnUrl,
-            configuration: PORTAL_CONFIGURATION_ID, // 無指定ならStripeデフォルト
+            configuration: PORTAL_CONFIGURATION_ID, // 無持E��ならStripeチE��ォルチE
             locale: 'auto',
         });
 

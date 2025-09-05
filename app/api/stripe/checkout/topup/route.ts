@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { NextResponse, type NextRequest } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 
-export const runtime = 'nodejs' as const
+export const runtime = 'nodejs'
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY
 if (!STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY not set')
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         const origin = computeOrigin(req)
         const loc = req.cookies.get('NEXT_LOCALE')?.value ?? 'en'
 
-        // 顧客を確保
+        // 顧客を確俁E
         let customerId: string | null = null
         const list = await stripe.customers.list({ email: user.email, limit: 1 })
         if (list.data.length > 0) {

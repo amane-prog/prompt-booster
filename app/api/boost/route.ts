@@ -5,9 +5,9 @@ import { isPro as isProDate } from '@/lib/plan'
 import { Redis } from '@upstash/redis'
 import OpenAI from 'openai'
 
-export const runtime = 'nodejs' as const
+export const runtime = 'nodejs'
 
-// ===== 設定 =====
+// ===== 設宁E=====
 const FREE_DAILY_LIMIT = Number(process.env.FREE_DAILY_LIMIT ?? 3)
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN
@@ -16,14 +16,14 @@ const redis = UPSTASH_URL && UPSTASH_TOKEN ? new Redis({ url: UPSTASH_URL, token
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY as string })
 const MODEL = 'gpt-4o-mini'
 
-// ===== 型 =====
+// ===== 垁E=====
 type Pair = { date: string; value: number }
 
 type BoostBody = {
     input?: string
     prompt?: string
     text?: string
-    /** カンマ区切り or 配列どちらでもOK（フロントは配列推奨） */
+    /** カンマ区刁E�� or 配�EどちらでもOK�E�フロント�E配�E推奨�E�E*/
     highlights?: string[] | string | null
     options?: {
         mode?: 'dialogue' | 'generation'
@@ -37,7 +37,7 @@ type BoostBody = {
 
 type LlmResult = string
 
-// ===== JST日付/TTL =====
+// ===== JST日仁ETTL =====
 function jstDateString(): string {
     const now = new Date()
     const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000)
@@ -49,7 +49,7 @@ function secondsUntilJstMidnight(): number {
     const next = new Date(jst.getFullYear(), jst.getMonth(), jst.getDate() + 1, 0, 0, 0, 0)
     return Math.max(1, Math.floor((next.getTime() - jst.getTime()) / 1000))
 }
-// pro_until までのTTL（秒）
+// pro_until までのTTL�E�秒！E
 function secondsUntil(iso: string | null): number {
     if (!iso) return 31 * 24 * 60 * 60
     const end = new Date(iso).getTime()
@@ -57,7 +57,7 @@ function secondsUntil(iso: string | null): number {
     return Math.max(60, Math.floor((end - now) / 1000))
 }
 
-// ===== Cookieユーティリティ =====
+// ===== CookieユーチE��リチE�� =====
 function readPair(raw: string | undefined): Pair {
     const today = jstDateString()
     if (!raw) return { date: today, value: 0 }
@@ -71,8 +71,8 @@ function cookieNames(userId: string | null): { usage: string; bonus: string } {
     return { usage: `${prefix}usage`, bonus: `${prefix}bonus` }
 }
 
-// ===== Top-up在庫ヘルパ =====
-// sb は supabaseServer() の戻り（型は any でOK）
+// ===== Top-up在庫ヘルチE=====
+// sb は supabaseServer() の戻り（型は any でOK�E�E
 async function hasTopup(sb: any, userId: string): Promise<boolean> {
     const nowIso = new Date().toISOString()
     const { data: rows } = await sb
@@ -90,8 +90,8 @@ async function hasTopup(sb: any, userId: string): Promise<boolean> {
     return total > 0
 }
 
-// 先入れ先出しで Top-up を1消費（有効期限が近い順）
-// remain>0 を条件に付けて原子的に減らす
+// 先�Eれ�E出しで Top-up めE消費�E�有効期限が近い頁E��E
+// remain>0 を条件に付けて原子的に減らぁE
 async function consumeOneTopup(sb: any, userId: string): Promise<boolean> {
     const nowIso = new Date().toISOString()
     const { data: rows } = await sb
@@ -118,7 +118,7 @@ async function consumeOneTopup(sb: any, userId: string): Promise<boolean> {
     return false
 }
 
-// ===== 入力/強調 抽出 =====
+// ===== 入劁E強調 抽出 =====
 function parseBody(jsonUnknown: unknown): BoostBody {
     if (typeof jsonUnknown !== 'object' || jsonUnknown === null) return {}
     const rec = jsonUnknown as Record<string, unknown>
@@ -135,7 +135,7 @@ function parseBody(jsonUnknown: unknown): BoostBody {
     }
 }
 
-/** 入力中の [こういうやつ] を抽出して、括弧を外したクリーンな本文と強調配列を返す */
+/** 入力中の [こうぁE��めE��] を抽出して、括弧を外したクリーンな本斁E��強調配�Eを返す */
 function extractBracketHighlights(raw: string): { clean: string; highlights: string[] } {
     const found: string[] = []
     const clean = raw.replace(/\[([^\]\r\n]{1,60})\]/g, (_m, g1: string) => {
@@ -146,7 +146,7 @@ function extractBracketHighlights(raw: string): { clean: string; highlights: str
     return { clean, highlights: found }
 }
 
-/** highlights: カンマ区切り or 配列 → 正規化（空や重複を除去、最大10件まで） */
+/** highlights: カンマ区刁E�� or 配�E ↁE正規化�E�空めE��褁E��除去、最大10件まで�E�E*/
 function normalizeHighlights(h: string[] | string | null | undefined): string[] {
     if (!h) return []
     const arr = Array.isArray(h) ? h : h.split(',')
@@ -167,14 +167,14 @@ function normalizeHighlights(h: string[] | string | null | undefined): string[] 
     return out
 }
 
-/** プラン別 文字数制限（Free/Pro=500, Pro+=2000） */
+/** プラン別 斁E��数制限！Eree/Pro=500, Pro+=2000�E�E*/
 function enforceCharLimit(text: string, tier: 'free' | 'pro' | 'pro_plus'): { text: string; truncated: boolean } {
     const limit = tier === 'pro_plus' ? 2000 : 500
     if (text.length <= limit) return { text, truncated: false }
     return { text: text.slice(0, limit), truncated: true }
 }
 
-// ===== OpenAI呼び出し =====
+// ===== OpenAI呼び出ぁE=====
 async function callLLM(userBrief: string, highlights: string[], options?: BoostBody['options']): Promise<LlmResult> {
     const system =
         [
@@ -221,7 +221,7 @@ async function callLLM(userBrief: string, highlights: string[], options?: BoostB
     return resp.choices[0]?.message?.content ?? ''
 }
 
-// ===== ルート本体 =====
+// ===== ルート本佁E=====
 export async function POST(req: NextRequest) {
     try {
         const url = new URL(req.url)
@@ -238,7 +238,7 @@ export async function POST(req: NextRequest) {
             userId = null
         }
 
-        // 課金情報を確認して tier と proUntil を確定
+        // 課金情報を確認して tier と proUntil を確宁E
         let planTier: 'free' | 'pro' | 'pro_plus' = 'free'
         let proUntil: string | null = null
         if (userId) {
@@ -260,7 +260,7 @@ export async function POST(req: NextRequest) {
             if (proActive) return NextResponse.json({ ok: true, remain: null, tier: planTier })
 
             if (userId) {
-                // Redisに広告ボーナス +1
+                // Redisに庁E��ボ�Eナス +1
                 const today = jstDateString()
                 if (redis) {
                     const bonusKey = `pb:b:${userId}:${today}`
@@ -293,7 +293,7 @@ export async function POST(req: NextRequest) {
             return res
         }
 
-        // --- 入力 ---
+        // --- 入劁E---
         let bodyJson: unknown = {}
         try {
             bodyJson = await req.json()
@@ -304,21 +304,21 @@ export async function POST(req: NextRequest) {
         const rawInput = parsed.input ?? ''
         if (!rawInput) return NextResponse.json({ error: 'empty input' }, { status: 400 })
 
-        // [] マーカー抽出 + クリーン本文生成
+        // [] マ�Eカー抽出 + クリーン本斁E��戁E
         const extracted = extractBracketHighlights(rawInput)
         const extraHi = normalizeHighlights(parsed.highlights)
         const allHighlights = normalizeHighlights([...extracted.highlights, ...extraHi])
 
         const finalBriefRaw = extracted.clean
 
-        // --- 消費方針（どれを使うか） ---
+        // --- 消費方針（どれを使ぁE���E�E---
         let useFreeDaily = false          // Free の日次枠
         let useSubMonthly = false         // Pro/Pro+ の月次枠
         let useTopup = false              // Top-up
-        let cookiePathFree = false        // 未ログイン/Redis無しの Free cookie 運用
+        let cookiePathFree = false        // 未ログイン/Redis無し�E Free cookie 運用
 
         if (!proActive) {
-            // Free：無料枠 → 0なら Top-up（ログイン+Redis時のみ）
+            // Free�E�無料枠 ↁE0なめETop-up�E�ログイン+Redis時�Eみ�E�E
             if (userId && redis) {
                 const today = jstDateString()
                 const usageKey = `pb:q:${userId}:${today}`
@@ -339,7 +339,7 @@ export async function POST(req: NextRequest) {
                     }
                 }
             } else {
-                // 未ログイン or Redisなし → cookie で従来運用（Top-upは未対応）
+                // 未ログイン or RedisなぁEↁEcookie で従来運用�E�Eop-upは未対応！E
                 const { usage, bonus } = cookieNames(userId)
                 const u = readPair(jar.get(usage)?.value)
                 const b = readPair(jar.get(bonus)?.value)
@@ -349,13 +349,13 @@ export async function POST(req: NextRequest) {
                         { status: 402 }
                     )
                 }
-                cookiePathFree = true // 成功後に cookie を+1
+                cookiePathFree = true // 成功後に cookie めE1
             }
         } else {
-            // Pro/Pro+：月次1000 → 0なら Top-up
+            // Pro/Pro+�E�月次1000 ↁE0なめETop-up
             if (userId) {
                 const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
-                const subCap = 1000 // tier別に変えるならここで分岐
+                const subCap = 1000 // tier別に変えるならここで刁E��E
                 const key = `pb:m:${userId}:${cycleId}`
                 const usedRaw = Number((await redis?.get(key)) ?? 0)
                 const subLeft = Math.max(0, subCap - usedRaw)
@@ -374,13 +374,13 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        // --- 文字数制限（UIは常時開放、制限はバックで適用） ---
+        // --- 斁E��数制限！EIは常時開放、制限�Eバックで適用�E�E---
         const limited = enforceCharLimit(finalBriefRaw, planTier)
 
         // --- LLM ---
         const text: LlmResult = await callLLM(limited.text, allHighlights, parsed.options)
 
-        // --- 成功後に消費をコミット ---
+        // --- 成功後に消費をコミッチE---
         // Free (Redis)
         if (useFreeDaily && userId && redis) {
             const today = jstDateString()
@@ -416,13 +416,13 @@ export async function POST(req: NextRequest) {
             return res
         }
 
-        // Pro/Pro+ 月次（Redis）
+        // Pro/Pro+ 月次�E�Eedis�E�E
         if (useSubMonthly && userId && redis) {
             const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
             const key = `pb:m:${userId}:${cycleId}`
             const used = await redis.incr(key)
             if (used === 1) await redis.expire(key, secondsUntil(proUntil))
-            // Pro系は remain=null で返す（フロントは /status 再取得で subRemaining を表示）
+            // Pro系は remain=null で返す�E�フロント�E /status 再取得で subRemaining を表示�E�E
             return NextResponse.json({
                 text,
                 remain: null,
@@ -432,11 +432,11 @@ export async function POST(req: NextRequest) {
             })
         }
 
-        // Top-up 消費（全プラン共通のフォールバック）
+        // Top-up 消費�E��Eプラン共通�Eフォールバック�E�E
         if (useTopup && userId) {
             const ok = await consumeOneTopup(sb, userId)
             if (!ok) {
-                // 競合で在庫が無くなった等
+                // 競合で在庫が無くなった筁E
                 return NextResponse.json({ error: 'No top-up balance', tier: planTier }, { status: 402 })
             }
             return NextResponse.json({
@@ -448,7 +448,7 @@ export async function POST(req: NextRequest) {
             })
         }
 
-        // ここに来るのは Pro だが userId/redis 無し等の稀ケース
+        // ここに来る�Eは Pro だぁEuserId/redis 無し等�E稀ケース
         return NextResponse.json({
             text,
             remain: proActive ? null : undefined,

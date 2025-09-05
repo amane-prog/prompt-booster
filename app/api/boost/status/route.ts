@@ -3,7 +3,7 @@ import { supabaseServer } from '@/lib/supabaseServer'
 import { isPro as isProDate } from '@/lib/plan'
 import { Redis } from '@upstash/redis'
 
-export const runtime = 'nodejs' as const
+export const runtime = 'nodejs'
 
 const FREE_DAILY_LIMIT = Number(process.env.FREE_DAILY_LIMIT ?? 3)
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL
@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        // Free の残回数（Pro/Pro+ は null）
+        // Free の残回数�E�Ero/Pro+ は null�E�E
         let freeRemaining: number | null = null
         if (planTier === 'free') {
             if (userId && redis) {
@@ -80,12 +80,12 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        // ★ Pro/Pro+ の月次サブスク残数
+        // ☁EPro/Pro+ の月次サブスク残数
         let subCap: number | null = null
         let subUsed: number | null = null
         let subRemaining: number | null = null
         if (planTier !== 'free' && userId) {
-            subCap = 1000 // tier で変えるならここで分岐
+            subCap = 1000 // tier で変えるならここで刁E��E
             if (redis) {
                 const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
                 const key = `pb:m:${userId}:${cycleId}`
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        // Top-up 残高（有効期限内のみ・FIFO用に期限昇順）
+        // Top-up 残高（有効期限冁E�Eみ・FIFO用に期限昁E��E��E
         let topupRemain = 0
         let topups: { remain: number; expire_at: string }[] = []
         if (userId) {
@@ -130,7 +130,7 @@ export async function GET(req: NextRequest) {
             isPro: planTier !== 'free',
             remain: freeRemaining,
 
-            // サブスク残数（Pro/Pro+ 用）
+            // サブスク残数�E�Ero/Pro+ 用�E�E
             subCap,
             subUsed,
             subRemaining,

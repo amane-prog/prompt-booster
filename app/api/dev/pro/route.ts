@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 
-export const runtime = 'nodejs' // 任意だが推奨（Edgeでは動かないため）
+export const runtime = 'nodejs' // 任意だが推奨�E�Edgeでは動かなぁE��めE��E
 
 export async function POST(_req: NextRequest) {
-    const sb = await supabaseServer() // ← await を付ける
+    const sb = await supabaseServer() // ↁEawait を付けめE
 
     const { data: userRes } = await sb.auth.getUser().catch(() => ({ data: { user: null } as any }))
     const userId = userRes?.user?.id

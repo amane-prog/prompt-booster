@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import Stripe from 'stripe';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-export const runtime = 'nodejs' as const;
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY as string;
@@ -44,7 +44,7 @@ async function resolveUserIdFromCustomerId(customerId: string): Promise<string |
     return null;
 }
 
-// ✅ Basil以降: サブスクの「現在の課金期間の終了」は items の current_period_end の最小値を採用
+// ✁EBasil以陁E サブスクの「現在の課金期間�E終亁E���E items の current_period_end の最小値を採用
 function minItemPeriodEnd(sub: Stripe.Subscription): number | null {
     const ends = (sub.items?.data ?? [])
         .map(i => (i as any).current_period_end as number | undefined)
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
                 const userId = userIdFromMeta(s.metadata) ?? (await resolveUserIdFromCustomerId(customerId));
                 if (!userId) break;
 
-                // --- Top-up（都度払い） ---
+                // --- Top-up�E��E度払い�E�E---
                 const isTopup = s.mode === 'payment' || !s.subscription;
                 if (isTopup && s.payment_status === 'paid') {
                     const lineItems = await stripe.checkout.sessions.listLineItems(s.id, { limit: 10 });

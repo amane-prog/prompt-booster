@@ -16,16 +16,16 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
     }
 
-    // ï¿½Â‹ï¿½ï¿½Ïï¿½ï¿½É’Ç‰ï¿½ï¿½pï¿½bï¿½Nï¿½pï¿½Ì‰ï¿½ï¿½iIDï¿½ï¿½İ’ï¿½
+    // E½Â‹ï¿½E½Ïï¿½E½É’Ç‰ï¿½E½pE½bE½NE½pE½Ì‰ï¿½E½iIDE½E½İ’ï¿½
     const priceId = process.env.STRIPE_PRICE_ID_ADDON
     if (!priceId) return NextResponse.json({ error: 'missing price id' }, { status: 500 })
 
-    // Customerï¿½mï¿½ï¿½
+    // CustomerE½mE½E½
     const found = await stripe.customers.list({ email: user.email, limit: 1 })
     const customer = found.data[0] ??
         (await stripe.customers.create({ email: user.email, metadata: { userId: user.id } }))
 
-    // Checkout ï¿½Zï¿½bï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ì¬
+    // Checkout E½ZE½bE½VE½E½E½E½E½E¬
     const origin = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? 'http://localhost:3000'
     const session = await stripe.checkout.sessions.create({
         mode: 'payment',

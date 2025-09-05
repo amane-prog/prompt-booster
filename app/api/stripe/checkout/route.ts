@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 import { NextResponse, type NextRequest } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseServer';
 
-export const runtime = 'nodejs' as const;
+export const runtime = 'nodejs';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 if (!STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY not set');
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
         }
 
-        // CSRF緩和: Origin allowlist
+        // CSRF緩咁E Origin allowlist
         const origin = computeOrigin(req);
         const allowed = new Set([
             process.env.NEXT_PUBLIC_SITE_ORIGIN,
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
         const loc = req.cookies.get('NEXT_LOCALE')?.value ?? 'ja';
 
-        // Customer 検索/作成
+        // Customer 検索/作�E
         let customerId: string | null = null;
         try {
             const search = await stripe.customers.search({
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
             customerId = created.id;
         }
 
-        // DB保存（冪等 upsert）
+        // DB保存（�E筁Eupsert�E�E
         await sb.from('user_billing').upsert(
             { user_id: user.id, stripe_customer_id: customerId },
             { onConflict: 'user_id' }
