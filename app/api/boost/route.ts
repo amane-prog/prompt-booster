@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 import { isPro as isProDate } from '@/lib/plan'
 import { Redis } from '@upstash/redis'
@@ -129,7 +129,7 @@ async function callLLM(userBrief: string, highlights: string[], options?: BoostB
 }
 
 // ===== Handler =====
-export async function POST(req: NextRequest) {
+export async function POST(req: Request): Promise<Response> {
     try {
         const redis = getRedis()
         const url = new URL(req.url)
