@@ -1,3 +1,7 @@
+type PageProps = {
+  params?: Record<string, string | string[]>;
+  searchParams?: Record<string, string | string[]>;
+};
 'use client'
 
 import { useState } from 'react'
@@ -5,7 +9,7 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { supabase } from '@/lib/supabaseClient' // 笘・縺薙ｌ縺檎┌縺・→縲靴annot find name 'supabase'縲・
 
-export default function SignInPage() {
+export default function SignInPage(_props: PageProps) {
     const t = useTranslations()
     const router = useRouter()
     const [email, setEmail] = useState('')         // 笘・email 繧堤畑諢擾ｼ・horthand error蟇ｾ遲厄ｼ・

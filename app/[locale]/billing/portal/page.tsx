@@ -1,9 +1,13 @@
+type PageProps = {
+  params?: Record<string, string | string[]>;
+  searchParams?: Record<string, string | string[]>;
+};
 // app/[locale]/billing/portal/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
 
-export default function BillingPortalLocalePage() {
+export default function BillingPortalLocalePage(_props: PageProps) {
     const [err, setErr] = useState<string | null>(null)
 
     useEffect(() => {

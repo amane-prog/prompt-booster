@@ -1,4 +1,8 @@
-export default function Privacy() {
+type PageProps = {
+  params?: Record<string, string | string[]>;
+  searchParams?: Record<string, string | string[]>;
+};
+export default function Privacy(_props: PageProps) {
     return (
         <div className="prose mx-auto max-w-3xl p-6">
             <h1>Privacy Policy</h1>

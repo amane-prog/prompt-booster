@@ -1,3 +1,7 @@
+type PageProps = {
+  params?: Record<string, string | string[]>;
+  searchParams?: Record<string, string | string[]>;
+};
 // app/[locale]/page.tsx
 'use client';
 
@@ -52,7 +56,7 @@ function fmtHMS(total: number): string {
     return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
-export default function HomePage() {
+export default function HomePage(_props: PageProps) {
     const t = useTranslations('ui');
     const toastT = useTranslations('toast');
     const creditT = useTranslations('credit');

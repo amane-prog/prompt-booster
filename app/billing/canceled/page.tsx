@@ -1,8 +1,12 @@
+type PageProps = {
+  params?: Record<string, string | string[]>;
+  searchParams?: Record<string, string | string[]>;
+};
 'use client'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 
-export default function CanceledPage() {
+export default function CanceledPage(_props: PageProps) {
     const t = useTranslations()
     const loc =
         typeof document !== 'undefined'

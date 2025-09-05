@@ -1,4 +1,8 @@
-export default function FeedbackPage() {
+type PageProps = {
+  params?: Record<string, string | string[]>;
+  searchParams?: Record<string, string | string[]>;
+};
+export default function FeedbackPage(_props: PageProps) {
     return (
         <div className="mx-auto max-w-2xl p-6">
             <h1 className="text-xl font-semibold">Feedback</h1>

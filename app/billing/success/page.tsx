@@ -1,10 +1,14 @@
+type PageProps = {
+  params?: Record<string, string | string[]>;
+  searchParams?: Record<string, string | string[]>;
+};
 'use client'
 import { useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 
-export default function SuccessPage() {
+export default function SuccessPage(_props: PageProps) {
     const t = useTranslations()
     const router = useRouter()
     const sp = useSearchParams()

@@ -1,10 +1,14 @@
+type PageProps = {
+  params?: Record<string, string | string[]>;
+  searchParams?: Record<string, string | string[]>;
+};
 'use client'
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'   // 笘・import 蠢倥ｌ髦ｲ豁｢
 
-export default function AuthCallback() {
+export default function AuthCallback(_props: PageProps) {
     const router = useRouter()
 
     useEffect(() => {

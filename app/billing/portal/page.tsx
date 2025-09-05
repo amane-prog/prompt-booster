@@ -1,3 +1,7 @@
+type PageProps = {
+  params?: Record<string, string | string[]>;
+  searchParams?: Record<string, string | string[]>;
+};
 // app/billing/portal/page.tsx
 'use client'
 
@@ -6,7 +10,7 @@ import Link from 'next/link'
 
 type PortalResponse = { url?: string; error?: string }
 
-export default function BillingPortalPage() {
+export default function BillingPortalPage(_props: PageProps) {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [unauthorized, setUnauthorized] = useState(false)
