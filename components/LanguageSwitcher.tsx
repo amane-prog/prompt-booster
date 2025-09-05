@@ -4,17 +4,22 @@ import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { locales } from '@/i18n';
 
+// 固定対応ロケール（当面は ja/en）
+const enabled = ['ja', 'en'] as const;
+type EnabledLocale = typeof enabled[number];
+
+function isEnabledLocale(x: string): x is EnabledLocale {
+    return (enabled as readonly string[]).includes(x);
+}
+
 export default function LanguageSwitcher({ className }: { className?: string }) {
-    const current = useLocale();
+    const current = useLocale(); // string 扱い
     const t = useTranslations();
     const router = useRouter();
     const pathname = usePathname() || '/';
     const searchParams = useSearchParams();
 
-    // 当面は ja/en のみ
-    const enabled = (locales as readonly string[]).filter(l => l === 'ja' || l === 'en');
-
-    function swapLocaleInPath(path: string, next: string) {
+    function swapLocaleInPath(path: string, next: EnabledLocale) {
         const list = locales as readonly string[];
         const parts = path.split('/');
         if (parts[1] && list.includes(parts[1])) {
@@ -34,15 +39,16 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
         }
     }
 
-    const value = enabled.includes(current) ? current : enabled[0];
+    // current は string なので、type guard で EnabledLocale に絞る
+    const value: EnabledLocale = isEnabledLocale(current) ? current : enabled[0];
 
     return (
         <select
             aria-label={t('nav.language')}
             className={className ?? 'h-8 rounded-md border px-2 text-sm bg-white'}
             value={value}
-            onChange={e => {
-                const next = e.target.value;
+            onChange={(e) => {
+                const next = e.target.value as EnabledLocale;
                 const newPath = swapLocaleInPath(pathname, next);
                 const qs = searchParams.toString();
                 router.replace(qs ? `${newPath}?${qs}` : newPath);
@@ -54,10 +60,12 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
                     'Max-Age=31536000',
                     'SameSite=Lax',
                     isProd ? 'Secure' : '',
-                ].filter(Boolean).join('; ');
+                ]
+                    .filter(Boolean)
+                    .join('; ');
             }}
         >
-            {enabled.map(loc => (
+            {enabled.map((loc) => (
                 <option key={loc} value={loc}>
                     {labelFor(loc)}
                 </option>
