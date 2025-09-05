@@ -1,5 +1,6 @@
 // app/[locale]/layout.tsx
 import type { ReactNode } from 'react';
+import type { LayoutProps } from 'next';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
@@ -8,8 +9,6 @@ import Header from '@/components/Header';
 import '@/styles/globals.css';
 
 export const dynamic = 'force-static';
-
-type Params = { locale: string };
 
 function isLocale(x: string): x is Locale {
     return (locales as readonly string[]).includes(x);
@@ -21,14 +20,12 @@ export function generateStaticParams(): ReadonlyArray<{ locale: Locale }> {
 
 export default async function LocaleLayout({
     children,
-    params
-}: {
-    children: ReactNode;
-    params: Params;
-}) {
-    const rawLocale = params.locale;
-    if (!isLocale(rawLocale)) notFound();
+    params,
+}: LayoutProps<'/[locale]'>) {
+    // ★ Next 15 では params が Promise なので await が必要
+    const { locale: rawLocale } = await params;
 
+    if (!isLocale(rawLocale)) notFound();
     setRequestLocale(rawLocale);
 
     let messages: Record<string, unknown>;
