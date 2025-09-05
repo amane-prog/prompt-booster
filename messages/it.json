@@ -1,0 +1,122 @@
+﻿{
+  "app": {
+    "title": "Prompt‑Booster",
+    "loading": "Caricamento…",
+    "error": "Si è verificato un errore"
+  },
+  "nav": {
+    "home": "Home",
+    "pricing": "Prezzi",
+    "docs": "Documenti",
+    "language": "Lingua",
+    "signIn": "Accedi",
+    "signOut": "Esci"
+  },
+  "header": {
+    "plan": "Piano",
+    "status": {
+      "free": "FREE",
+      "pro": "PRO",
+      "pro_plus": "PRO+"
+    },
+    "requestsRemaining": "Richieste rimanenti",
+    "requestsRemainingFmt": "{count, plural, =0 {# rimanenti} one {# rimanente} other {# rimanenti}}",
+    "requestsInfo": "Sia PRO che PRO+ hanno un limite di 1.000/mese. Usa i Top‑up oltre il limite.",
+    "topupRemaining": "Top‑up rimanenti",
+    "topupEarliestExpiry": "Scadenza più vicina: {date}",
+    "upgradeToProPlus": "Passa a PRO+",
+    "manageBilling": "Gestisci fatturazione",
+    "buyTopup": "Acquista Top‑up",
+    "applied": "Applicato"
+  },
+  "plan": {
+    "matrixTitle": "Piani",
+    "monthly": "Mensile",
+    "maxPerMonth": "Limite mensile",
+    "topup": "Top‑up",
+    "feature": "Funzioni",
+    "free": {
+      "name": "Free",
+      "desc": "Inizia gratis",
+      "price": "$0",
+      "limit": "3/giorno • fino a 1.000/mese",
+      "cta": "Inizia gratis"
+    },
+    "pro": {
+      "name": "Pro",
+      "desc": "Standard per indie dev",
+      "price": "$3",
+      "limit": "Fino a 1.000/mese",
+      "cta": "Passa a PRO"
+    },
+    "pro_plus": {
+      "name": "Pro+",
+      "desc": "Più margine e priorità",
+      "price": "$5",
+      "limit": "1.000/mese + priorità",
+      "cta": "Passa a PRO+"
+    },
+    "notes": {
+      "commonCap": "* PRO/PRO+ hanno entrambi 1.000/mese",
+      "topupNote": "* I Top‑up aggiungono crediti con scadenza"
+    }
+  },
+  "boost": {
+    "run": "Esegui",
+    "stop": "Ferma",
+    "mode": {
+      "label": "Modalità",
+      "chat": "Chat",
+      "rewrite": "Rielabora",
+      "summarize": "Riepiloga"
+    },
+    "length": {
+      "label": "Lunghezza",
+      "short": "Breve",
+      "medium": "Standard",
+      "long": "Lunga"
+    },
+    "tone": {
+      "label": "Tono",
+      "neutral": "Neutro",
+      "friendly": "Amichevole",
+      "formal": "Formale"
+    },
+    "applied": "Applicato: {label}"
+  },
+  "auth": {
+    "email": "Email",
+    "sendMagicLink": "Invia magic link",
+    "checkInbox": "Controlla la posta",
+    "signedIn": "Accesso effettuato",
+    "signedOut": "Disconnesso"
+  },
+  "billing": {
+    "checkout": {
+      "goPro": "Passa a PRO",
+      "goProPlus": "Passa a PRO+",
+      "topup": "Acquista Top‑up"
+    },
+    "result": {
+      "success": "Acquisto completato",
+      "canceled": "Acquisto annullato"
+    }
+  },
+  "toast": {
+    "saved": "Salvato",
+    "copied": "Copiato",
+    "error": "Qualcosa è andato storto"
+  },
+  "errors": {
+    "unauthorized": "Accesso richiesto",
+    "rateLimited": "Riprova più tardi",
+    "quotaExceeded": "Limite raggiunto. Valuta un Top‑up.",
+    "unknown": "Errore sconosciuto"
+  },
+  "language": {
+    "ja": "Giapponese",
+    "en": "Inglese",
+    "es": "Spagnolo",
+    "it": "Italiano"
+  }
+}

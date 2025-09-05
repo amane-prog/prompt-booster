@@ -1,0 +1,7 @@
+/* prompt-booster/styles/globals.css */
+@import "tailwindcss";
+
+/* 好みで最低限のリセット */
+html, body {
+    height: 100%;
+}

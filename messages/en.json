@@ -1,0 +1,266 @@
+{
+  "app": {
+    "title": "Prompt-Booster",
+    "loading": "Loading…",
+    "error": "An error has occurred",
+    "name": "Prompt Booster"
+  },
+  "nav": {
+    "home": "Home",
+    "pricing": "Pricing",
+    "docs": "Docs",
+    "language": "Language",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "manage": "Billing Portal",
+    "goPro": "Upgrade to Pro",
+    "goProPlus": "Upgrade to Pro+"
+  },
+  "ui": {
+    "status": "Status",
+    "plan": "Plan",
+    "remainingRequests": "Remaining Requests",
+    "freeDailyCap": "3",
+    "subscriptionCap": "Subscription Cap",
+    "resetsOn": "Resets: {date}",
+    "topupRemaining": "Top-up Remaining",
+    "earliestExpiry": "Earliest Expiry: {date}",
+    "buyTopupN": "+{count} requests (${price})",
+    "jstResetCountdown": "Until JST reset: {time}",
+    "input": "Input",
+    "inputPlaceholder": "Enter your needs, background, and constraints. Use [brackets] to emphasize key parts.",
+    "tipBracket": "Tip: Text in [brackets] is extracted for emphasis. / Cmd/Ctrl + Enter to run",
+    "maxCharsPerRequest": "Max characters per request: {n}",
+    "generate": "Generate ⚡",
+    "output": "Output",
+    "truncated": "Input was truncated to fit your plan limit",
+    "freeExhausted": "You’ve used up today’s free requests",
+    "subscriptionRemaining": "Subscription Remaining",
+    "processing": "Processing…",
+    "seePlans": "See full plans",
+    "copy": "Copy",
+    "share": "Share",
+    "empty": "—"
+  },
+  "credit": {
+    "busyTitle": "Currently busy / Low credits",
+    "freeModalBody": "You’ve reached today’s free request limit. Please try again after the daily reset. To continue now, upgrade to Pro or add a Top-up.",
+    "proModalBody": "You’re approaching this month’s limit. Adding a Top-up temporarily expands your monthly cap."
+  },
+  "header": {
+    "plan": "Plan",
+    "status": {
+      "free": "FREE",
+      "pro": "PRO",
+      "pro_plus": "PRO+"
+    },
+    "pitch": "Organize and optimize your prompts before sending them to AI to get higher-quality results—even on free tiers. Use the generated prompt with your own AI.",
+    "assurance": "We don’t store your email in our own DB. Accounts are identified by UUID only (auth via Supabase, payments via Stripe).",
+    "requestsRemaining": "Requests Remaining",
+    "requestsRemainingFmt": "{count} left",
+    "requestsInfo": "Pro and Pro+ both allow up to 1,000 requests per month. Use top-ups if you need more.",
+    "topupRemaining": "Top-up Remaining",
+    "topupEarliestExpiry": "Earliest Expiry: {date}",
+    "upgradeToProPlus": "Upgrade to Pro+",
+    "manageBilling": "Manage Billing",
+    "buyTopup": "Buy Top-up",
+    "applied": "Applied"
+  },
+  "plan": {
+    "matrixTitle": "Plan Comparison",
+    "monthly": "Monthly Price",
+    "maxPerMonth": "Monthly Limit",
+    "topup": "Top-up",
+    "feature": "Features",
+    "free": {
+      "name": "Free",
+      "desc": "Try it for free",
+      "price": "Free",
+      "limit": "3 per day / up to 1,000 per month",
+      "cta": "Start for Free"
+    },
+    "pro": {
+      "name": "Pro",
+      "desc": "Standard plan for indie developers",
+      "price": "$3/month",
+      "limit": "Up to 1,000 per month",
+      "cta": "Upgrade to Pro"
+    },
+    "pro_plus": {
+      "name": "Pro+",
+      "desc": "More room. Priority execution and extra capacity",
+      "price": "$5/month",
+      "limit": "1,000 per month + priority",
+      "cta": "Upgrade to Pro+"
+    },
+    "notes": {
+      "commonCap": "※ Pro/Pro+ monthly cap is 1,000 requests",
+      "topupNote": "※ Top-ups add requests with expiry dates"
+    },
+    "badges": {
+      "mostPopular": "Most Popular",
+      "bestValue": "Best Value"
+    },
+    "bullets": {
+      "cap1000": "Up to 1,000 per month",
+      "daily3": "Up to 3 per day",
+      "priority": "Priority execution",
+      "chars500": "Up to 500 chars per request",
+      "chars2000": "Up to 2,000 chars per request",
+      "noAds": "No ads",
+      "bannerAds": "Banner ads",
+      "topup": "Supports top-ups"
+    },
+    "cta": {
+      "free": "Start for Free",
+      "pro": "Upgrade to Pro",
+      "pro_plus": "Upgrade to Pro+",
+      "seeDetails": "See Details"
+    }
+  },
+  "boost": {
+    "run": "Run",
+    "stop": "Stop",
+    "mode": {
+      "label": "Mode",
+      "chat": "Chat",
+      "rewrite": "Rewrite",
+      "summarize": "Summarize"
+    },
+    "length": {
+      "label": "Length",
+      "short": "Short",
+      "medium": "Standard",
+      "long": "Long"
+    },
+    "tone": {
+      "label": "Tone",
+      "neutral": "Neutral",
+      "friendly": "Friendly",
+      "formal": "Formal"
+    },
+    "applied": "Applied: {label}"
+  },
+  "auth": {
+    "email": "Email",
+    "sendMagicLink": "Send Magic Link",
+    "checkInbox": "Check your inbox",
+    "signedIn": "Signed in",
+    "signedOut": "Signed out"
+  },
+  "billing": {
+    "checkout": {
+      "goPro": "Upgrade to Pro",
+      "goProPlus": "Upgrade to Pro+",
+      "topup": "Buy Top-up",
+      "topup300": "Top-up 300",
+      "topup1000": "Top-up 1000"
+    },
+    "result": {
+      "success": "Purchase complete",
+      "canceled": "Purchase canceled"
+    }
+  },
+  "toast": {
+    "saved": "Saved",
+    "copied": "Copied",
+    "error": "An error occurred"
+  },
+  "errors": {
+    "unauthorized": "Authentication required",
+    "rateLimited": "Please try again later",
+    "quotaExceeded": "You’ve reached your limit. Consider a top-up.",
+    "unknown": "Unknown error"
+  },
+  "language": {
+    "ja": "Japanese",
+    "en": "English",
+    "es": "Spanish",
+    "it": "Italian"
+  },
+  "advanced": {
+    "emphasis": {
+      "title": "Words/phrases to emphasize (comma separated)",
+      "placeholder": "e.g., Fast response, Accuracy, Polite tone",
+      "aria": "Emphasis phrases",
+      "help": "Optional. Up to 10 items incl. phrases extracted via [brackets]."
+    },
+    "mode": {
+      "label": "Mode",
+      "dialogue": "Dialogue",
+      "generation": "Generation"
+    },
+    "color": {
+      "label": "Color tone",
+      "options": {
+        "auto": "Auto",
+        "bright": "Bright",
+        "dark": "Dark",
+        "pastel": "Pastel",
+        "mono": "Monochrome"
+      }
+    },
+    "ratio": {
+      "label": "Ratio",
+      "options": {
+        "auto": "Auto"
+      }
+    },
+    "tone": {
+      "label": "Tone",
+      "options": {
+        "auto": "Auto",
+        "friendly": "Friendly",
+        "formal": "Formal",
+        "concise": "Concise",
+        "enthusiastic": "Enthusiastic",
+        "neutral": "Neutral",
+        "empathetic": "Empathetic"
+      }
+    },
+    "tags": {
+      "label": "Tags (toggle ON/OFF)",
+      "reverse": "Reverse",
+      "substitute": "Substitute",
+      "reorder": "Reorder",
+      "remove": "Remove",
+      "merge": "Merge",
+      "expand": "Expand",
+      "condense": "Condense",
+      "fix": "Fix",
+      "adapt": "Adapt"
+    },
+    "style": {
+      "label": "Style",
+      "tags": {
+        "photorealistic": "Photorealistic",
+        "anime": "Anime",
+        "watercolor": "Watercolor",
+        "flat": "Flat",
+        "minimal": "Minimal",
+        "cyberpunk": "Cyberpunk",
+        "isometric": "Isometric",
+        "line-art": "Line Art"
+      }
+    },
+    "common": {
+      "applied": "Applied",
+      "none": "None"
+    }
+  },
+  "compact": {
+    "title": "Plans",
+    "seeDetails": "See details"
+  },
+  "planComparison": {
+    "title": "Plan comparison"
+  },
+  "common": {
+    "close": "Close",
+    "managePlan": "Manage plan"
+  },
+  "legal": {
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
+  }
+}
