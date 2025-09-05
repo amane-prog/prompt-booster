@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { supabase } from '@/lib/supabaseClient' // ★ これが無いと「Cannot find name 'supabase'」
+import { supabase } from '@/lib/supabaseClient' // 笘・縺薙ｌ縺檎┌縺・→縲靴annot find name 'supabase'縲・
 
 export default function SignInPage() {
     const t = useTranslations()
     const router = useRouter()
-    const [email, setEmail] = useState('')         // ★ email を用意（shorthand error対策）
+    const [email, setEmail] = useState('')         // 笘・email 繧堤畑諢擾ｼ・horthand error蟇ｾ遲厄ｼ・
     const [loading, setLoading] = useState(false)
     const [msg, setMsg] = useState<string | null>(null)
 
@@ -19,7 +19,7 @@ export default function SignInPage() {
         setLoading(true)
         setMsg(null)
         try {
-            // ★ 変数名は 'origin' と被りやすいので siteOrigin に
+            // 笘・螟画焚蜷阪・ 'origin' 縺ｨ陲ｫ繧翫ｄ縺吶＞縺ｮ縺ｧ siteOrigin 縺ｫ
             const siteOrigin =
                 typeof window !== 'undefined'
                     ? window.location.origin
@@ -27,7 +27,7 @@ export default function SignInPage() {
 
             const { error } = await supabase.auth.signInWithOtp({
                 email,
-                options: { emailRedirectTo: `${siteOrigin}/auth/callback` }, // ★ callbackへ
+                options: { emailRedirectTo: `${siteOrigin}/auth/callback` }, // 笘・callback縺ｸ
             })
 
             if (error) {
@@ -57,7 +57,7 @@ export default function SignInPage() {
                     disabled={loading || !email}
                     className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
                 >
-                    {loading ? (t.has('signin.sending') ? t('signin.sending') : 'Sending…') : (t.has('signin.send') ? t('signin.send') : 'Send magic link')}
+                    {loading ? (t.has('signin.sending') ? t('signin.sending') : 'Sending窶ｦ') : (t.has('signin.send') ? t('signin.send') : 'Send magic link')}
                 </button>
             </form>
             {msg && <p className="mt-3 text-sm text-neutral-600">{msg}</p>}

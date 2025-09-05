@@ -5,7 +5,7 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 
 const config: NextConfig = {
     eslint: {
-        // –{”Ôƒrƒ‹ƒh‚ÅLintƒGƒ‰[‚ğ–³‹‚·‚é
+        // æœ¬ç•ªãƒ“ãƒ«ãƒ‰ã§Lintã‚¨ãƒ©ãƒ¼ã‚’ç„¡è¦–ã™ã‚‹
         ignoreDuringBuilds: true,
     },
 }

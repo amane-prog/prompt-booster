@@ -36,7 +36,7 @@ export default async function BillingLayout({ children }: { children: ReactNode 
         <html lang={locale}>
             <body className="bg-neutral-50">
                 <IntlProviderClient locale={locale} messages={messages}>
-                    {/* 画面中央にカード配置 */}
+                    {/* 逕ｻ髱｢荳ｭ螟ｮ縺ｫ繧ｫ繝ｼ繝蛾・鄂ｮ */}
                     <div className="grid min-h-screen place-items-center px-4">{children}</div>
                 </IntlProviderClient>
             </body>
