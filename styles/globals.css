@@ -1,8 +1,5 @@
-﻿/* prompt-booster/styles/globals.css */
-@charset "UTF-8";
+﻿@charset "UTF-8";
 @import "tailwindcss";
 
-/* 好みで最低限のリセット */
-html, body {
-    height: 100%;
-}
+/* global reset (必要なら追記) */
+html, body { height: 100%; }
