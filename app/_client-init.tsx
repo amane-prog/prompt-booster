@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 const orig = String.prototype.repeat;
 String.prototype.repeat = function (count: any) {
     const n = Number(count);

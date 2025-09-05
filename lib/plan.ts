@@ -1,4 +1,4 @@
-﻿// lib/plan.ts
+// lib/plan.ts
 export type PlanTier = 'free' | 'pro' | 'pro_plus'
 
 export const Plan = {

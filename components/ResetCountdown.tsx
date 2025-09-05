@@ -1,4 +1,4 @@
-﻿// components/ResetCountdown.tsx
+// components/ResetCountdown.tsx
 'use client'
 
 import { useEffect, useState } from 'react'

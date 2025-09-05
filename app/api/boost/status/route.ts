@@ -1,4 +1,4 @@
-﻿import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 import { isPro as isProDate } from '@/lib/plan'
 import { Redis } from '@upstash/redis'

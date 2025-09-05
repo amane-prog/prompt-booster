@@ -1,4 +1,4 @@
-﻿// app/api/stripe/checkout/topup/route.ts
+// app/api/stripe/checkout/topup/route.ts
 import Stripe from 'stripe'
 import { NextResponse, type NextRequest } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'

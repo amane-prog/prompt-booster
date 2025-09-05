@@ -1,4 +1,4 @@
-﻿// utils/stripe.ts
+// utils/stripe.ts
 
 export type Plan = 'pro' | 'pro_plus'
 export type TopupKind = '300' | '1000'

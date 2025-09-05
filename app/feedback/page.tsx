@@ -12,7 +12,7 @@ export default function FeedbackPage() {
                 target="_blank"
             >
                 <textarea
-                    name="entry.123456" // © ƒtƒH[ƒ€‚É‡‚í‚¹‚ÄC³
+                    name="entry.123456" // ï¿½ï¿½ ï¿½tï¿½Hï¿½[ï¿½ï¿½ï¿½Éï¿½ï¿½í‚¹ï¿½ÄCï¿½ï¿½
                     required
                     className="min-h-40 w-full rounded-lg border p-3"
                     placeholder="Your message..."

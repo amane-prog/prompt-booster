@@ -1,4 +1,4 @@
-﻿// app/[locale]/terms/page.tsx
+// app/[locale]/terms/page.tsx
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

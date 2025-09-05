@@ -1,4 +1,4 @@
-﻿// components/AdBanner.tsx
+// components/AdBanner.tsx
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'

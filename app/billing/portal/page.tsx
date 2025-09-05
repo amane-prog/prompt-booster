@@ -1,4 +1,4 @@
-﻿// app/billing/portal/page.tsx
+// app/billing/portal/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'

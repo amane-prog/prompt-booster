@@ -1,4 +1,4 @@
-﻿import '@/styles/globals.css';
+import '@/styles/globals.css';
 import type { ReactNode } from 'react';
 import { cookies, headers } from 'next/headers';
 import { type AbstractIntlMessages } from 'next-intl';

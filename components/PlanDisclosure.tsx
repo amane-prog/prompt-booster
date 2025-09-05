@@ -11,87 +11,87 @@ export default function PlanDisclosure({
 }) {
     return (
         <section className="rounded-2xl border bg-white p-4">
-            <h3 className="mb-3 text-sm font-medium">ƒvƒ‰ƒ“ˆê——id—vŽ–€•\Ž¦j</h3>
+            <h3 className="mb-3 text-sm font-medium">ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ê——ï¿½iï¿½dï¿½vï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½j</h3>
 
             <div className="overflow-auto">
                 <table className="w-full border-collapse text-sm">
-                    <caption className="sr-only">—¿‹àƒvƒ‰ƒ“‚Ì”äŠr•\</caption>
+                    <caption className="sr-only">ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Ì”ï¿½rï¿½\</caption>
                     <thead>
                         <tr className="[&>th]:border [&>th]:px-2 [&>th]:py-1 bg-neutral-50 text-left">
-                            <th>ƒvƒ‰ƒ“</th>
-                            <th>ŒŽŠz</th>
-                            <th>ƒŠƒNƒGƒXƒgãŒÀ</th>
-                            <th>1‰ñ‚ÌÅ‘å•¶Žš”</th>
-                            <th>L</th>
-                            <th>’Ç‰Á‰Û‹à</th>
+                            <th>ï¿½vï¿½ï¿½ï¿½ï¿½</th>
+                            <th>ï¿½ï¿½ï¿½z</th>
+                            <th>ï¿½ï¿½ï¿½Nï¿½Gï¿½Xï¿½gï¿½ï¿½ï¿½</th>
+                            <th>1ï¿½ï¿½ÌÅ‘å•¶ï¿½ï¿½ï¿½ï¿½</th>
+                            <th>ï¿½Lï¿½ï¿½</th>
+                            <th>ï¿½Ç‰ï¿½ï¿½Û‹ï¿½</th>
                         </tr>
                     </thead>
                     <tbody className="[&>tr>td]:border [&>tr>td]:px-2 [&>tr>td]:py-2">
                         <tr>
                             <td>Free</td>
-                            <td>–³—¿</td>
-                            <td>1“ú3‰ñ</td>
-                            <td>500•¶Žš</td>
+                            <td>ï¿½ï¿½ï¿½ï¿½</td>
+                            <td>1ï¿½ï¿½3ï¿½ï¿½</td>
+                            <td>500ï¿½ï¿½ï¿½ï¿½</td>
                             <td>
-                                ƒoƒi[íŽž•\Ž¦ /
+                                ï¿½oï¿½iï¿½[ï¿½íŽžï¿½\ï¿½ï¿½ /
                                 <br />
-                                “®‰æŽ‹’®‚Å+1‰ñ
+                                ï¿½ï¿½ï¿½æŽ‹ï¿½ï¿½ï¿½ï¿½+1ï¿½ï¿½
                             </td>
-                            <td>‚È‚µ</td>
+                            <td>ï¿½È‚ï¿½</td>
                         </tr>
                         <tr>
                             <td>Pro</td>
-                            <td>$3/ŒŽ</td>
-                            <td>ŒŽ1,000‰ñ</td>
-                            <td>500•¶Žš</td>
-                            <td>‚È‚µ</td>
-                            <td>+$5‚Å+1,000‰ñ</td>
+                            <td>$3/ï¿½ï¿½</td>
+                            <td>ï¿½ï¿½1,000ï¿½ï¿½</td>
+                            <td>500ï¿½ï¿½ï¿½ï¿½</td>
+                            <td>ï¿½È‚ï¿½</td>
+                            <td>+$5ï¿½ï¿½+1,000ï¿½ï¿½</td>
                         </tr>
                         <tr>
                             <td>Pro+</td>
-                            <td>$5/ŒŽ</td>
-                            <td>ŒŽ1,000‰ñ</td>
-                            <td>2,000•¶Žš</td>
-                            <td>‚È‚µ</td>
-                            <td>+$5‚Å+1,000‰ñ</td>
+                            <td>$5/ï¿½ï¿½</td>
+                            <td>ï¿½ï¿½1,000ï¿½ï¿½</td>
+                            <td>2,000ï¿½ï¿½ï¿½ï¿½</td>
+                            <td>ï¿½È‚ï¿½</td>
+                            <td>+$5ï¿½ï¿½+1,000ï¿½ï¿½</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            {/* ”CˆÓFCTAiPro+‚Í–¢ŽÀ‘•‚È‚ç‰B‚·/–³Œø‰»‚Å‚àOKj */}
+            {/* ï¿½Cï¿½ÓFCTAï¿½iPro+ï¿½Í–ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½Bï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½OKï¿½j */}
             <div className="mt-3 flex gap-2">
                 {onGoPro && (
                     <button
                         onClick={onGoPro}
                         className="rounded bg-blue-600 px-3 py-1 text-xs text-white"
-                        aria-label="Pro‚ÉƒAƒbƒvƒOƒŒ[ƒh"
+                        aria-label="Proï¿½ÉƒAï¿½bï¿½vï¿½Oï¿½ï¿½ï¿½[ï¿½h"
                     >
-                        Pro‚ÉƒAƒbƒvƒOƒŒ[ƒh
+                        Proï¿½ÉƒAï¿½bï¿½vï¿½Oï¿½ï¿½ï¿½[ï¿½h
                     </button>
                 )}
                 {onGoProPlus && (
                     <button
                         onClick={onGoProPlus}
                         className="rounded border px-3 py-1 text-xs"
-                        aria-label="Pro+‚ÉƒAƒbƒvƒOƒŒ[ƒh"
+                        aria-label="Pro+ï¿½ÉƒAï¿½bï¿½vï¿½Oï¿½ï¿½ï¿½[ï¿½h"
                     >
-                        Pro+i$5/ŒŽj
+                        Pro+ï¿½i$5/ï¿½ï¿½ï¿½j
                     </button>
                 )}
             </div>
 
-            {/* –@—ß/‰^—pŒü‚¯‹r’ */}
+            {/* ï¿½@ï¿½ï¿½/ï¿½^ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½rï¿½ï¿½ */}
             <ol className="mt-3 list-decimal space-y-1 pl-5 text-xs text-neutral-500">
-                <li>•\Ž¦‰¿Ši‚ÍUSD‚Å‚·Bˆ×‘ÖŠ·ŽZEŒˆÏ‚ÍStripe‚É‚æ‚èˆ—‚³‚ê‚Ü‚·B</li>
-                <li>ƒTƒuƒXƒNƒŠƒvƒVƒ‡ƒ“‚ÍŒŽŽŸ‚ÅŽ©“®XV^‚¢‚Â‚Å‚à‰ð–ñ‰Â”\iŽŸ‰ñ¿‹•ª‚©‚ç’âŽ~jB</li>
-                <li>ãŒÀ‚ÍFree‚ÍJST‹æØ‚èi“úŽŸjA—L—¿ƒvƒ‰ƒ“‚ÍŒŽŽŸ‚ÅƒŠƒZƒbƒg‚³‚ê‚Ü‚·B</li>
-                <li>’Ç‰ÁƒpƒbƒNi+$5, +1,000‰ñj‚Í“–ŒŽ“à‚Ì‚Ý—LŒøE–¢Žg—p•ª‚ÌŒJ‰z‚Í‚ ‚è‚Ü‚¹‚ñB</li>
-                <li>—˜—p‹K–ñEƒvƒ‰ƒCƒoƒV[ƒ|ƒŠƒV[‚ð‚²Šm”F‚­‚¾‚³‚¢B</li>
+                <li>ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½iï¿½ï¿½USDï¿½Å‚ï¿½ï¿½Bï¿½×‘ÖŠï¿½ï¿½Zï¿½Eï¿½ï¿½ï¿½Ï‚ï¿½Stripeï¿½É‚ï¿½èˆï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B</li>
+                <li>ï¿½Tï¿½uï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ÍŒï¿½ï¿½ï¿½ï¿½ÅŽï¿½ï¿½ï¿½ï¿½Xï¿½Vï¿½^ï¿½ï¿½ï¿½Â‚Å‚ï¿½ï¿½ï¿½Â”\ï¿½iï¿½ï¿½ï¿½ñ¿‹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½~ï¿½jï¿½B</li>
+                <li>ï¿½ï¿½ï¿½ï¿½ï¿½Freeï¿½ï¿½JSTï¿½ï¿½Ø‚ï¿½iï¿½ï¿½ï¿½ï¿½ï¿½jï¿½Aï¿½Lï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ÍŒï¿½ï¿½ï¿½ï¿½Åƒï¿½ï¿½Zï¿½bï¿½gï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B</li>
+                <li>ï¿½Ç‰ï¿½ï¿½pï¿½bï¿½Nï¿½i+$5, +1,000ï¿½ï¿½jï¿½Í“ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Ý—Lï¿½ï¿½ï¿½Eï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½ÌŒJï¿½zï¿½Í‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B</li>
+                <li>ï¿½ï¿½ï¿½pï¿½Kï¿½ï¿½Eï¿½vï¿½ï¿½ï¿½Cï¿½oï¿½Vï¿½[ï¿½|ï¿½ï¿½ï¿½Vï¿½[ï¿½ï¿½ï¿½ï¿½mï¿½Fï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B</li>
             </ol>
 
             <div className="mt-2 text-right text-[11px] text-neutral-400">
-                ÅIXV: 2025-08-29
+                ï¿½ÅIï¿½Xï¿½V: 2025-08-29
             </div>
         </section>
     )
