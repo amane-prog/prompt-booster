@@ -44,7 +44,7 @@ async function resolveUserIdFromCustomerId(customerId: string): Promise<string |
     return null;
 }
 
-// ✁EBasil以陁E サブスクの「現在の課金期間�E終亁E���E items の current_period_end の最小値を採用
+// 笨・Basil莉･髯・ 繧ｵ繝悶せ繧ｯ縺ｮ縲檎樟蝨ｨ縺ｮ隱ｲ驥第悄髢薙・邨ゆｺ・阪・ items 縺ｮ current_period_end 縺ｮ譛蟆丞､繧呈治逕ｨ
 function minItemPeriodEnd(sub: Stripe.Subscription): number | null {
     const ends = (sub.items?.data ?? [])
         .map(i => (i as any).current_period_end as number | undefined)
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
                 const userId = userIdFromMeta(s.metadata) ?? (await resolveUserIdFromCustomerId(customerId));
                 if (!userId) break;
 
-                // --- Top-up�E��E度払い�E�E---
+                // --- Top-up・磯・蠎ｦ謇輔＞・・---
                 const isTopup = s.mode === 'payment' || !s.subscription;
                 if (isTopup && s.payment_status === 'paid') {
                     const lineItems = await stripe.checkout.sessions.listLineItems(s.id, { limit: 10 });
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
                     }
                 }
 
-                // --- サブスク ---
+                // --- 繧ｵ繝悶せ繧ｯ ---
                 if (s.subscription) {
                     const subId = typeof s.subscription === 'string' ? s.subscription : s.subscription.id;
                     if (subId) {

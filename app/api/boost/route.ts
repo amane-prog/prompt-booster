@@ -7,7 +7,7 @@ import OpenAI from 'openai'
 
 export const runtime = 'nodejs'
 
-// ===== 設宁E=====
+// ===== 險ｭ螳・=====
 const FREE_DAILY_LIMIT = Number(process.env.FREE_DAILY_LIMIT ?? 3)
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN
@@ -16,14 +16,14 @@ const redis = UPSTASH_URL && UPSTASH_TOKEN ? new Redis({ url: UPSTASH_URL, token
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY as string })
 const MODEL = 'gpt-4o-mini'
 
-// ===== 垁E=====
+// ===== 蝙・=====
 type Pair = { date: string; value: number }
 
 type BoostBody = {
     input?: string
     prompt?: string
     text?: string
-    /** カンマ区刁E�� or 配�EどちらでもOK�E�フロント�E配�E推奨�E�E*/
+    /** 繧ｫ繝ｳ繝槫玄蛻・ｊ or 驟榊・縺ｩ縺｡繧峨〒繧０K・医ヵ繝ｭ繝ｳ繝医・驟榊・謗ｨ螂ｨ・・*/
     highlights?: string[] | string | null
     options?: {
         mode?: 'dialogue' | 'generation'
@@ -37,7 +37,7 @@ type BoostBody = {
 
 type LlmResult = string
 
-// ===== JST日仁ETTL =====
+// ===== JST譌･莉・TTL =====
 function jstDateString(): string {
     const now = new Date()
     const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000)
@@ -49,7 +49,7 @@ function secondsUntilJstMidnight(): number {
     const next = new Date(jst.getFullYear(), jst.getMonth(), jst.getDate() + 1, 0, 0, 0, 0)
     return Math.max(1, Math.floor((next.getTime() - jst.getTime()) / 1000))
 }
-// pro_until までのTTL�E�秒！E
+// pro_until 縺ｾ縺ｧ縺ｮTTL・育ｧ抵ｼ・
 function secondsUntil(iso: string | null): number {
     if (!iso) return 31 * 24 * 60 * 60
     const end = new Date(iso).getTime()
@@ -57,7 +57,7 @@ function secondsUntil(iso: string | null): number {
     return Math.max(60, Math.floor((end - now) / 1000))
 }
 
-// ===== CookieユーチE��リチE�� =====
+// ===== Cookie繝ｦ繝ｼ繝・ぅ繝ｪ繝・ぅ =====
 function readPair(raw: string | undefined): Pair {
     const today = jstDateString()
     if (!raw) return { date: today, value: 0 }
@@ -71,8 +71,8 @@ function cookieNames(userId: string | null): { usage: string; bonus: string } {
     return { usage: `${prefix}usage`, bonus: `${prefix}bonus` }
 }
 
-// ===== Top-up在庫ヘルチE=====
-// sb は supabaseServer() の戻り（型は any でOK�E�E
+// ===== Top-up蝨ｨ蠎ｫ繝倥Ν繝・=====
+// sb 縺ｯ supabaseServer() 縺ｮ謌ｻ繧奇ｼ亥梛縺ｯ any 縺ｧOK・・
 async function hasTopup(sb: any, userId: string): Promise<boolean> {
     const nowIso = new Date().toISOString()
     const { data: rows } = await sb
@@ -90,8 +90,8 @@ async function hasTopup(sb: any, userId: string): Promise<boolean> {
     return total > 0
 }
 
-// 先�Eれ�E出しで Top-up めE消費�E�有効期限が近い頁E��E
-// remain>0 を条件に付けて原子的に減らぁE
+// 蜈亥・繧悟・蜃ｺ縺励〒 Top-up 繧・豸郁ｲｻ・域怏蜉ｹ譛滄剞縺瑚ｿ代＞鬆・ｼ・
+// remain>0 繧呈擅莉ｶ縺ｫ莉倥￠縺ｦ蜴溷ｭ千噪縺ｫ貂帙ｉ縺・
 async function consumeOneTopup(sb: any, userId: string): Promise<boolean> {
     const nowIso = new Date().toISOString()
     const { data: rows } = await sb
@@ -118,7 +118,7 @@ async function consumeOneTopup(sb: any, userId: string): Promise<boolean> {
     return false
 }
 
-// ===== 入劁E強調 抽出 =====
+// ===== 蜈･蜉・蠑ｷ隱ｿ 謚ｽ蜃ｺ =====
 function parseBody(jsonUnknown: unknown): BoostBody {
     if (typeof jsonUnknown !== 'object' || jsonUnknown === null) return {}
     const rec = jsonUnknown as Record<string, unknown>
@@ -135,7 +135,7 @@ function parseBody(jsonUnknown: unknown): BoostBody {
     }
 }
 
-/** 入力中の [こうぁE��めE��] を抽出して、括弧を外したクリーンな本斁E��強調配�Eを返す */
+/** 蜈･蜉帑ｸｭ縺ｮ [縺薙≧縺・≧繧・▽] 繧呈歓蜃ｺ縺励※縲∵峡蠑ｧ繧貞､悶＠縺溘け繝ｪ繝ｼ繝ｳ縺ｪ譛ｬ譁・→蠑ｷ隱ｿ驟榊・繧定ｿ斐☆ */
 function extractBracketHighlights(raw: string): { clean: string; highlights: string[] } {
     const found: string[] = []
     const clean = raw.replace(/\[([^\]\r\n]{1,60})\]/g, (_m, g1: string) => {
@@ -146,7 +146,7 @@ function extractBracketHighlights(raw: string): { clean: string; highlights: str
     return { clean, highlights: found }
 }
 
-/** highlights: カンマ区刁E�� or 配�E ↁE正規化�E�空めE��褁E��除去、最大10件まで�E�E*/
+/** highlights: 繧ｫ繝ｳ繝槫玄蛻・ｊ or 驟榊・ 竊・豁｣隕丞喧・育ｩｺ繧・㍾隍・ｒ髯､蜴ｻ縲∵怙螟ｧ10莉ｶ縺ｾ縺ｧ・・*/
 function normalizeHighlights(h: string[] | string | null | undefined): string[] {
     if (!h) return []
     const arr = Array.isArray(h) ? h : h.split(',')
@@ -167,14 +167,14 @@ function normalizeHighlights(h: string[] | string | null | undefined): string[] 
     return out
 }
 
-/** プラン別 斁E��数制限！Eree/Pro=500, Pro+=2000�E�E*/
+/** 繝励Λ繝ｳ蛻･ 譁・ｭ玲焚蛻ｶ髯撰ｼ・ree/Pro=500, Pro+=2000・・*/
 function enforceCharLimit(text: string, tier: 'free' | 'pro' | 'pro_plus'): { text: string; truncated: boolean } {
     const limit = tier === 'pro_plus' ? 2000 : 500
     if (text.length <= limit) return { text, truncated: false }
     return { text: text.slice(0, limit), truncated: true }
 }
 
-// ===== OpenAI呼び出ぁE=====
+// ===== OpenAI蜻ｼ縺ｳ蜃ｺ縺・=====
 async function callLLM(userBrief: string, highlights: string[], options?: BoostBody['options']): Promise<LlmResult> {
     const system =
         [
@@ -221,14 +221,14 @@ async function callLLM(userBrief: string, highlights: string[], options?: BoostB
     return resp.choices[0]?.message?.content ?? ''
 }
 
-// ===== ルート本佁E=====
+// ===== 繝ｫ繝ｼ繝域悽菴・=====
 export async function POST(req: NextRequest) {
     try {
         const url = new URL(req.url)
         const ad = url.searchParams.get('ad')
         const jar = req.cookies
 
-        // 認証
+        // 隱崎ｨｼ
         const sb = await supabaseServer()
         let userId: string | null = null
         try {
@@ -238,7 +238,7 @@ export async function POST(req: NextRequest) {
             userId = null
         }
 
-        // 課金情報を確認して tier と proUntil を確宁E
+        // 隱ｲ驥第ュ蝣ｱ繧堤｢ｺ隱阪＠縺ｦ tier 縺ｨ proUntil 繧堤｢ｺ螳・
         let planTier: 'free' | 'pro' | 'pro_plus' = 'free'
         let proUntil: string | null = null
         if (userId) {
@@ -260,7 +260,7 @@ export async function POST(req: NextRequest) {
             if (proActive) return NextResponse.json({ ok: true, remain: null, tier: planTier })
 
             if (userId) {
-                // Redisに庁E��ボ�Eナス +1
+                // Redis縺ｫ蠎・相繝懊・繝翫せ +1
                 const today = jstDateString()
                 if (redis) {
                     const bonusKey = `pb:b:${userId}:${today}`
@@ -273,7 +273,7 @@ export async function POST(req: NextRequest) {
                     return NextResponse.json({ ok: true, remain: remaining, tier: 'free' })
                 }
             }
-            // cookie フォールバック
+            // cookie 繝輔か繝ｼ繝ｫ繝舌ャ繧ｯ
             const { usage, bonus } = cookieNames(userId)
             const u = readPair(jar.get(usage)?.value)
             const b = readPair(jar.get(bonus)?.value)
@@ -293,7 +293,7 @@ export async function POST(req: NextRequest) {
             return res
         }
 
-        // --- 入劁E---
+        // --- 蜈･蜉・---
         let bodyJson: unknown = {}
         try {
             bodyJson = await req.json()
@@ -304,21 +304,21 @@ export async function POST(req: NextRequest) {
         const rawInput = parsed.input ?? ''
         if (!rawInput) return NextResponse.json({ error: 'empty input' }, { status: 400 })
 
-        // [] マ�Eカー抽出 + クリーン本斁E��戁E
+        // [] 繝槭・繧ｫ繝ｼ謚ｽ蜃ｺ + 繧ｯ繝ｪ繝ｼ繝ｳ譛ｬ譁・函謌・
         const extracted = extractBracketHighlights(rawInput)
         const extraHi = normalizeHighlights(parsed.highlights)
         const allHighlights = normalizeHighlights([...extracted.highlights, ...extraHi])
 
         const finalBriefRaw = extracted.clean
 
-        // --- 消費方針（どれを使ぁE���E�E---
-        let useFreeDaily = false          // Free の日次枠
-        let useSubMonthly = false         // Pro/Pro+ の月次枠
+        // --- 豸郁ｲｻ譁ｹ驥晢ｼ医←繧後ｒ菴ｿ縺・°・・---
+        let useFreeDaily = false          // Free 縺ｮ譌･谺｡譫
+        let useSubMonthly = false         // Pro/Pro+ 縺ｮ譛域ｬ｡譫
         let useTopup = false              // Top-up
-        let cookiePathFree = false        // 未ログイン/Redis無し�E Free cookie 運用
+        let cookiePathFree = false        // 譛ｪ繝ｭ繧ｰ繧､繝ｳ/Redis辟｡縺励・ Free cookie 驕狗畑
 
         if (!proActive) {
-            // Free�E�無料枠 ↁE0なめETop-up�E�ログイン+Redis時�Eみ�E�E
+            // Free・夂┌譁呎棧 竊・0縺ｪ繧・Top-up・医Ο繧ｰ繧､繝ｳ+Redis譎ゅ・縺ｿ・・
             if (userId && redis) {
                 const today = jstDateString()
                 const usageKey = `pb:q:${userId}:${today}`
@@ -327,7 +327,7 @@ export async function POST(req: NextRequest) {
                 const bonus = Number((await redis.get(bonusKey)) ?? 0)
                 const freeLeft = Math.max(0, FREE_DAILY_LIMIT + bonus - used)
                 if (freeLeft > 0) {
-                    useFreeDaily = true // 成功後にINCR
+                    useFreeDaily = true // 謌仙粥蠕後↓INCR
                 } else {
                     if (await hasTopup(sb, userId)) {
                         useTopup = true
@@ -339,7 +339,7 @@ export async function POST(req: NextRequest) {
                     }
                 }
             } else {
-                // 未ログイン or RedisなぁEↁEcookie で従来運用�E�Eop-upは未対応！E
+                // 譛ｪ繝ｭ繧ｰ繧､繝ｳ or Redis縺ｪ縺・竊・cookie 縺ｧ蠕捺擂驕狗畑・・op-up縺ｯ譛ｪ蟇ｾ蠢懶ｼ・
                 const { usage, bonus } = cookieNames(userId)
                 const u = readPair(jar.get(usage)?.value)
                 const b = readPair(jar.get(bonus)?.value)
@@ -349,18 +349,18 @@ export async function POST(req: NextRequest) {
                         { status: 402 }
                     )
                 }
-                cookiePathFree = true // 成功後に cookie めE1
+                cookiePathFree = true // 謌仙粥蠕後↓ cookie 繧・1
             }
         } else {
-            // Pro/Pro+�E�月次1000 ↁE0なめETop-up
+            // Pro/Pro+・壽怦谺｡1000 竊・0縺ｪ繧・Top-up
             if (userId) {
                 const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
-                const subCap = 1000 // tier別に変えるならここで刁E��E
+                const subCap = 1000 // tier蛻･縺ｫ螟峨∴繧九↑繧峨％縺薙〒蛻・ｲ・
                 const key = `pb:m:${userId}:${cycleId}`
                 const usedRaw = Number((await redis?.get(key)) ?? 0)
                 const subLeft = Math.max(0, subCap - usedRaw)
                 if (subLeft > 0) {
-                    useSubMonthly = true // 成功後にINCR
+                    useSubMonthly = true // 謌仙粥蠕後↓INCR
                 } else {
                     if (await hasTopup(sb, userId)) {
                         useTopup = true
@@ -374,13 +374,13 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        // --- 斁E��数制限！EIは常時開放、制限�Eバックで適用�E�E---
+        // --- 譁・ｭ玲焚蛻ｶ髯撰ｼ・I縺ｯ蟶ｸ譎る幕謾ｾ縲∝宛髯舌・繝舌ャ繧ｯ縺ｧ驕ｩ逕ｨ・・---
         const limited = enforceCharLimit(finalBriefRaw, planTier)
 
         // --- LLM ---
         const text: LlmResult = await callLLM(limited.text, allHighlights, parsed.options)
 
-        // --- 成功後に消費をコミッチE---
+        // --- 謌仙粥蠕後↓豸郁ｲｻ繧偵さ繝溘ャ繝・---
         // Free (Redis)
         if (useFreeDaily && userId && redis) {
             const today = jstDateString()
@@ -416,13 +416,13 @@ export async function POST(req: NextRequest) {
             return res
         }
 
-        // Pro/Pro+ 月次�E�Eedis�E�E
+        // Pro/Pro+ 譛域ｬ｡・・edis・・
         if (useSubMonthly && userId && redis) {
             const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
             const key = `pb:m:${userId}:${cycleId}`
             const used = await redis.incr(key)
             if (used === 1) await redis.expire(key, secondsUntil(proUntil))
-            // Pro系は remain=null で返す�E�フロント�E /status 再取得で subRemaining を表示�E�E
+            // Pro邉ｻ縺ｯ remain=null 縺ｧ霑斐☆・医ヵ繝ｭ繝ｳ繝医・ /status 蜀榊叙蠕励〒 subRemaining 繧定｡ｨ遉ｺ・・
             return NextResponse.json({
                 text,
                 remain: null,
@@ -432,11 +432,11 @@ export async function POST(req: NextRequest) {
             })
         }
 
-        // Top-up 消費�E��Eプラン共通�Eフォールバック�E�E
+        // Top-up 豸郁ｲｻ・亥・繝励Λ繝ｳ蜈ｱ騾壹・繝輔か繝ｼ繝ｫ繝舌ャ繧ｯ・・
         if (useTopup && userId) {
             const ok = await consumeOneTopup(sb, userId)
             if (!ok) {
-                // 競合で在庫が無くなった筁E
+                // 遶ｶ蜷医〒蝨ｨ蠎ｫ縺檎┌縺上↑縺｣縺溽ｭ・
                 return NextResponse.json({ error: 'No top-up balance', tier: planTier }, { status: 402 })
             }
             return NextResponse.json({
@@ -448,7 +448,7 @@ export async function POST(req: NextRequest) {
             })
         }
 
-        // ここに来る�Eは Pro だぁEuserId/redis 無し等�E稀ケース
+        // 縺薙％縺ｫ譚･繧九・縺ｯ Pro 縺縺・userId/redis 辟｡縺礼ｭ峨・遞繧ｱ繝ｼ繧ｹ
         return NextResponse.json({
             text,
             remain: proActive ? null : undefined,

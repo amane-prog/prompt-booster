@@ -28,7 +28,7 @@ export async function POST() {
             return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
         }
 
-        // Origin allowlist�E�ESRF緩和！E
+        // Origin allowlist・・SRF邱ｩ蜥鯉ｼ・
         const hdrs = await headers();
         const origin = computeOrigin(hdrs);
         const allowed = new Set([
@@ -39,11 +39,11 @@ export async function POST() {
             return NextResponse.json({ error: 'forbidden origin' }, { status: 403 });
         }
 
-        // 返却先�Eロケール付きに�E�言語一貫性�E�E
+        // 霑泌唆蜈医・繝ｭ繧ｱ繝ｼ繝ｫ莉倥″縺ｫ・郁ｨ隱樔ｸ雋ｫ諤ｧ・・
         const loc = hdrs.get('cookie')?.match(/NEXT_LOCALE=([^;]+)/)?.[1] ?? 'ja';
         const returnUrl = `${origin}/${encodeURIComponent(loc)}/settings/billing`;
 
-        // 1) DBに保存済みの customerId を優允E
+        // 1) DB縺ｫ菫晏ｭ俶ｸ医∩縺ｮ customerId 繧貞━蜈・
         let customerId: string | null = null;
         const { data: billingRow } = await sb
             .from('user_billing')
@@ -54,7 +54,7 @@ export async function POST() {
             customerId = billingRow.stripe_customer_id as string;
         }
 
-        // 2) 無ければ Stripe から発要E作�E ↁEDB保孁E
+        // 2) 辟｡縺代ｌ縺ｰ Stripe 縺九ｉ逋ｺ隕・菴懈・ 竊・DB菫晏ｭ・
         if (!customerId) {
             let found: Stripe.Customer | null = null;
             try {
@@ -85,11 +85,11 @@ export async function POST() {
             );
         }
 
-        // 3) Portal セチE��ョン作�E
+        // 3) Portal 繧ｻ繝・す繝ｧ繝ｳ菴懈・
         const session = await stripe.billingPortal.sessions.create({
             customer: customerId!,
             return_url: returnUrl,
-            configuration: PORTAL_CONFIGURATION_ID, // 無持E��ならStripeチE��ォルチE
+            configuration: PORTAL_CONFIGURATION_ID, // 辟｡謖・ｮ壹↑繧唄tripe繝・ヵ繧ｩ繝ｫ繝・
             locale: 'auto',
         });
 

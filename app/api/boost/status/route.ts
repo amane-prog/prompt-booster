@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        // Free の残回数�E�Ero/Pro+ は null�E�E
+        // Free 縺ｮ谿句屓謨ｰ・・ro/Pro+ 縺ｯ null・・
         let freeRemaining: number | null = null
         if (planTier === 'free') {
             if (userId && redis) {
@@ -80,12 +80,12 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        // ☁EPro/Pro+ の月次サブスク残数
+        // 笘・Pro/Pro+ 縺ｮ譛域ｬ｡繧ｵ繝悶せ繧ｯ谿区焚
         let subCap: number | null = null
         let subUsed: number | null = null
         let subRemaining: number | null = null
         if (planTier !== 'free' && userId) {
-            subCap = 1000 // tier で変えるならここで刁E��E
+            subCap = 1000 // tier 縺ｧ螟峨∴繧九↑繧峨％縺薙〒蛻・ｲ・
             if (redis) {
                 const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
                 const key = `pb:m:${userId}:${cycleId}`
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        // Top-up 残高（有効期限冁E�Eみ・FIFO用に期限昁E��E��E
+        // Top-up 谿矩ｫ假ｼ域怏蜉ｹ譛滄剞蜀・・縺ｿ繝ｻFIFO逕ｨ縺ｫ譛滄剞譏・・ｼ・
         let topupRemain = 0
         let topups: { remain: number; expire_at: string }[] = []
         if (userId) {
@@ -130,7 +130,7 @@ export async function GET(req: NextRequest) {
             isPro: planTier !== 'free',
             remain: freeRemaining,
 
-            // サブスク残数�E�Ero/Pro+ 用�E�E
+            // 繧ｵ繝悶せ繧ｯ谿区焚・・ro/Pro+ 逕ｨ・・
             subCap,
             subUsed,
             subRemaining,
