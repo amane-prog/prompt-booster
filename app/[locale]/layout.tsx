@@ -1,6 +1,6 @@
 // app/[locale]/layout.tsx
 import type { ReactNode } from 'react';
-import type { LayoutProps } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
@@ -10,22 +10,28 @@ import '@/styles/globals.css';
 
 export const dynamic = 'force-static';
 
+type Params = { locale: string };
+
 function isLocale(x: string): x is Locale {
     return (locales as readonly string[]).includes(x);
 }
 
-export function generateStaticParams(): ReadonlyArray<{ locale: Locale }> {
-    return (locales as readonly Locale[]).map((l) => ({ locale: l }));
+// readonly → mutable に変換して返す
+export function generateStaticParams(): { locale: Locale }[] {
+    return [...(locales as readonly Locale[])].map((l) => ({ locale: l }));
 }
 
 export default async function LocaleLayout({
     children,
     params,
-}: LayoutProps<'/[locale]'>) {
-    // ★ Next 15 では params が Promise なので await が必要
+}: {
+    children: ReactNode;
+    params: Promise<Params>; // ★ Next 15: params は Promise
+}) {
     const { locale: rawLocale } = await params;
 
     if (!isLocale(rawLocale)) notFound();
+
     setRequestLocale(rawLocale);
 
     let messages: Record<string, unknown>;
@@ -51,15 +57,15 @@ export default async function LocaleLayout({
                                 © {new Date().getFullYear()} Prompt Booster (Beta)
                             </span>
                             <div className="flex flex-wrap gap-3 text-xs">
-                                <a href={`/${rawLocale}/terms`} className="underline text-neutral-600">
+                                <Link href={`/${rawLocale}/terms`} className="underline text-neutral-600">
                                     {t('legal.terms')}
-                                </a>
-                                <a href={`/${rawLocale}/privacy`} className="underline text-neutral-600">
+                                </Link>
+                                <Link href={`/${rawLocale}/privacy`} className="underline text-neutral-600">
                                     {t('legal.privacy')}
-                                </a>
-                                <a href={`/${rawLocale}/billing/portal`} className="underline text-blue-600">
+                                </Link>
+                                <Link href={`/${rawLocale}/billing/portal`} className="underline text-blue-600">
                                     {t('nav.manage')}
-                                </a>
+                                </Link>
                             </div>
                         </div>
                     </footer>
