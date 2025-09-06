@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
-
+import { useTranslations } from 'next-intl'
 export default function SignInPage() {
     const [email, setEmail] = useState('')
     const [loading, setLoading] = useState(false)
@@ -28,26 +28,42 @@ export default function SignInPage() {
         } finally {
             setLoading(false)
         }
+        const origin =
+            typeof window !== 'undefined'
+                ? window.location.origin
+                : process.env.NEXT_PUBLIC_SITE_ORIGIN!; 
+
+        const redirectTo = `${origin}/auth/callback`;
+
+        const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: { emailRedirectTo: redirectTo }
+        });
+
+        if (!error) setSent(true);
     }
+
+    const t = useTranslations('auth')
 
     if (sent) {
         return (
             <main className="max-w-md mx-auto p-6">
-                <h1 className="text-lg font-semibold mb-2">メールを送信しました</h1>
-                <p className="text-sm text-neutral-600">受信メールのリンクからサインインしてください。</p>
+                <h1 className="text-lg font-semibold mb-2">{t('checkInbox')}</h1>
+                {/* 既存キーだけ使うので補足文は省略 */}
             </main>
         )
     }
 
     return (
         <main className="max-w-md mx-auto p-6">
-            <h1 className="text-lg font-semibold mb-4">サインイン</h1>
+            {/* タイトルは既存キーで代用 */}
+            <h1 className="text-lg font-semibold mb-4">{t('sendMagicLink')}</h1>
             <form onSubmit={onSubmit} className="space-y-3">
                 <input
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    placeholder="you@example.com"
+                    placeholder={t('email')}
                     className="w-full rounded border px-3 py-2"
                     required
                 />
@@ -55,7 +71,7 @@ export default function SignInPage() {
                     disabled={loading}
                     className="rounded px-4 py-2 border w-full disabled:opacity-60"
                 >
-                    {loading ? '送信中…' : 'マジックリンクを送る'}
+                    {loading ? `${t('sendMagicLink')}…` : t('sendMagicLink')}
                 </button>
             </form>
         </main>
