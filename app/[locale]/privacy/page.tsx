@@ -1,23 +1,21 @@
 // app/[locale]/privacy/page.tsx
-import type { Metadata } from 'next';
+import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 
-export const metadata: Metadata = {
-    title: 'Privacy Policy | Prompt Booster',
-};
+type Props = { params: { locale: string } }
 
-// 型（any 不使用。Promise 許容で .next/types と互換）
-type PageParams = { locale: string };
-type PageSearchParams = Record<string, string | string[]>;
+// ロケールごとに <title> を切り替え
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const t = await getTranslations({ locale: params.locale, namespace: 'legal.privacy' })
+    const title =
+        (t.has?.('title') && t('title')) ||
+        (params.locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy')
+    return { title: `${title} | Prompt Booster` }
+}
 
-type PageProps = {
-    params?: Promise<PageParams>;
-    searchParams?: Promise<PageSearchParams>;
-};
-
-// Server Component のまま async にして params を await
-export default async function PrivacyPage(_props: PageProps) {
-    const { locale } = _props.params ? await _props.params : { locale: 'en' };
-    const isJA = locale === 'ja';
+// サーバーコンポーネントは同期でOK（await不要）
+export default function PrivacyPage({ params }: Props) {
+    const isJA = params.locale === 'ja'
 
     return (
         <main className="prose mx-auto max-w-3xl px-4 py-10">
@@ -170,5 +168,5 @@ export default async function PrivacyPage(_props: PageProps) {
                 </>
             )}
         </main>
-    );
+    )
 }

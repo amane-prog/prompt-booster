@@ -1,47 +1,48 @@
 // app/[locale]/layout.tsx
-import type { ReactNode } from 'react';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { NextIntlClientProvider } from 'next-intl';
-import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { locales, type Locale } from '@/i18n';
-import Header from '@/components/Header';
-import '@/styles/globals.css';
+import type { ReactNode } from 'react'
+import Link from 'next-intl/link'
+import { notFound } from 'next/navigation'
+import { NextIntlClientProvider } from 'next-intl'
+import { setRequestLocale, getTranslations } from 'next-intl/server'
+import { locales, type Locale } from '@/i18n'
+import Header from '@/components/Header'
+import '@/styles/globals.css'
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-static'
 
-type Params = { locale: string };
+type Params = { locale: string }
 
 function isLocale(x: string): x is Locale {
-    return (locales as readonly string[]).includes(x);
+    return (locales as readonly string[]).includes(x)
 }
 
 // readonly → mutable に変換して返す
 export function generateStaticParams(): { locale: Locale }[] {
-    return [...(locales as readonly Locale[])].map((l) => ({ locale: l }));
+    return [...(locales as readonly Locale[])].map((l) => ({ locale: l }))
 }
 
 export default async function LocaleLayout({
     children,
     params,
 }: {
-    children: ReactNode;
-    params: Promise<Params>; // ★ Next 15: params は Promise
+    children: ReactNode
+    // あなたの環境に合わせて Promise 受け取りのままにしておく
+    params: Promise<Params>
 }) {
-    const { locale: rawLocale } = await params;
+    const { locale: rawLocale } = await params
 
-    if (!isLocale(rawLocale)) notFound();
+    if (!isLocale(rawLocale)) notFound()
 
-    setRequestLocale(rawLocale);
+    setRequestLocale(rawLocale)
 
-    let messages: Record<string, unknown>;
+    let messages: Record<string, unknown>
     try {
-        messages = (await import(`@/messages/${rawLocale}.json`)).default as Record<string, unknown>;
+        messages = (await import(`@/messages/${rawLocale}.json`)).default as Record<string, unknown>
     } catch {
-        messages = (await import('@/messages/en.json')).default as Record<string, unknown>;
+        messages = (await import('@/messages/en.json')).default as Record<string, unknown>
     }
 
-    const t = await getTranslations({ locale: rawLocale });
+    const t = await getTranslations({ locale: rawLocale })
 
     return (
         <html lang={rawLocale}>
@@ -57,13 +58,14 @@ export default async function LocaleLayout({
                                 © {new Date().getFullYear()} Prompt Booster (Beta)
                             </span>
                             <div className="flex flex-wrap gap-3 text-xs">
-                                <Link href={`/${rawLocale}/terms`} className="underline text-neutral-600">
+                                {/* next-intl/link を使うと現在ロケールが自動で付与される */}
+                                <Link href="/terms" className="underline text-neutral-600">
                                     {t('legal.terms')}
                                 </Link>
-                                <Link href={`/${rawLocale}/privacy`} className="underline text-neutral-600">
+                                <Link href="/privacy" className="underline text-neutral-600">
                                     {t('legal.privacy')}
                                 </Link>
-                                <Link href={`/${rawLocale}/billing/portal`} className="underline text-blue-600">
+                                <Link href="/billing/portal" className="underline text-blue-600">
                                     {t('nav.manage')}
                                 </Link>
                             </div>
@@ -72,5 +74,5 @@ export default async function LocaleLayout({
                 </NextIntlClientProvider>
             </body>
         </html>
-    );
+    )
 }

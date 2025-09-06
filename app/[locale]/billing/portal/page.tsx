@@ -1,38 +1,48 @@
-'use client'; // ← このページが hooks を使うなら必ず最上段に
+// app/[locale]/billing/portal/page.tsx
+'use client'
 
-import { useEffect, useState } from 'react';
-import type { Metadata } from 'next'; // 使っていれば
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-type PageParams = { locale: string };
-type PageSearchParams = Record<string, string | string[]>;
-
-// .next/types の期待に合わせて Promise を許容（anyは使わない）
-type PageProps = {
-    params?: Promise<PageParams>;
-    searchParams?: Promise<PageSearchParams>;
-};
-
-// 汎用ガード（any 不使用）
-function isPromise<T>(v: unknown): v is Promise<T> {
-    return !!v && typeof v === 'object' && 'then' in (v as Record<string, unknown>);
-}
-
-export default function LocaleTopPage(_props: PageProps) {
-    const [locale, setLocale] = useState<string>('en');
-    const [sp, setSp] = useState<PageSearchParams>({});
+export default function BillingPortalRedirect() {
+    const router = useRouter()
+    const [msg, setMsg] = useState('Opening billing portal…')
 
     useEffect(() => {
-        const p = _props.params as unknown;
-        if (isPromise<PageParams>(p)) {
-            p.then(v => { if (v?.locale) setLocale(v.locale); }).catch(() => { });
-        }
+        let alive = true
+            ; (async () => {
+                try {
+                    const res = await fetch('/api/stripe/portal', { method: 'POST' })
+                    // 正常時: { url } / 異常時: { error }
+                    const data: { url?: string; error?: string } = await res.json().catch(() => ({} as any))
 
-        const s = _props.searchParams as unknown;
-        if (isPromise<PageSearchParams>(s)) {
-            s.then(obj => { if (obj && typeof obj === 'object') setSp(obj); }).catch(() => { });
-        }
-    }, [_props.params, _props.searchParams]);
+                    if (!alive) return
 
-    // ここで locale / sp を使ってUIを描画
-    return <main>home ({locale})</main>;
+                    if (res.ok && data?.url) {
+                        location.href = data.url
+                        return
+                    }
+
+                    setMsg(data?.error || `Open portal failed (${res.status})`)
+                    // 数秒後にトップへ戻す（必要なら調整）
+                    setTimeout(() => router.replace('/'), 2500)
+                } catch (e) {
+                    if (!alive) return
+                    setMsg(e instanceof Error ? e.message : 'Portal error')
+                    setTimeout(() => router.replace('/'), 2500)
+                }
+            })()
+        return () => {
+            alive = false
+        }
+    }, [router])
+
+    return (
+        <main className="grid min-h-[50vh] place-items-center p-8 text-center">
+            <div>
+                <div className="mb-2 text-sm text-neutral-600">{msg}</div>
+                <div className="text-xs text-neutral-400">Please wait…</div>
+            </div>
+        </main>
+    )
 }

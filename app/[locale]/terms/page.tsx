@@ -1,21 +1,21 @@
 // app/[locale]/terms/page.tsx
-import type { Metadata } from 'next';
+import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
+import Link from 'next-intl/link'
 
-export const metadata: Metadata = {
-    title: 'Terms of Service | Prompt Booster',
-};
+type Props = { params: { locale: string } }
 
-type PageParams = { locale: string };
-type PageSearchParams = Record<string, string | string[]>;
+// ロケールごとに <title> を切り替え
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const t = await getTranslations({ locale: params.locale, namespace: 'legal.terms' })
+    const title =
+        (t.has?.('title') && t('title')) ||
+        (params.locale === 'ja' ? '利用規約' : 'Terms of Service')
+    return { title: `${title} | Prompt Booster` }
+}
 
-type PageProps = {
-    params?: Promise<PageParams>;
-    searchParams?: Promise<PageSearchParams>;
-};
-
-export default async function TermsPage(_props: PageProps) {
-    const { locale } = _props.params ? await _props.params : { locale: 'en' };
-    const isJA = locale === 'ja';
+export default function TermsPage({ params }: Props) {
+    const isJA = params.locale === 'ja'
 
     return (
         <main className="prose mx-auto max-w-3xl px-4 py-10">
@@ -69,7 +69,7 @@ export default async function TermsPage(_props: PageProps) {
                     <h2>7. プライバシー</h2>
                     <p>
                         当社は個人データの最小化に努めます。詳細は
-                        <a href="/privacy">プライバシーポリシー</a>
+                        <Link href="/privacy">プライバシーポリシー</Link>
                         をご参照ください（Supabase による認証、Stripe による決済、Upstash Redis によるクォータ、OpenAI による推論、ホスティング等の利用を含みます）。
                     </p>
 
@@ -150,7 +150,7 @@ export default async function TermsPage(_props: PageProps) {
 
                     <h2>7. Privacy</h2>
                     <p>
-                        We minimize personal data. See our <a href="/privacy">Privacy Policy</a> for details (including the use of Supabase for auth, Stripe for payments, Upstash Redis for quotas, OpenAI for model inference, and our hosting provider).
+                        We minimize personal data. See our <Link href="/privacy">Privacy Policy</Link> for details (including the use of Supabase for auth, Stripe for payments, Upstash Redis for quotas, OpenAI for inference, and our hosting provider).
                     </p>
 
                     <h2>8. Disclaimers</h2>
@@ -184,5 +184,5 @@ export default async function TermsPage(_props: PageProps) {
                 </>
             )}
         </main>
-    );
+    )
 }
