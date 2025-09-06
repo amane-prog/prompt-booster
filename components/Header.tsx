@@ -2,11 +2,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import Toast from '@/components/Toast'
+
 
 type PlanTier = 'free' | 'pro' | 'pro_plus'
 type Status = { planTier?: PlanTier; freeRemaining?: number; isPro?: boolean }
@@ -14,6 +15,7 @@ type CheckoutPlan = 'pro' | 'pro_plus'
 
 export default function Header() {
     const t = useTranslations()
+    const locale = useLocale()
     const [email, setEmail] = useState<string | null>(null)
     const [userId, setUserId] = useState<string | null>(null)
     const [plan, setPlan] = useState<PlanTier>('free')
@@ -97,7 +99,6 @@ export default function Header() {
     const isPro = plan !== 'free'
     const appName = t.has('app.name') ? t('app.name') : 'Prompt Booster'
 
-
     // UUIDの末尾だけ表示
     const shortId = userId ? `${userId.slice(0, 6)}…${userId.slice(-4)}` : null
 
@@ -106,7 +107,7 @@ export default function Header() {
             <header className="w-full border-b bg-white">
                 {/* 上段 */}
                 <div className="mx-auto px-4 py-3 max-w-screen-2xl 3xl:max-w-screen-3xl 4xl:max-w-screen-4xl flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2 font-semibold">
+                    <Link href={`/${locale}`} className="flex items-center gap-2 font-semibold">
                         {appName}
                         {isPro && (
                             <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-xs text-white">
@@ -132,7 +133,7 @@ export default function Header() {
                                         {plan === 'pro' && (
                                             <button
                                                 onClick={() => goPro('pro_plus')}
-                                                className="rounded bg-blue-600 px-2 py-1 text-xs text-white"  // ← Pro+ も青に
+                                                className="rounded bg-blue-600 px-2 py-1 text-xs text-white"
                                                 title={t.has('header.upgradeToProPlus') ? t('header.upgradeToProPlus') : 'Upgrade to Pro+'}
                                             >
                                                 {t.has('header.upgradeToProPlus') ? t('header.upgradeToProPlus') : 'Upgrade to Pro+'}
@@ -155,7 +156,7 @@ export default function Header() {
                                         </button>
                                         <button
                                             onClick={() => goPro('pro_plus')}
-                                            className="rounded bg-blue-600 px-2 py-1 text-xs text-white"  // ← 青に統一
+                                            className="rounded bg-blue-600 px-2 py-1 text-xs text-white"
                                         >
                                             {t.has('nav.goProPlus') ? t('nav.goProPlus') : (t.has('billing.checkout.goProPlus') ? t('billing.checkout.goProPlus') : 'Go Pro+')}
                                         </button>
@@ -170,7 +171,7 @@ export default function Header() {
                                 </button>
                             </>
                         ) : (
-                            <Link href="/signin" className="text-sm underline">
+                            <Link href={`/${locale}/signin`} className="text-sm underline">
                                 {t.has('nav.signIn') ? t('nav.signIn') : 'Sign in'}
                             </Link>
                         )}

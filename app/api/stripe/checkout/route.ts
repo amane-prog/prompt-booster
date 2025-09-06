@@ -1,100 +1,66 @@
-import Stripe from 'stripe';
-import { NextResponse, type NextRequest } from 'next/server';
-import { supabaseServer } from '@/lib/supabaseServer';
+import Stripe from 'stripe'
+import { NextResponse, type NextRequest } from 'next/server'
+import { supabaseServer } from '@/lib/supabaseServer'
 
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-if (!STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY not set');
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY!
+const stripe = new Stripe(STRIPE_SECRET_KEY) // apiVersion省略で型エラー回避
 
-const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2025-08-27.basil' });
+type PlanTier = 'pro' | 'pro_plus'
+const allowlist = (origin: string) => new Set(
+    [process.env.APP_BASE_URL, process.env.NEXT_PUBLIC_APP_BASE_URL, 'http://localhost:3000']
+        .filter(Boolean) as string[]
+).has(origin)
 
-type PlanTier = 'pro' | 'pro_plus';
-
-function computeOrigin(req: NextRequest): string {
-    return (
-        req.headers.get('origin') ??
-        `${req.headers.get('x-forwarded-proto') ?? 'https'}://${req.headers.get('host') ?? 'localhost:3000'}`
-    );
-}
+const originOf = (req: NextRequest) =>
+    req.headers.get('origin') ??
+    `${req.headers.get('x-forwarded-proto') ?? 'https'}://${req.headers.get('host') ?? 'localhost:3000'}`
 
 export async function POST(req: NextRequest) {
     try {
-        const url = new URL(req.url);
-        const plan = (url.searchParams.get('plan') === 'pro_plus' ? 'pro_plus' : 'pro') as PlanTier;
+        const url = new URL(req.url)
+        const plan = (url.searchParams.get('plan') === 'pro_plus' ? 'pro_plus' : 'pro') as PlanTier
 
-        const sb = await supabaseServer();
-        const { data: { user } } = await sb.auth.getUser();
-        if (!user?.id || !user.email) {
-            return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-        }
+        const sb = await supabaseServer() 
+        const { data: { user } } = await sb.auth.getUser()
+        if (!user?.id || !user.email) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
-        // CSRF邱ｩ蜥・ Origin allowlist
-        const origin = computeOrigin(req);
-        const allowed = new Set([
-            process.env.NEXT_PUBLIC_SITE_ORIGIN,
-            'http://localhost:3000',
-        ].filter(Boolean) as string[]);
-        if (!allowed.has(origin)) {
-            return NextResponse.json({ error: 'forbidden origin' }, { status: 403 });
-        }
+        const origin = originOf(req)
+        if (!allowlist(origin)) return NextResponse.json({ error: 'forbidden origin' }, { status: 403 })
 
-        const loc = req.cookies.get('NEXT_LOCALE')?.value ?? 'ja';
+        const loc = req.cookies.get('NEXT_LOCALE')?.value ?? 'ja'
 
-        // Customer 讀懃ｴ｢/菴懈・
-        let customerId: string | null = null;
+        // find/create customer
+        let customerId: string | null = null
         try {
-            const search = await stripe.customers.search({
-                query: `metadata['userId']:'${user.id}'`,
-                limit: 1
-            });
-            customerId = search.data[0]?.id ?? null;
-        } catch {
-            const list = await stripe.customers.list({ email: user.email, limit: 10 });
+            const s = await stripe.customers.search({ query: `metadata['userId']:'${user.id}'`, limit: 1 })
+            customerId = s.data[0]?.id ?? null
+        } catch { }
+        if (!customerId) {
+            const list = await stripe.customers.list({ email: user.email, limit: 10 })
             customerId =
                 list.data.find(c => (c.metadata?.userId ?? '') === user.id)?.id ??
-                list.data[0]?.id ??
-                null;
+                list.data[0]?.id ?? null
         }
         if (!customerId) {
-            const created = await stripe.customers.create({
-                email: user.email,
-                metadata: { userId: user.id }
-            });
-            customerId = created.id;
+            const created = await stripe.customers.create({ email: user.email, metadata: { userId: user.id } })
+            customerId = created.id
         }
 
-        // DB菫晏ｭ假ｼ亥・遲・upsert・・
+        // (optional) persist in DB
         await sb.from('user_billing').upsert(
             { user_id: user.id, stripe_customer_id: customerId },
             { onConflict: 'user_id' }
-        );
+        )
 
-        // 萓｡譬ｼID
         const priceId =
             plan === 'pro_plus'
                 ? process.env.STRIPE_PRICE_ID_PRO_PLUS
-                : (process.env.STRIPE_PRICE_ID_PRO ?? process.env.STRIPE_PRICE_ID);
-
+                : (process.env.STRIPE_PRICE_ID_PRO ?? process.env.STRIPE_PRICE_ID)
         if (!priceId) {
-            const missing = plan === 'pro_plus'
-                ? 'STRIPE_PRICE_ID_PRO_PLUS'
-                : 'STRIPE_PRICE_ID_PRO (or STRIPE_PRICE_ID)';
-            return NextResponse.json({ error: `price id not set: set ${missing}` }, { status: 500 });
-        }
-
-        // Price sanity check
-        try {
-            const price = await stripe.prices.retrieve(priceId);
-            if (price.active !== true) {
-                return NextResponse.json({ error: 'price is not active' }, { status: 500 });
-            }
-            if (price.type !== 'recurring') {
-                return NextResponse.json({ error: 'price must be recurring for subscriptions' }, { status: 500 });
-            }
-        } catch (e) {
-            const msg = e instanceof Error ? e.message : 'retrieve price failed';
-            return NextResponse.json({ error: `price lookup failed: ${msg}` }, { status: 500 });
+            const miss = plan === 'pro_plus' ? 'STRIPE_PRICE_ID_PRO_PLUS' : 'STRIPE_PRICE_ID_PRO (or STRIPE_PRICE_ID)'
+            return NextResponse.json({ error: `price id not set: ${miss}` }, { status: 500 })
         }
 
         const session = await stripe.checkout.sessions.create({
@@ -107,14 +73,11 @@ export async function POST(req: NextRequest) {
             subscription_data: { metadata: { userId: user.id, plan } },
             allow_promotion_codes: true,
             locale: 'auto'
-        });
+        })
 
-        return NextResponse.json(
-            { url: session.url },
-            { headers: { 'Cache-Control': 'no-store' } }
-        );
+        return NextResponse.json({ url: session.url }, { headers: { 'Cache-Control': 'no-store' } })
     } catch (e) {
-        const msg = e instanceof Error ? e.message : 'checkout error';
-        return NextResponse.json({ error: msg }, { status: 500 });
+        const msg = e instanceof Error ? e.message : 'checkout error'
+        return NextResponse.json({ error: msg }, { status: 500 })
     }
 }
