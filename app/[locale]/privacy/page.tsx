@@ -3,19 +3,20 @@ import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 
-type Props = { params: { locale: string } }
+type Params = { locale: string }
+type PageProps = { params: Promise<Params> }
 
-// ロケールごとに <title> を切り替え
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const t = await getTranslations({ locale: params.locale, namespace: 'legal.privacy' })
-    const title =
-        (t.has?.('title') && t('title')) ||
-        (params.locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy')
+// ロケールごとに <title> を切り替え（params は Promise）
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { locale } = await params
+    const t = await getTranslations({ locale, namespace: 'legal.privacy' })
+    const title = (t.has?.('title') && t('title')) || (locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy')
     return { title: `${title} | Prompt Booster` }
 }
 
-export default function PrivacyPage({ params }: Props) {
-    const isJA = params.locale === 'ja'
+export default async function PrivacyPage({ params }: PageProps) {
+    const { locale } = await params
+    const isJA = locale === 'ja'
 
     return (
         <main className="prose mx-auto max-w-3xl px-4 py-10">
@@ -95,7 +96,7 @@ export default function PrivacyPage({ params }: Props) {
                     <p className="text-sm text-neutral-500">最終更新日: 2025-09-03</p>
                     <hr />
                     <p className="text-xs text-neutral-500">
-                        利用規約は <Link href={`/${params.locale}/terms`}>こちら</Link> をご確認ください。
+                        利用規約は <Link href={`/${locale}/terms`}>こちら</Link> をご確認ください。
                     </p>
                 </>
             ) : (
@@ -171,7 +172,7 @@ export default function PrivacyPage({ params }: Props) {
                     <p className="text-sm text-neutral-500">Last updated: 2025-09-03</p>
                     <hr />
                     <p className="text-xs text-neutral-500">
-                        For Terms of Service, see <Link href={`/${params.locale}/terms`}>here</Link>.
+                        For Terms of Service, see <Link href={`/${locale}/terms`}>here</Link>.
                     </p>
                 </>
             )}
