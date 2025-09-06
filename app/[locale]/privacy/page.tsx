@@ -1,6 +1,7 @@
 // app/[locale]/privacy/page.tsx
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
+import Link from 'next/link'
 
 type Props = { params: { locale: string } }
 
@@ -13,7 +14,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: `${title} | Prompt Booster` }
 }
 
-// サーバーコンポーネントは同期でOK（await不要）
 export default function PrivacyPage({ params }: Props) {
     const isJA = params.locale === 'ja'
 
@@ -93,6 +93,10 @@ export default function PrivacyPage({ params }: Props) {
                     <p>amaneprizm@gmail.com</p>
 
                     <p className="text-sm text-neutral-500">最終更新日: 2025-09-03</p>
+                    <hr />
+                    <p className="text-xs text-neutral-500">
+                        利用規約は <Link href={`/${params.locale}/terms`}>こちら</Link> をご確認ください。
+                    </p>
                 </>
             ) : (
                 <>
@@ -165,6 +169,10 @@ export default function PrivacyPage({ params }: Props) {
                     <p>amaneprizm@gmail.com</p>
 
                     <p className="text-sm text-neutral-500">Last updated: 2025-09-03</p>
+                    <hr />
+                    <p className="text-xs text-neutral-500">
+                        For Terms of Service, see <Link href={`/${params.locale}/terms`}>here</Link>.
+                    </p>
                 </>
             )}
         </main>
