@@ -1,7 +1,6 @@
 // app/auth/callback/page.tsx
 'use client'
 
-import { NextResponse } from 'next/server'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
@@ -10,20 +9,20 @@ type PageProps = {
     searchParams?: Record<string, string | string[]>
 }
 
-export async function GET(req: Request, ctx: { params: { locale: string } }) {
-    const url = new URL(req.url)
-    return NextResponse.redirect(new URL(`/auth/callback${url.search}`, url.origin))
-}
 export default function AuthCallback(_props: PageProps) {
     const router = useRouter()
 
     useEffect(() => {
         ; (async () => {
             try {
+                // ブラウザでセッション交換
                 const { error } = await supabase.auth.exchangeCodeForSession(window.location.href)
+
+                // NEXT_LOCALE クッキーから遷移先決定（未設定なら en）
                 const m = document.cookie.match(/(?:^|; )NEXT_LOCALE=([^;]+)/)
                 const nextLocale = m?.[1] ?? 'en'
                 router.replace(`/${nextLocale}`)
+
                 if (error) console.warn('[auth/callback] exchangeCodeForSession error:', error)
             } catch (e) {
                 console.warn('[auth/callback] unexpected error:', e)
