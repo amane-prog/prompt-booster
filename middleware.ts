@@ -46,7 +46,7 @@ export function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl
 
     // 1) メンテ最優先（全ルート503）
-    if (isMaintenanceOn()) {
+    if (isMaintenanceOn() && !/^\/api\/stripe\/webhook$/.test(pathname)) {
         return new NextResponse('Service temporarily unavailable', { status: 503 })
     }
 
