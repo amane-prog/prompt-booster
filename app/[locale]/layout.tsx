@@ -1,6 +1,6 @@
 // app/[locale]/layout.tsx
 import type { ReactNode } from 'react'
-import Link from 'next-intl/link'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
 import { setRequestLocale, getTranslations } from 'next-intl/server'
@@ -26,8 +26,7 @@ export default async function LocaleLayout({
     params,
 }: {
     children: ReactNode
-    // あなたの環境に合わせて Promise 受け取りのままにしておく
-    params: Promise<Params>
+    params: Promise<Params> // あなたの環境に合わせて Promise 受け取り
 }) {
     const { locale: rawLocale } = await params
 
@@ -58,14 +57,13 @@ export default async function LocaleLayout({
                                 © {new Date().getFullYear()} Prompt Booster (Beta)
                             </span>
                             <div className="flex flex-wrap gap-3 text-xs">
-                                {/* next-intl/link を使うと現在ロケールが自動で付与される */}
-                                <Link href="/terms" className="underline text-neutral-600">
+                                <Link href={`/${rawLocale}/terms`} className="underline text-neutral-600">
                                     {t('legal.terms')}
                                 </Link>
-                                <Link href="/privacy" className="underline text-neutral-600">
+                                <Link href={`/${rawLocale}/privacy`} className="underline text-neutral-600">
                                     {t('legal.privacy')}
                                 </Link>
-                                <Link href="/billing/portal" className="underline text-blue-600">
+                                <Link href={`/${rawLocale}/billing/portal`} className="underline text-blue-600">
                                     {t('nav.manage')}
                                 </Link>
                             </div>

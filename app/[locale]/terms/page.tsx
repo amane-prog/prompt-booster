@@ -1,7 +1,7 @@
 // app/[locale]/terms/page.tsx
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
-import Link from 'next-intl/link'
+import Link from 'next/link'
 
 type Props = { params: { locale: string } }
 
@@ -69,7 +69,7 @@ export default function TermsPage({ params }: Props) {
                     <h2>7. プライバシー</h2>
                     <p>
                         当社は個人データの最小化に努めます。詳細は
-                        <Link href="/privacy">プライバシーポリシー</Link>
+                        <Link href={`/${params.locale}/privacy`}>プライバシーポリシー</Link>
                         をご参照ください（Supabase による認証、Stripe による決済、Upstash Redis によるクォータ、OpenAI による推論、ホスティング等の利用を含みます）。
                     </p>
 
@@ -150,7 +150,7 @@ export default function TermsPage({ params }: Props) {
 
                     <h2>7. Privacy</h2>
                     <p>
-                        We minimize personal data. See our <Link href="/privacy">Privacy Policy</Link> for details (including the use of Supabase for auth, Stripe for payments, Upstash Redis for quotas, OpenAI for inference, and our hosting provider).
+                        We minimize personal data. See our <Link href={`/${params.locale}/privacy`}>Privacy Policy</Link> for details (including the use of Supabase for auth, Stripe for payments, Upstash Redis for quotas, OpenAI for inference, and our hosting provider).
                     </p>
 
                     <h2>8. Disclaimers</h2>
