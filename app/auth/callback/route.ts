@@ -1,24 +1,24 @@
-// app/auth/callback/route.ts
+ï»¿// app/auth/callback/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/supabaseServer' // ƒT[ƒo‘¤‚Åg‚¤ê‡i•s—v‚È‚çíœj
+import { supabaseServer } from '@/lib/supabaseServer' // ã‚µãƒ¼ãƒå´ã§ä½¿ã†å ´åˆï¼ˆä¸è¦ãªã‚‰å‰Šé™¤ï¼‰
 
-// ‚±‚±‚Å‚Íu/auth/callback?code=...v‚Å—ˆ‚½‚ÉƒZƒbƒVƒ‡ƒ“ŒğŠ· or ƒŠƒ_ƒCƒŒƒNƒg‚¾‚¯‚â‚é
+// ã“ã“ã§ã¯ã€Œ/auth/callback?code=...ã€ã§æ¥ãŸæ™‚ã«ã‚»ãƒƒã‚·ãƒ§ãƒ³äº¤æ› or ãƒªãƒ€ã‚¤ãƒ¬ã‚¯ãƒˆã ã‘ã‚„ã‚‹
 export async function GET(req: NextRequest) {
     const url = new URL(req.url)
     const code = url.searchParams.get('code')
     const next = url.searchParams.get('next') || '/'
 
     if (!code) {
-        // locale•t‚«‚Å—ˆ‚½ê‡‚È‚Ç‚àŠÜ‚ßA’P‚ÉUIƒy[ƒW‚Ö—¬‚µ‚ÄƒNƒ‰ƒCƒAƒ“ƒg‚Åˆ—‚µ‚Ä‚àOK
-        // ‚±‚±‚ÅŠ®Œ‹‚³‚¹‚½‚¢‚È‚ç supabaseServer().auth.exchangeCodeForSession(code) ‚ğÀs‚µ‚Ä‚à‚æ‚¢
+        // localeä»˜ãã§æ¥ãŸå ´åˆãªã©ã‚‚å«ã‚ã€å˜ã«UIãƒšãƒ¼ã‚¸ã¸æµã—ã¦ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã§å‡¦ç†ã—ã¦ã‚‚OK
+        // ã“ã“ã§å®Œçµã•ã›ãŸã„ãªã‚‰ supabaseServer().auth.exchangeCodeForSession(code) ã‚’å®Ÿè¡Œã—ã¦ã‚‚ã‚ˆã„
         return NextResponse.redirect(new URL(`/auth/callback${url.search}`, url.origin))
     }
 
-    // ƒT[ƒo‘¤‚ÅŠ®Œ‹‚³‚¹‚½‚¢”hFƒRƒƒ“ƒgƒAƒEƒg‰ğœ
+    // ã‚µãƒ¼ãƒå´ã§å®Œçµã•ã›ãŸã„æ´¾ï¼šã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆè§£é™¤
     // const sb = supabaseServer()
     // const { error } = await sb.auth.exchangeCodeForSession(code)
     // if (error) return NextResponse.redirect(new URL('/signin?error=auth', url.origin))
 
-    // ‚±‚±‚Å‚ÍƒNƒ‰ƒCƒAƒ“ƒgUI‚Ö“n‚·
+    // ã“ã“ã§ã¯ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆUIã¸æ¸¡ã™
     return NextResponse.redirect(new URL(`/auth/callback${url.search}`, url.origin))
 }
