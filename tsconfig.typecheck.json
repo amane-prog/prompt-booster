@@ -1,0 +1,36 @@
+﻿{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": { "@/*": ["*"] },
+    "lib": ["ES2022", "DOM", "ES2021.Intl"],
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx",
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "i18n/**/*.ts",
+    "i18n/**/*.tsx",
+    "messages/**/*.json",
+    "tailwind.config.ts",
+    "next-env.d.ts"
+  ],
+  "exclude": [
+    ".next",
+    "dist",
+    "node_modules/**/backup_*",
+    "**/backup_*",
+    "**/backup_*/**"
+  ]
+}
