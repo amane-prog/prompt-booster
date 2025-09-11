@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         const origin = computeOrigin(req)
         const loc = req.cookies.get('NEXT_LOCALE')?.value ?? 'en'
 
-        // 顧客を確俁E
+        // 鬯ｯ蛛・ｽｽ・ｧ髯橸ｽｳ繝ｻ・｢驛｢・ｧ陜｣・､繝ｻ・｢繝ｻ・ｺ髣厄ｽｫ郢晢ｽｻ
         let customerId: string | null = null
         const list = await stripe.customers.list({ email: user.email, limit: 1 })
         if (list.data.length > 0) {

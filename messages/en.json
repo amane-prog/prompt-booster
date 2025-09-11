@@ -26,26 +26,26 @@
     "topupRemaining": "Top-up Remaining",
     "earliestExpiry": "Earliest Expiry: {date}",
     "buyTopupN": "+{count} requests (${price})",
-    "jstResetCountdown": "Until JST reset: {time}",
+    "jstResetCountdown": "JST reset in: {time}",
     "input": "Input",
-    "inputPlaceholder": "Enter your needs, background, and constraints. Use [brackets] to emphasize key parts.",
-    "tipBracket": "Tip: Text in [brackets] is extracted for emphasis. / Cmd/Ctrl + Enter to run",
-    "maxCharsPerRequest": "Max characters per request: {n}",
-    "generate": "Generate ⚡",
+    "inputPlaceholder": "Enter needs, background, and constraints. Wrap in [brackets] for emphasis.",
+    "tipBracket": "Tip: Text in [brackets] will be emphasized. Press Cmd/Ctrl + Enter to run.",
+    "maxCharsPerRequest": "Max chars per request: {n}",
+    "generate": "Generate",
     "output": "Output",
-    "truncated": "Input was truncated to fit your plan limit",
-    "freeExhausted": "You’ve used up today’s free requests",
+    "truncated": "Input was truncated to fit the limit",
+    "freeExhausted": "Today's free requests have been used up",
     "subscriptionRemaining": "Subscription Remaining",
     "processing": "Processing…",
-    "seePlans": "See full plans",
+    "seePlans": "See Plans",
     "copy": "Copy",
     "share": "Share",
-    "empty": "—"
+    "empty": "No input"
   },
   "credit": {
-    "busyTitle": "Currently busy / Low credits",
-    "freeModalBody": "You’ve reached today’s free request limit. Please try again after the daily reset. To continue now, upgrade to Pro or add a Top-up.",
-    "proModalBody": "You’re approaching this month’s limit. Adding a Top-up temporarily expands your monthly cap."
+    "busyTitle": "Busy / Low Credits",
+    "freeModalBody": "You've used up today's free requests. Please try again after the daily reset. To continue now, upgrade to Pro or purchase a Top-up.",
+    "proModalBody": "You are approaching this month's cap. You can temporarily expand your limit by purchasing a Top-up."
   },
   "header": {
     "plan": "Plan",
@@ -54,11 +54,11 @@
       "pro": "PRO",
       "pro_plus": "PRO+"
     },
-    "pitch": "Organize and optimize your prompts before sending them to AI to get higher-quality results—even on free tiers. Use the generated prompt with your own AI.",
-    "assurance": "We don’t store your email in our own DB. Accounts are identified by UUID only (auth via Supabase, payments via Stripe).",
+    "pitch": "Optimize your prompts before sending them to AI for better results. Free tier available. Use generated prompts with your own AI.",
+    "assurance": "We do not store your email in our own DB. Accounts are identified only by UUID (auth via Supabase, billing via Stripe).",
     "requestsRemaining": "Requests Remaining",
     "requestsRemainingFmt": "{count} left",
-    "requestsInfo": "Pro and Pro+ both allow up to 1,000 requests per month. Use top-ups if you need more.",
+    "requestsInfo": "Both Pro and Pro+ have 1,000 requests/month. Add Top-ups if needed.",
     "topupRemaining": "Top-up Remaining",
     "topupEarliestExpiry": "Earliest Expiry: {date}",
     "upgradeToProPlus": "Upgrade to Pro+",
@@ -69,47 +69,47 @@
   "plan": {
     "matrixTitle": "Plan Comparison",
     "monthly": "Monthly Price",
-    "maxPerMonth": "Monthly Limit",
+    "maxPerMonth": "Monthly Cap",
     "topup": "Top-up",
-    "feature": "Features",
+    "feature": "Feature",
     "free": {
       "name": "Free",
-      "desc": "Try it for free",
+      "desc": "Try for free",
       "price": "Free",
-      "limit": "3 per day / up to 1,000 per month",
+      "limit": "3/day up to 1,000/month",
       "cta": "Start for Free"
     },
     "pro": {
       "name": "Pro",
-      "desc": "Standard plan for indie developers",
+      "desc": "Standard plan for solo devs",
       "price": "$3/month",
-      "limit": "Up to 1,000 per month",
+      "limit": "Up to 1,000/month",
       "cta": "Upgrade to Pro"
     },
     "pro_plus": {
       "name": "Pro+",
-      "desc": "More room. Priority execution and extra capacity",
+      "desc": "More capacity & priority execution",
       "price": "$5/month",
-      "limit": "1,000 per month + priority",
+      "limit": "1,000/month + priority",
       "cta": "Upgrade to Pro+"
     },
     "notes": {
-      "commonCap": "※ Pro/Pro+ monthly cap is 1,000 requests",
-      "topupNote": "※ Top-ups add requests with expiry dates"
+      "commonCap": "Pro/Pro+ monthly cap is 1,000",
+      "topupNote": "Top-ups allow you to purchase extra requests (expires)"
     },
     "badges": {
       "mostPopular": "Most Popular",
       "bestValue": "Best Value"
     },
     "bullets": {
-      "cap1000": "Up to 1,000 per month",
-      "daily3": "Up to 3 per day",
+      "cap1000": "Up to 1,000/month",
+      "daily3": "3/day",
       "priority": "Priority execution",
-      "chars500": "Up to 500 chars per request",
-      "chars2000": "Up to 2,000 chars per request",
+      "chars500": "Up to 500 chars/request",
+      "chars2000": "Up to 2000 chars/request",
       "noAds": "No ads",
       "bannerAds": "Banner ads",
-      "topup": "Supports top-ups"
+      "topup": "Top-up available"
     },
     "cta": {
       "free": "Start for Free",
@@ -130,7 +130,7 @@
     "length": {
       "label": "Length",
       "short": "Short",
-      "medium": "Standard",
+      "medium": "Medium",
       "long": "Long"
     },
     "tone": {
@@ -157,7 +157,7 @@
       "topup1000": "Top-up 1000"
     },
     "result": {
-      "success": "Purchase complete",
+      "success": "Purchase successful",
       "canceled": "Purchase canceled"
     }
   },
@@ -167,9 +167,9 @@
     "error": "An error occurred"
   },
   "errors": {
-    "unauthorized": "Authentication required",
+    "unauthorized": "Authorization required",
     "rateLimited": "Please try again later",
-    "quotaExceeded": "You’ve reached your limit. Consider a top-up.",
+    "quotaExceeded": "Quota exceeded. Consider Top-up.",
     "unknown": "Unknown error"
   },
   "language": {
@@ -180,10 +180,10 @@
   },
   "advanced": {
     "emphasis": {
-      "title": "Words/phrases to emphasize (comma separated)",
-      "placeholder": "e.g., Fast response, Accuracy, Polite tone",
+      "title": "Emphasize words/phrases (comma separated)",
+      "placeholder": "e.g. fast response, accuracy, polite tone",
       "aria": "Emphasis phrases",
-      "help": "Optional. Up to 10 items incl. phrases extracted via [brackets]."
+      "help": "Optional. Up to 10. [bracketed] phrases are also auto-extracted."
     },
     "mode": {
       "label": "Mode",
@@ -191,13 +191,13 @@
       "generation": "Generation"
     },
     "color": {
-      "label": "Color tone",
+      "label": "Color Tone",
       "options": {
         "auto": "Auto",
         "bright": "Bright",
         "dark": "Dark",
         "pastel": "Pastel",
-        "mono": "Monochrome"
+        "mono": "Mono"
       }
     },
     "ratio": {
@@ -219,7 +219,7 @@
       }
     },
     "tags": {
-      "label": "Tags (toggle ON/OFF)",
+      "label": "Tags (ON/OFF)",
       "reverse": "Reverse",
       "substitute": "Substitute",
       "reorder": "Reorder",
@@ -250,14 +250,14 @@
   },
   "compact": {
     "title": "Plans",
-    "seeDetails": "See details"
+    "seeDetails": "See Details"
   },
   "planComparison": {
-    "title": "Plan comparison"
+    "title": "Plan Comparison"
   },
   "common": {
     "close": "Close",
-    "managePlan": "Manage plan"
+    "managePlan": "Manage Plan"
   },
   "legal": {
     "terms": "Terms of Service",

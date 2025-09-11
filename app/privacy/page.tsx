@@ -12,7 +12,7 @@ export default function Privacy() {
             <h2>How We Use Data</h2>
             <p>
                 To authenticate you, enforce quotas, and provide subscription features.
-                We don�ft sell your personal data.
+                We don郢晢ｽｻ繝ｻ・ｽft sell your personal data.
             </p>
             <h2>3rd Parties</h2>
             <p>Supabase (Auth/DB), Stripe (payments), OpenAI (API), Vercel (hosting).</p>

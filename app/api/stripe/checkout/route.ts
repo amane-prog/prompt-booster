@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
         }
 
-        // CSRF緩咁E Origin allowlist
+        // CSRF鬩搾ｽｱ繝ｻ・ｩ髯ｷ・･郢晢ｽｻ Origin allowlist
         const origin = computeOrigin(req);
         const allowed = new Set([
             process.env.NEXT_PUBLIC_SITE_ORIGIN,
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
         const loc = req.cookies.get('NEXT_LOCALE')?.value ?? 'ja';
 
-        // Customer 検索/作�E
+        // Customer 髫ｶﾂ隲帙・・ｽ・ｴ繝ｻ・｢/髣厄ｽｴ隲帛現繝ｻ
         let customerId: string | null = null;
         try {
             const search = await stripe.customers.search({
@@ -64,13 +64,13 @@ export async function POST(req: NextRequest) {
             customerId = created.id;
         }
 
-        // DB保存（�E筁Eupsert�E�E
+        // DB髣厄ｽｫ隴取得・ｽ・ｭ陋帙・・ｽ・ｼ闔・･郢晢ｽｻ鬩包ｽｲ郢晢ｽｻupsert郢晢ｽｻ郢晢ｽｻ
         await sb.from('user_billing').upsert(
             { user_id: user.id, stripe_customer_id: customerId },
             { onConflict: 'user_id' }
         );
 
-        // 価格ID
+        // 髣憺屮・ｽ・｡髫ｴ・ｬ繝ｻ・ｼID
         const priceId =
             plan === 'pro_plus'
                 ? process.env.STRIPE_PRICE_ID_PRO_PLUS

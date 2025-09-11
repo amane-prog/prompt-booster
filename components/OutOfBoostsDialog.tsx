@@ -17,9 +17,9 @@ export default function OutOfBoostsDialog({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-                <h2 className="text-lg font-semibold">Out of boosts today 🚫</h2>
+                <h2 className="text-lg font-semibold">Out of boosts today ・滓ｧｫ諠ｱ</h2>
                 <p className="mt-2 text-sm text-gray-600">
-                    You’ve used all free boosts for today.
+                    You驕ｯ・ｶ陷・ｵe used all free boosts for today.
                 </p>
                 <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <button

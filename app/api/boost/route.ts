@@ -7,7 +7,7 @@ import OpenAI from 'openai'
 
 export const runtime = 'nodejs'
 
-// ===== 設宁E=====
+// ===== 鬮ｫ・ｪ繝ｻ・ｭ髯橸ｽｳ郢晢ｽｻ=====
 const FREE_DAILY_LIMIT = Number(process.env.FREE_DAILY_LIMIT ?? 3)
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN
@@ -16,14 +16,14 @@ const redis = UPSTASH_URL && UPSTASH_TOKEN ? new Redis({ url: UPSTASH_URL, token
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY as string })
 const MODEL = 'gpt-4o-mini'
 
-// ===== 垁E=====
+// ===== 髯懷生繝ｻ=====
 type Pair = { date: string; value: number }
 
 type BoostBody = {
     input?: string
     prompt?: string
     text?: string
-    /** カンマ区刁E�� or 配�EどちらでもOK�E�フロント�E配�E推奨�E�E*/
+    /** 驛｢・ｧ繝ｻ・ｫ驛｢譎｢・ｽ・ｳ驛｢譎・ｽｧ・ｫ驍・・蟠慕ｹ晢ｽｻ繝ｻ繝ｻor 鬯ｩ貊難ｽｦ鄙ｫ繝ｻ驍ｵ・ｺ繝ｻ・ｩ驍ｵ・ｺ繝ｻ・｡驛｢・ｧ陝ｲ・ｨ邵ｲ蝣､・ｹ・ｧ繝ｻ蟆ｻ郢晢ｽｻ陋ｹ・ｻ郢晢ｽｵ驛｢譎｢・ｽ・ｭ驛｢譎｢・ｽ・ｳ驛｢譎冗樟郢晢ｽｻ鬯ｩ貊難ｽｦ鄙ｫ繝ｻ髫ｰ證ｦ・ｽ・ｨ髯槭ｑ・ｽ・ｨ郢晢ｽｻ郢晢ｽｻ*/
     highlights?: string[] | string | null
     options?: {
         mode?: 'dialogue' | 'generation'
@@ -37,7 +37,7 @@ type BoostBody = {
 
 type LlmResult = string
 
-// ===== JST日仁ETTL =====
+// ===== JST髫ｴ魃会ｽｽ・･髣泌ｳｨ繝ｻTTL =====
 function jstDateString(): string {
     const now = new Date()
     const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000)
@@ -49,7 +49,7 @@ function secondsUntilJstMidnight(): number {
     const next = new Date(jst.getFullYear(), jst.getMonth(), jst.getDate() + 1, 0, 0, 0, 0)
     return Math.max(1, Math.floor((next.getTime() - jst.getTime()) / 1000))
 }
-// pro_until までのTTL�E�秒！E
+// pro_until 驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ繝ｻ・ｮTTL郢晢ｽｻ髢ｧ・ｲ繝ｻ・ｧ隰夲ｽｵ繝ｻ・ｼ郢晢ｽｻ
 function secondsUntil(iso: string | null): number {
     if (!iso) return 31 * 24 * 60 * 60
     const end = new Date(iso).getTime()
@@ -57,7 +57,7 @@ function secondsUntil(iso: string | null): number {
     return Math.max(60, Math.floor((end - now) / 1000))
 }
 
-// ===== CookieユーチE��リチE�� =====
+// ===== Cookie驛｢譎｢・ｽ・ｦ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ邵ｺ繝ｻ・ｹ譎｢・ｽ・ｪ驛｢譏ｴ繝ｻ邵ｺ繝ｻ=====
 function readPair(raw: string | undefined): Pair {
     const today = jstDateString()
     if (!raw) return { date: today, value: 0 }
@@ -71,8 +71,8 @@ function cookieNames(userId: string | null): { usage: string; bonus: string } {
     return { usage: `${prefix}usage`, bonus: `${prefix}bonus` }
 }
 
-// ===== Top-up在庫ヘルチE=====
-// sb は supabaseServer() の戻り（型は any でOK�E�E
+// ===== Top-up髯懶ｽｨ繝ｻ・ｨ髯溯ｶ｣・ｽ・ｫ驛｢譎渉・･・取刮・ｹ譏ｴ繝ｻ=====
+// sb 驍ｵ・ｺ繝ｻ・ｯ supabaseServer() 驍ｵ・ｺ繝ｻ・ｮ髫ｰ魃会ｽｽ・ｻ驛｢・ｧ陞ゅ・・ｽ・ｼ闔・･隴ｴ蟶ｷ・ｸ・ｺ繝ｻ・ｯ any 驍ｵ・ｺ繝ｻ・ｧOK郢晢ｽｻ郢晢ｽｻ
 async function hasTopup(sb: any, userId: string): Promise<boolean> {
     const nowIso = new Date().toISOString()
     const { data: rows } = await sb
@@ -90,8 +90,8 @@ async function hasTopup(sb: any, userId: string): Promise<boolean> {
     return total > 0
 }
 
-// 先�Eれ�E出しで Top-up めE消費�E�有効期限が近い頁E��E
-// remain>0 を条件に付けて原子的に減らぁE
+// 髯ｷ莠包ｽｺ・･郢晢ｽｻ驛｢・ｧ隰疲ｺ倥・髯ｷ繝ｻ・ｽ・ｺ驍ｵ・ｺ陷会ｽｱ邵ｲ繝ｻTop-up 驛｢・ｧ郢晢ｽｻ髮趣ｽｸ鬩帙・・ｽ・ｲ繝ｻ・ｻ郢晢ｽｻ陜捺ｻ督蜑ｰ諤上・・ｹ髫ｴ蟶ｶ・ｻ繝ｻ蠢憺し・ｺ霑ｹ螟ｲ・ｽ・ｿ闔会ｽ｣繝ｻ讓｣・ｬ繝ｻ繝ｻ繝ｻ・ｼ郢晢ｽｻ
+// remain>0 驛｢・ｧ陷ｻ蝓溷･鈴濫莨夲ｽｽ・ｶ驍ｵ・ｺ繝ｻ・ｫ髣皮甥ﾂ・･繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｦ髯ｷ・ｴ雋・ｽｷ繝ｻ・ｭ陷翫・鬟ｭ驍ｵ・ｺ繝ｻ・ｫ髮九ｇ・ｸ蜻ｻ・ｽ閾･・ｸ・ｺ郢晢ｽｻ
 async function consumeOneTopup(sb: any, userId: string): Promise<boolean> {
     const nowIso = new Date().toISOString()
     const { data: rows } = await sb
@@ -118,7 +118,7 @@ async function consumeOneTopup(sb: any, userId: string): Promise<boolean> {
     return false
 }
 
-// ===== 入劁E強調 抽出 =====
+// ===== 髯ｷ闌ｨ・ｽ・･髯ｷ蟲ｨ繝ｻ髯滓汚・ｽ・ｷ鬮ｫ・ｱ繝ｻ・ｿ 髫ｰ螟ｲ・ｽ・ｽ髯ｷ繝ｻ・ｽ・ｺ =====
 function parseBody(jsonUnknown: unknown): BoostBody {
     if (typeof jsonUnknown !== 'object' || jsonUnknown === null) return {}
     const rec = jsonUnknown as Record<string, unknown>
@@ -135,7 +135,7 @@ function parseBody(jsonUnknown: unknown): BoostBody {
     }
 }
 
-/** 入力中の [こうぁE��めE��] を抽出して、括弧を外したクリーンな本斁E��強調配�Eを返す */
+/** 髯ｷ闌ｨ・ｽ・･髯ｷ迚呻ｽｸ謇假ｽｽ・ｸ繝ｻ・ｭ驍ｵ・ｺ繝ｻ・ｮ [驍ｵ・ｺ髦ｮ蜷ｮ魘ｬ驍ｵ・ｺ郢晢ｽｻ遶包ｽｧ驛｢・ｧ郢晢ｽｻ隨・ｽｽ] 驛｢・ｧ陷ｻ蝓滂ｽｭ讌｢諤弱・・ｺ驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ驍ｵ・ｲ遶擾ｽｵ陝ｲ・｡髯滓汚・ｽ・ｧ驛｢・ｧ髮区ｩｸ・ｽ・､隰費ｽｶ繝ｻ・ｰ驍ｵ・ｺ雋・･・驛｢譎｢・ｽ・ｪ驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｳ驍ｵ・ｺ繝ｻ・ｪ髫ｴ蟷｢・ｽ・ｬ髫ｴ竏壹・遶雁ｮ夲｣ｰ謇假ｽｽ・ｷ鬮ｫ・ｱ繝ｻ・ｿ鬯ｩ貊難ｽｦ鄙ｫ繝ｻ驛｢・ｧ陞ｳ螟ｲ・ｽ・ｿ隴∫ｵｶ繝ｻ */
 function extractBracketHighlights(raw: string): { clean: string; highlights: string[] } {
     const found: string[] = []
     const clean = raw.replace(/\[([^\]\r\n]{1,60})\]/g, (_m, g1: string) => {
@@ -146,7 +146,7 @@ function extractBracketHighlights(raw: string): { clean: string; highlights: str
     return { clean, highlights: found }
 }
 
-/** highlights: カンマ区刁E�� or 配�E ↁE正規化�E�空めE��褁E��除去、最大10件まで�E�E*/
+/** highlights: 驛｢・ｧ繝ｻ・ｫ驛｢譎｢・ｽ・ｳ驛｢譎・ｽｧ・ｫ驍・・蟠慕ｹ晢ｽｻ繝ｻ繝ｻor 鬯ｩ貊難ｽｦ鄙ｫ繝ｻ 驕ｶ鄙ｫ繝ｻ髮弱・・ｽ・｣鬮ｫ遨ゑｽｸ讒ｫ蟇・ｹ晢ｽｻ髢ｧ・ｲ繝ｻ・ｩ繝ｻ・ｺ驛｢・ｧ郢晢ｽｻ郤・ｽｾ鬮ｫ髦ｪ繝ｻ繝ｻ蟶晢ｽｫ・ｯ繝ｻ・､髯ｷ・ｴ繝ｻ・ｻ驍ｵ・ｲ遶擾ｽｵ隲､蜻ｵ譽斐・・ｧ10髣比ｼ夲ｽｽ・ｶ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ繝ｻ・ｧ郢晢ｽｻ郢晢ｽｻ*/
 function normalizeHighlights(h: string[] | string | null | undefined): string[] {
     if (!h) return []
     const arr = Array.isArray(h) ? h : h.split(',')
@@ -167,14 +167,14 @@ function normalizeHighlights(h: string[] | string | null | undefined): string[] 
     return out
 }
 
-/** プラン別 斁E��数制限！Eree/Pro=500, Pro+=2000�E�E*/
+/** 驛｢譎丞ｹｲ・主ｸｷ・ｹ譎｢・ｽ・ｳ髯具ｽｻ繝ｻ・･ 髫ｴ竏壹・繝ｻ・ｭ驍・ｽｲ霎溷､雁ｴ輔・・ｶ鬯ｮ・ｯ隰ｦ・ｰ繝ｻ・ｼ郢晢ｽｻree/Pro=500, Pro+=2000郢晢ｽｻ郢晢ｽｻ*/
 function enforceCharLimit(text: string, tier: 'free' | 'pro' | 'pro_plus'): { text: string; truncated: boolean } {
     const limit = tier === 'pro_plus' ? 2000 : 500
     if (text.length <= limit) return { text, truncated: false }
     return { text: text.slice(0, limit), truncated: true }
 }
 
-// ===== OpenAI呼び出ぁE=====
+// ===== OpenAI髯ｷ・ｻ繝ｻ・ｼ驍ｵ・ｺ繝ｻ・ｳ髯ｷ繝ｻ・ｽ・ｺ驍ｵ・ｺ郢晢ｽｻ=====
 async function callLLM(userBrief: string, highlights: string[], options?: BoostBody['options']): Promise<LlmResult> {
     const system =
         [
@@ -221,14 +221,14 @@ async function callLLM(userBrief: string, highlights: string[], options?: BoostB
     return resp.choices[0]?.message?.content ?? ''
 }
 
-// ===== ルート本佁E=====
+// ===== 驛｢譎｢・ｽ・ｫ驛｢譎｢・ｽ・ｼ驛｢譎乗ｲｺ隰費ｽｽ髣厄ｽｴ郢晢ｽｻ=====
 export async function POST(req: NextRequest) {
     try {
         const url = new URL(req.url)
         const ad = url.searchParams.get('ad')
         const jar = req.cookies
 
-        // 認証
+        // 鬮ｫ・ｱ陝雜｣・ｽ・ｨ繝ｻ・ｼ
         const sb = await supabaseServer()
         let userId: string | null = null
         try {
@@ -238,7 +238,7 @@ export async function POST(req: NextRequest) {
             userId = null
         }
 
-        // 課金情報を確認して tier と proUntil を確宁E
+        // 鬮ｫ・ｱ繝ｻ・ｲ鬯ｩ・･髫ｨ・ｬ郢晢ｽ･髯懶ｽ｣繝ｻ・ｱ驛｢・ｧ陜｣・､繝ｻ・｢繝ｻ・ｺ鬮ｫ・ｱ鬮ｦ・ｪ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｦ tier 驍ｵ・ｺ繝ｻ・ｨ proUntil 驛｢・ｧ陜｣・､繝ｻ・｢繝ｻ・ｺ髯橸ｽｳ郢晢ｽｻ
         let planTier: 'free' | 'pro' | 'pro_plus' = 'free'
         let proUntil: string | null = null
         if (userId) {
@@ -260,7 +260,7 @@ export async function POST(req: NextRequest) {
             if (proActive) return NextResponse.json({ ok: true, remain: null, tier: planTier })
 
             if (userId) {
-                // Redisに庁E��ボ�Eナス +1
+                // Redis驍ｵ・ｺ繝ｻ・ｫ髯溷ｼｱ繝ｻ騾ｶ・ｸ驛｢譎・鯵郢晢ｽｻ驛｢譎会ｽｿ・ｫ邵ｺ繝ｻ+1
                 const today = jstDateString()
                 if (redis) {
                     const bonusKey = `pb:b:${userId}:${today}`
@@ -273,7 +273,7 @@ export async function POST(req: NextRequest) {
                     return NextResponse.json({ ok: true, remain: remaining, tier: 'free' })
                 }
             }
-            // cookie フォールバック
+            // cookie 驛｢譎・ｽｼ譁青ｰ驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｫ驛｢譎√・郢晢ｽ｣驛｢・ｧ繝ｻ・ｯ
             const { usage, bonus } = cookieNames(userId)
             const u = readPair(jar.get(usage)?.value)
             const b = readPair(jar.get(bonus)?.value)
@@ -293,7 +293,7 @@ export async function POST(req: NextRequest) {
             return res
         }
 
-        // --- 入劁E---
+        // --- 髯ｷ闌ｨ・ｽ・･髯ｷ蟲ｨ繝ｻ---
         let bodyJson: unknown = {}
         try {
             bodyJson = await req.json()
@@ -304,21 +304,21 @@ export async function POST(req: NextRequest) {
         const rawInput = parsed.input ?? ''
         if (!rawInput) return NextResponse.json({ error: 'empty input' }, { status: 400 })
 
-        // [] マ�Eカー抽出 + クリーン本斁E��戁E
+        // [] 驛｢譎・ｽｧ・ｭ郢晢ｽｻ驛｢・ｧ繝ｻ・ｫ驛｢譎｢・ｽ・ｼ髫ｰ螟ｲ・ｽ・ｽ髯ｷ繝ｻ・ｽ・ｺ + 驛｢・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｪ驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｳ髫ｴ蟷｢・ｽ・ｬ髫ｴ竏壹・陷・ｽｽ髫ｰ蠕後・
         const extracted = extractBracketHighlights(rawInput)
         const extraHi = normalizeHighlights(parsed.highlights)
         const allHighlights = normalizeHighlights([...extracted.highlights, ...extraHi])
 
         const finalBriefRaw = extracted.clean
 
-        // --- 消費方針（どれを使ぁE���E�E---
-        let useFreeDaily = false          // Free の日次枠
-        let useSubMonthly = false         // Pro/Pro+ の月次枠
+        // --- 髮趣ｽｸ鬩帙・・ｽ・ｲ繝ｻ・ｻ髫ｴ繝ｻ・ｽ・ｹ鬯ｩ・･隴趣ｽ｢繝ｻ・ｼ陋ｹ・ｻ遶雁鴻・ｹ・ｧ陟暮ｯ会ｽｽ螳壽割繝ｻ・ｿ驍ｵ・ｺ郢晢ｽｻ・ゑｽｰ郢晢ｽｻ郢晢ｽｻ---
+        let useFreeDaily = false          // Free 驍ｵ・ｺ繝ｻ・ｮ髫ｴ魃会ｽｽ・･髫ｹ・ｺ繝ｻ・｡髫ｴ・ｫ繝ｻ・ｰ
+        let useSubMonthly = false         // Pro/Pro+ 驍ｵ・ｺ繝ｻ・ｮ髫ｴ蟶帶ｲｺ繝ｻ・ｬ繝ｻ・｡髫ｴ・ｫ繝ｻ・ｰ
         let useTopup = false              // Top-up
-        let cookiePathFree = false        // 未ログイン/Redis無し�E Free cookie 運用
+        let cookiePathFree = false        // 髫ｴ蟷｢・ｽ・ｪ驛｢譎｢・ｽ・ｭ驛｢・ｧ繝ｻ・ｰ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ/Redis髴取ｻゑｽｽ・｡驍ｵ・ｺ陷会ｽｱ郢晢ｽｻ Free cookie 鬯ｩ諷戊ｷ晞｡繝ｻ
 
         if (!proActive) {
-            // Free�E�無料枠 ↁE0なめETop-up�E�ログイン+Redis時�Eみ�E�E
+            // Free郢晢ｽｻ陞溘ｄ莨ｯ髫ｴ竏晉ｶ懆ｭｽ・ｧ 驕ｶ鄙ｫ繝ｻ0驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ郢晢ｽｻTop-up郢晢ｽｻ陋ｹ・ｻ・取ｺｽ・ｹ・ｧ繝ｻ・ｰ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ+Redis髫ｴ蠑ｱ・・ｹ晢ｽｻ驍ｵ・ｺ繝ｻ・ｿ郢晢ｽｻ郢晢ｽｻ
             if (userId && redis) {
                 const today = jstDateString()
                 const usageKey = `pb:q:${userId}:${today}`
@@ -327,7 +327,7 @@ export async function POST(req: NextRequest) {
                 const bonus = Number((await redis.get(bonusKey)) ?? 0)
                 const freeLeft = Math.max(0, FREE_DAILY_LIMIT + bonus - used)
                 if (freeLeft > 0) {
-                    useFreeDaily = true // 成功後にINCR
+                    useFreeDaily = true // 髫ｰ蠕｡・ｻ蜥擾ｽｲ・･髯溷供・ｾ螽ｯ繝ｻINCR
                 } else {
                     if (await hasTopup(sb, userId)) {
                         useTopup = true
@@ -339,7 +339,7 @@ export async function POST(req: NextRequest) {
                     }
                 }
             } else {
-                // 未ログイン or RedisなぁEↁEcookie で従来運用�E�Eop-upは未対応！E
+                // 髫ｴ蟷｢・ｽ・ｪ驛｢譎｢・ｽ・ｭ驛｢・ｧ繝ｻ・ｰ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ or Redis驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ驕ｶ鄙ｫ繝ｻcookie 驍ｵ・ｺ繝ｻ・ｧ髯溷｢鍋袖隰ｫ繧具ｽｩ諷戊ｷ晞｡莉｣繝ｻ郢晢ｽｻop-up驍ｵ・ｺ繝ｻ・ｯ髫ｴ蟷｢・ｽ・ｪ髯昴・・ｽ・ｾ髯滂ｽ｢隲幢ｽｶ繝ｻ・ｼ郢晢ｽｻ
                 const { usage, bonus } = cookieNames(userId)
                 const u = readPair(jar.get(usage)?.value)
                 const b = readPair(jar.get(bonus)?.value)
@@ -349,18 +349,18 @@ export async function POST(req: NextRequest) {
                         { status: 402 }
                     )
                 }
-                cookiePathFree = true // 成功後に cookie めE1
+                cookiePathFree = true // 髫ｰ蠕｡・ｻ蜥擾ｽｲ・･髯溷供・ｾ螽ｯ繝ｻ cookie 驛｢・ｧ郢晢ｽｻ1
             }
         } else {
-            // Pro/Pro+�E�月次1000 ↁE0なめETop-up
+            // Pro/Pro+郢晢ｽｻ陞｢・ｽ隲､・ｦ髫ｹ・ｺ繝ｻ・｡1000 驕ｶ鄙ｫ繝ｻ0驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ郢晢ｽｻTop-up
             if (userId) {
                 const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
-                const subCap = 1000 // tier別に変えるならここで刁E��E
+                const subCap = 1000 // tier髯具ｽｻ繝ｻ・･驍ｵ・ｺ繝ｻ・ｫ髯樊ｺｷ・ｳ・ｨ遶擾ｽｴ驛｢・ｧ闕ｵ譏ｶ繝ｻ驛｢・ｧ陝ｲ・ｨ繝ｻ繝ｻ・ｸ・ｺ髦ｮ蜷ｶﾂ螳壼ｴ慕ｹ晢ｽｻ繝ｻ・ｲ郢晢ｽｻ
                 const key = `pb:m:${userId}:${cycleId}`
                 const usedRaw = Number((await redis?.get(key)) ?? 0)
                 const subLeft = Math.max(0, subCap - usedRaw)
                 if (subLeft > 0) {
-                    useSubMonthly = true // 成功後にINCR
+                    useSubMonthly = true // 髫ｰ蠕｡・ｻ蜥擾ｽｲ・･髯溷供・ｾ螽ｯ繝ｻINCR
                 } else {
                     if (await hasTopup(sb, userId)) {
                         useTopup = true
@@ -374,13 +374,13 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        // --- 斁E��数制限！EIは常時開放、制限�Eバックで適用�E�E---
+        // --- 髫ｴ竏壹・繝ｻ・ｭ驍・ｽｲ霎溷､雁ｴ輔・・ｶ鬯ｮ・ｯ隰ｦ・ｰ繝ｻ・ｼ郢晢ｽｻI驍ｵ・ｺ繝ｻ・ｯ髯晢ｽｶ繝ｻ・ｸ髫ｴ蠑ｱ・玖濤謌奇ｽｬ・ｾ繝ｻ・ｾ驍ｵ・ｲ遶乗剌・ｮ蟷・ｽｫ・ｯ髣雁ｾ後・驛｢譎√・郢晢ｽ｣驛｢・ｧ繝ｻ・ｯ驍ｵ・ｺ繝ｻ・ｧ鬯ｩ蛹・ｽｽ・ｩ鬨ｾ蛹・ｽｽ・ｨ郢晢ｽｻ郢晢ｽｻ---
         const limited = enforceCharLimit(finalBriefRaw, planTier)
 
         // --- LLM ---
         const text: LlmResult = await callLLM(limited.text, allHighlights, parsed.options)
 
-        // --- 成功後に消費をコミッチE---
+        // --- 髫ｰ蠕｡・ｻ蜥擾ｽｲ・･髯溷供・ｾ螽ｯ繝ｻ髮趣ｽｸ鬩帙・・ｽ・ｲ繝ｻ・ｻ驛｢・ｧ陋幢ｽｵ邵ｺ諷包ｽｹ譎・ｽｺ蛟･ﾎ暮Δ譏ｴ繝ｻ---
         // Free (Redis)
         if (useFreeDaily && userId && redis) {
             const today = jstDateString()
@@ -416,13 +416,13 @@ export async function POST(req: NextRequest) {
             return res
         }
 
-        // Pro/Pro+ 月次�E�Eedis�E�E
+        // Pro/Pro+ 髫ｴ蟶帶ｲｺ繝ｻ・ｬ繝ｻ・｡郢晢ｽｻ郢晢ｽｻedis郢晢ｽｻ郢晢ｽｻ
         if (useSubMonthly && userId && redis) {
             const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
             const key = `pb:m:${userId}:${cycleId}`
             const used = await redis.incr(key)
             if (used === 1) await redis.expire(key, secondsUntil(proUntil))
-            // Pro系は remain=null で返す�E�フロント�E /status 再取得で subRemaining を表示�E�E
+            // Pro鬩堺ｼ夲ｽｽ・ｻ驍ｵ・ｺ繝ｻ・ｯ remain=null 驍ｵ・ｺ繝ｻ・ｧ鬮ｴ隨ｬ魍堤ｬ倥・繝ｻ陋ｹ・ｻ郢晢ｽｵ驛｢譎｢・ｽ・ｭ驛｢譎｢・ｽ・ｳ驛｢譎冗樟郢晢ｽｻ /status 髯ｷﾂ隶朱宦蠕宣辧蜍溷ｹｲ邵ｲ繝ｻsubRemaining 驛｢・ｧ陞ｳ螟ｲ・ｽ・｡繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ郢晢ｽｻ郢晢ｽｻ
             return NextResponse.json({
                 text,
                 remain: null,
@@ -432,11 +432,11 @@ export async function POST(req: NextRequest) {
             })
         }
 
-        // Top-up 消費�E��Eプラン共通�Eフォールバック�E�E
+        // Top-up 髮趣ｽｸ鬩帙・・ｽ・ｲ繝ｻ・ｻ郢晢ｽｻ闔・･郢晢ｽｻ驛｢譎丞ｹｲ・主ｸｷ・ｹ譎｢・ｽ・ｳ髯ｷ闌ｨ・ｽ・ｱ鬯ｨ・ｾ陞｢・ｹ郢晢ｽｻ驛｢譎・ｽｼ譁青ｰ驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｫ驛｢譎√・郢晢ｽ｣驛｢・ｧ繝ｻ・ｯ郢晢ｽｻ郢晢ｽｻ
         if (useTopup && userId) {
             const ok = await consumeOneTopup(sb, userId)
             if (!ok) {
-                // 競合で在庫が無くなった筁E
+                // 鬩包ｽｶ繝ｻ・ｶ髯ｷ・ｷ陋ｹ・ｻ邵ｲ螳夊・繝ｻ・ｨ髯溯ｶ｣・ｽ・ｫ驍ｵ・ｺ隶吝ｯゆｼｯ驍ｵ・ｺ闕ｳ蟯ｩ繝ｻ驍ｵ・ｺ繝ｻ・｣驍ｵ・ｺ雋・ｽｽ繝ｻ・ｭ郢晢ｽｻ
                 return NextResponse.json({ error: 'No top-up balance', tier: planTier }, { status: 402 })
             }
             return NextResponse.json({
@@ -448,7 +448,7 @@ export async function POST(req: NextRequest) {
             })
         }
 
-        // ここに来る�Eは Pro だぁEuserId/redis 無し等�E稀ケース
+        // 驍ｵ・ｺ髦ｮ蜻ｻ・ｼ繝ｻ・ｸ・ｺ繝ｻ・ｫ髫ｴ螟ｲ・ｽ・･驛｢・ｧ闕ｵ譏ｴ繝ｻ驍ｵ・ｺ繝ｻ・ｯ Pro 驍ｵ・ｺ繝ｻ・ｰ驍ｵ・ｺ郢晢ｽｻuserId/redis 髴取ｻゑｽｽ・｡驍ｵ・ｺ驕会ｽｼ繝ｻ・ｭ陝ｲ・ｨ郢晢ｽｻ鬩墓･ｪﾂ驛｢・ｧ繝ｻ・ｱ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｹ
         return NextResponse.json({
             text,
             remain: proActive ? null : undefined,

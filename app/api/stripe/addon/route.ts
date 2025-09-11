@@ -16,16 +16,16 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
     }
 
-    // �E���E�ϐ��E�ɒǉ��E�p�E�b�E�N�E�p�E�̉��E�iID�E��E�ݒ�
+    // 郢晢ｽｻ繝ｻ・ｽ繝ｻ繧・・繝ｻ・ｿ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ繝ｻ荵苓・繝ｻ・ｿ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ繝ｻ闃ｽ・ｿ・ｽ闔ｨ螟ｲ・ｽ・ｿ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽp郢晢ｽｻ繝ｻ・ｽb郢晢ｽｻ繝ｻ・ｽN郢晢ｽｻ繝ｻ・ｽp郢晢ｽｻ繝ｻ・ｽ繝ｻ蠕｡・ｼ螟ｲ・ｽ・ｿ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽiID郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ繝ｻ譎・・繝ｻ・ｿ繝ｻ・ｽ
     const priceId = process.env.STRIPE_PRICE_ID_ADDON
     if (!priceId) return NextResponse.json({ error: 'missing price id' }, { status: 500 })
 
-    // Customer�E�m�E��E�
+    // Customer郢晢ｽｻ繝ｻ・ｽm郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ
     const found = await stripe.customers.list({ email: user.email, limit: 1 })
     const customer = found.data[0] ??
         (await stripe.customers.create({ email: user.email, metadata: { userId: user.id } }))
 
-    // Checkout �E�Z�E�b�E�V�E��E��E��E��E��E�
+    // Checkout 郢晢ｽｻ繝ｻ・ｽZ郢晢ｽｻ繝ｻ・ｽb郢晢ｽｻ繝ｻ・ｽV郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｬ
     const origin = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? 'http://localhost:3000'
     const session = await stripe.checkout.sessions.create({
         mode: 'payment',

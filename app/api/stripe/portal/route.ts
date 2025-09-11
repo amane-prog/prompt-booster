@@ -28,7 +28,7 @@ export async function POST() {
             return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
         }
 
-        // Origin allowlist�E�ESRF緩和！E
+        // Origin allowlist郢晢ｽｻ郢晢ｽｻSRF鬩搾ｽｱ繝ｻ・ｩ髯ｷ・･鬲・ｼ夲ｽｽ・ｼ郢晢ｽｻ
         const hdrs = await headers();
         const origin = computeOrigin(hdrs);
         const allowed = new Set([
@@ -39,11 +39,11 @@ export async function POST() {
             return NextResponse.json({ error: 'forbidden origin' }, { status: 403 });
         }
 
-        // 返却先�Eロケール付きに�E�言語一貫性�E�E
+        // 鬮ｴ隨ｬ・ｳ謔滄飭髯ｷ莠･迴ｾ郢晢ｽｻ驛｢譎｢・ｽ・ｭ驛｢・ｧ繝ｻ・ｱ驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｫ髣皮甥ﾂ・･遯ｶ・ｳ驍ｵ・ｺ繝ｻ・ｫ郢晢ｽｻ鬩帙・・ｽ・ｨ・つ鬮ｫ・ｱ隶楢ｲｻ・ｽ・ｸ・つ鬮ｮ蜈ｷ・ｽ・ｫ髫ｲ・､繝ｻ・ｧ郢晢ｽｻ郢晢ｽｻ
         const loc = hdrs.get('cookie')?.match(/NEXT_LOCALE=([^;]+)/)?.[1] ?? 'ja';
         const returnUrl = `${origin}/${encodeURIComponent(loc)}/settings/billing`;
 
-        // 1) DBに保存済みの customerId を優允E
+        // 1) DB驍ｵ・ｺ繝ｻ・ｫ髣厄ｽｫ隴取得・ｽ・ｭ闖ｫ・ｶ繝ｻ・ｸ陋ｹ・ｻ遶擾ｽｩ驍ｵ・ｺ繝ｻ・ｮ customerId 驛｢・ｧ髮区ｨ樒・髯ｷ蛹ｻ繝ｻ
         let customerId: string | null = null;
         const { data: billingRow } = await sb
             .from('user_billing')
@@ -54,7 +54,7 @@ export async function POST() {
             customerId = billingRow.stripe_customer_id as string;
         }
 
-        // 2) 無ければ Stripe から発要E作�E ↁEDB保孁E
+        // 2) 髴取ｻゑｽｽ・｡驍ｵ・ｺ闔会ｽ｣繝ｻ讙趣ｽｸ・ｺ繝ｻ・ｰ Stripe 驍ｵ・ｺ闕ｵ譎｢・ｽ陋ｾﾂ蜈ｷ・ｽ・ｺ鬮ｫ霈斐・髣厄ｽｴ隲帛現繝ｻ 驕ｶ鄙ｫ繝ｻDB髣厄ｽｫ隴取得・ｽ・ｭ郢晢ｽｻ
         if (!customerId) {
             let found: Stripe.Customer | null = null;
             try {
@@ -85,11 +85,11 @@ export async function POST() {
             );
         }
 
-        // 3) Portal セチE��ョン作�E
+        // 3) Portal 驛｢・ｧ繝ｻ・ｻ驛｢譏ｴ繝ｻ邵ｺ蜥擾ｽｹ譎｢・ｽ・ｧ驛｢譎｢・ｽ・ｳ髣厄ｽｴ隲帛現繝ｻ
         const session = await stripe.billingPortal.sessions.create({
             customer: customerId!,
             return_url: returnUrl,
-            configuration: PORTAL_CONFIGURATION_ID, // 無持E��ならStripeチE��ォルチE
+            configuration: PORTAL_CONFIGURATION_ID, // 髴取ｻゑｽｽ・｡髫ｰ謔ｶ繝ｻ繝ｻ・ｮ陞｢・ｹ遶企・・ｹ・ｧ陷墟ｴripe驛｢譏ｴ繝ｻ郢晢ｽｵ驛｢・ｧ繝ｻ・ｩ驛｢譎｢・ｽ・ｫ驛｢譏ｴ繝ｻ
             locale: 'auto',
         });
 

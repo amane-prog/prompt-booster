@@ -13,39 +13,39 @@
     "signIn": "サインイン",
     "signOut": "サインアウト",
     "manage": "請求管理",
-    "goPro": "Pro にアップグレード",
-    "goProPlus": "Pro+ にアップグレード"
+    "goPro": "Proにアップグレード",
+    "goProPlus": "Pro+にアップグレード"
   },
   "ui": {
     "status": "ステータス",
     "plan": "プラン",
     "remainingRequests": "残りリクエスト",
     "freeDailyCap": "3",
-    "subscriptionCap": "サブスク枠",
+    "subscriptionCap": "サブスクリプション上限",
     "resetsOn": "リセット: {date}",
-    "topupRemaining": "追加パック残数",
+    "topupRemaining": "追加分残り",
     "earliestExpiry": "最短有効期限: {date}",
-    "buyTopupN": "+{count}回 (${price})",
+    "buyTopupN": "+{count}リクエスト (${price})",
     "jstResetCountdown": "JSTリセットまで: {time}",
     "input": "入力",
-    "inputPlaceholder": "あなたの要望・背景・制約などを記入。最重要箇所は [こうやって] 括れば強調扱いされます。",
-    "tipBracket": "Tip: 強調したい箇所は [こうやって] 括ると自動抽出されます。/ Cmd/Ctrl + Enter で実行",
-    "maxCharsPerRequest": "1回の最大文字数: {n}",
-    "generate": "Generate ⚡",
+    "inputPlaceholder": "ニーズ・背景・制約を入力してください。[括弧]で囲むと強調されます。",
+    "tipBracket": "Tip: [括弧]内のテキストは強調対象。Cmd/Ctrl + Enter で実行",
+    "maxCharsPerRequest": "1リクエストあたり最大文字数: {n}",
+    "generate": "生成",
     "output": "出力",
-    "truncated": "入力がプラン上限に合わせて一部カットされました",
-    "freeExhausted": "本日の無料回数を使い切りました",
-    "subscriptionRemaining": "サブスク残数",
+    "truncated": "入力が上限に合わせて切り詰められました",
+    "freeExhausted": "本日の無料リクエストを使い切りました",
+    "subscriptionRemaining": "サブスク残り",
     "processing": "処理中…",
-    "seePlans": "プランを詳しく",
+    "seePlans": "プランを確認",
     "copy": "コピー",
     "share": "共有",
-    "empty": "—"
+    "empty": "未入力です"
   },
   "credit": {
-    "busyTitle": "現在混雑中／クレジット不足",
-    "freeModalBody": "本日の無料リクエスト上限に達しました。日次リセット後に再度お試しください。すぐに続ける場合は、ProへのアップグレードまたはTop-upの追加をご検討ください。",
-    "proModalBody": "今月の上限に近づいています。Top-upを追加すると、今月の上限を一時的に拡張できます。"
+    "busyTitle": "現在混雑中 / クレジット残少",
+    "freeModalBody": "本日の無料リクエスト数を使い切りました。日次リセット後に再度お試しください。今すぐ続けたい場合は Pro にアップグレードするか Top-up を購入してください。",
+    "proModalBody": "今月の上限に近づいています。Top-up を追加購入することで一時的に上限を拡張できます。"
   },
   "header": {
     "plan": "プラン",
@@ -54,68 +54,68 @@
       "pro": "PRO",
       "pro_plus": "PRO+"
     },
-    "pitch": "AIに送る前のプロンプトを整理・最適化して、無料枠でも精度の高い出力を引き出す支援ツールです。生成したプロンプトをご自身のAIにお使いください。",
-    "assurance": "当サービスはメールアドレス等の個人情報を自社DBに保存しません。アカウント識別はUUIDのみ（認証はSupabase、決済はStripe）。",
+    "pitch": "AIに送信する前にプロンプトを整理・最適化し、より高品質な結果を得ましょう。無料枠でも利用可能。生成されたプロンプトはご自身のAIで使えます。",
+    "assurance": "私たちはメールアドレスを自前のDBに保存しません。アカウントはUUIDのみで識別されます（認証はSupabase、決済はStripeを利用）。",
     "requestsRemaining": "残りリクエスト",
-    "requestsRemainingFmt": "{count} 回",
-    "requestsInfo": "Pro と Pro+ の月間上限はいずれも 1,000 回です。上限超過時は追加パックをご利用ください。",
-    "topupRemaining": "追加パック残数",
+    "requestsRemainingFmt": "{count} 件残り",
+    "requestsInfo": "Pro と Pro+ はどちらも月 1,000 回まで利用可能です。必要に応じて Top-up を追加してください。",
+    "topupRemaining": "追加分残り",
     "topupEarliestExpiry": "最短有効期限: {date}",
-    "upgradeToProPlus": "Pro+ にアップグレード",
-    "manageBilling": "請求を管理",
-    "buyTopup": "追加パックを購入",
-    "applied": "適用中"
+    "upgradeToProPlus": "Pro+にアップグレード",
+    "manageBilling": "請求管理",
+    "buyTopup": "Top-upを購入",
+    "applied": "適用済み"
   },
   "plan": {
-    "matrixTitle": "プラン一覧",
+    "matrixTitle": "プラン比較",
     "monthly": "月額料金",
-    "maxPerMonth": "月間リクエスト上限",
-    "topup": "追加パック",
+    "maxPerMonth": "月間上限",
+    "topup": "Top-up",
     "feature": "機能",
     "free": {
       "name": "Free",
-      "desc": "まずは無料でお試し",
+      "desc": "無料でお試し",
       "price": "無料",
-      "limit": "1日3回 / 月1,000回まで",
+      "limit": "1日3回 / 月最大1,000回",
       "cta": "無料で開始"
     },
     "pro": {
       "name": "Pro",
-      "desc": "個人開発者向けの標準プラン",
-      "price": "月額 $3",
-      "limit": "月1,000回まで",
-      "cta": "Pro にアップグレード"
+      "desc": "個人開発者向け標準プラン",
+      "price": "$3/月",
+      "limit": "月最大1,000回",
+      "cta": "Proにアップグレード"
     },
     "pro_plus": {
       "name": "Pro+",
-      "desc": "より余裕を。優先実行と拡張枠",
-      "price": "月額 $5",
+      "desc": "より余裕を。優先実行と追加容量を提供",
+      "price": "$5/月",
       "limit": "月1,000回 + 優先実行",
-      "cta": "Pro+ にアップグレード"
+      "cta": "Pro+にアップグレード"
     },
     "notes": {
-      "commonCap": "※ Pro/Pro+ の月間上限はいずれも 1,000 回です",
-      "topupNote": "※ 追加パックは有効期限付きで加算されます"
+      "commonCap": "Pro/Pro+ の月間上限は 1,000 回です",
+      "topupNote": "Top-up によって追加リクエストを購入できます（有効期限あり）"
     },
     "badges": {
-      "mostPopular": "一番人気",
-      "bestValue": "おすすめ"
+      "mostPopular": "人気No.1",
+      "bestValue": "最もお得"
     },
     "bullets": {
-      "cap1000": "月1,000回まで",
+      "cap1000": "月最大1,000回",
       "daily3": "1日3回まで",
       "priority": "優先実行",
-      "chars500": "1回500文字まで",
-      "chars2000": "1回2,000文字まで",
+      "chars500": "1リクエスト最大500文字",
+      "chars2000": "1リクエスト最大2000文字",
       "noAds": "広告なし",
       "bannerAds": "バナー広告あり",
-      "topup": "追加パック対応"
+      "topup": "Top-up対応"
     },
     "cta": {
       "free": "無料で開始",
-      "pro": "Pro にアップグレード",
-      "pro_plus": "Pro+ にアップグレード",
-      "seeDetails": "詳しく比較"
+      "pro": "Proにアップグレード",
+      "pro_plus": "Pro+にアップグレード",
+      "seeDetails": "詳細を見る"
     }
   },
   "boost": {
@@ -123,15 +123,15 @@
     "stop": "停止",
     "mode": {
       "label": "モード",
-      "chat": "会話",
-      "rewrite": "書き換え",
+      "chat": "チャット",
+      "rewrite": "リライト",
       "summarize": "要約"
     },
     "length": {
       "label": "長さ",
-      "short": "短め",
+      "short": "短い",
       "medium": "標準",
-      "long": "長め"
+      "long": "長い"
     },
     "tone": {
       "label": "トーン",
@@ -144,32 +144,32 @@
   "auth": {
     "email": "メールアドレス",
     "sendMagicLink": "マジックリンクを送信",
-    "checkInbox": "メールボックスを確認してください",
-    "signedIn": "サインインしました",
-    "signedOut": "サインアウトしました"
+    "checkInbox": "受信箱を確認してください",
+    "signedIn": "サインイン済み",
+    "signedOut": "サインアウト済み"
   },
   "billing": {
     "checkout": {
-      "goPro": "Pro にアップグレード",
-      "goProPlus": "Pro+ にアップグレード",
-      "topup": "追加パックを購入",
-      "topup300": "追加パック 300",
-      "topup1000": "追加パック 1000"
+      "goPro": "Proにアップグレード",
+      "goProPlus": "Pro+にアップグレード",
+      "topup": "Top-upを購入",
+      "topup300": "Top-up 300",
+      "topup1000": "Top-up 1000"
     },
     "result": {
-      "success": "購入が完了しました",
+      "success": "購入完了",
       "canceled": "購入をキャンセルしました"
     }
   },
   "toast": {
     "saved": "保存しました",
     "copied": "コピーしました",
-    "error": "問題が発生しました"
+    "error": "エラーが発生しました"
   },
   "errors": {
     "unauthorized": "認証が必要です",
     "rateLimited": "しばらくしてからお試しください",
-    "quotaExceeded": "上限に達しました。追加パックをご検討ください。",
+    "quotaExceeded": "上限に達しました。Top-up をご検討ください。",
     "unknown": "不明なエラー"
   },
   "language": {
@@ -180,22 +180,22 @@
   },
   "advanced": {
     "emphasis": {
-      "title": "強調したい単語・フレーズ（カンマ区切り）",
-      "placeholder": "例: 迅速な対応, 正確性, トーンは丁寧",
-      "aria": "強調語句",
-      "help": "空でもOK。[]で抽出されたキーフレーズと合わせて最大10件まで反映します。"
+      "title": "強調したい単語/フレーズ（カンマ区切り）",
+      "placeholder": "例: 高速応答, 正確さ, 丁寧なトーン",
+      "aria": "強調フレーズ",
+      "help": "任意。最大10件まで。[括弧]で囲まれたフレーズも自動抽出されます。"
     },
     "mode": {
       "label": "モード",
-      "dialogue": "対話",
+      "dialogue": "会話",
       "generation": "生成"
     },
     "color": {
-      "label": "色彩",
+      "label": "カラートーン",
       "options": {
         "auto": "自動",
-        "bright": "明るめ",
-        "dark": "ダーク",
+        "bright": "明るい",
+        "dark": "暗い",
         "pastel": "パステル",
         "mono": "モノクロ"
       }
@@ -213,22 +213,22 @@
         "friendly": "フレンドリー",
         "formal": "フォーマル",
         "concise": "簡潔",
-        "enthusiastic": "熱量高め",
+        "enthusiastic": "熱意ある",
         "neutral": "ニュートラル",
         "empathetic": "共感的"
       }
     },
     "tags": {
-      "label": "タグ（クリックでON/OFF）",
-      "reverse": "逆順",
-      "substitute": "置き換え",
+      "label": "タグ (ON/OFF)",
+      "reverse": "逆転",
+      "substitute": "置換",
       "reorder": "並べ替え",
       "remove": "削除",
-      "merge": "結合",
+      "merge": "統合",
       "expand": "拡張",
-      "condense": "短縮",
+      "condense": "要約",
       "fix": "修正",
-      "adapt": "適応"
+      "adapt": "調整"
     },
     "style": {
       "label": "スタイル",
@@ -250,14 +250,14 @@
   },
   "compact": {
     "title": "プラン",
-    "seeDetails": "詳しく比較"
+    "seeDetails": "詳細を見る"
   },
   "planComparison": {
     "title": "プラン比較"
   },
   "common": {
     "close": "閉じる",
-    "managePlan": "プランを管理"
+    "managePlan": "プラン管理"
   },
   "legal": {
     "terms": "利用規約",

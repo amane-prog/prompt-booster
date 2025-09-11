@@ -98,13 +98,13 @@ export default function Header() {
     const appName = t.has('app.name') ? t('app.name') : 'Prompt Booster'
 
 
-    // UUIDの末尾だけ表示
-    const shortId = userId ? `${userId.slice(0, 6)}…${userId.slice(-4)}` : null
+    // UUID驍ｵ・ｺ繝ｻ・ｮ髫ｴ蟷｢・ｽ・ｫ髯昴・・ｽ・ｾ驍ｵ・ｺ繝ｻ・ｰ驍ｵ・ｺ鬯倬ｯ会ｽｽ・｡繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ
+    const shortId = userId ? `${userId.slice(0, 6)}驕ｯ・ｶ繝ｻ・ｦ${userId.slice(-4)}` : null
 
     return (
         <>
             <header className="w-full border-b bg-white">
-                {/* 上段 */}
+                {/* 髣包ｽｳ鬯・汚・ｽ・ｮ繝ｻ・ｵ */}
                 <div className="mx-auto px-4 py-3 max-w-screen-2xl 3xl:max-w-screen-3xl 4xl:max-w-screen-4xl flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2 font-semibold">
                         {appName}
@@ -118,7 +118,7 @@ export default function Header() {
                     <div className="flex items-center gap-3">
                         <LanguageSwitcher />
 
-                        {/* ID/メール表示 */}
+                        {/* ID/驛｢譎｢・ｽ・｡驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｫ鬮ｯ・ｦ繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ */}
                         {email ? (
                             <span className="text-sm text-neutral-600">{email}</span>
                         ) : shortId ? (
@@ -132,7 +132,7 @@ export default function Header() {
                                         {plan === 'pro' && (
                                             <button
                                                 onClick={() => goPro('pro_plus')}
-                                                className="rounded bg-blue-600 px-2 py-1 text-xs text-white"  // ← Pro+ も青に
+                                                className="rounded bg-blue-600 px-2 py-1 text-xs text-white"  // 驕ｶ鄙ｫ繝ｻPro+ 驛｢・ｧ郢ｧ蛹ｺ蜍｢驍ｵ・ｺ繝ｻ・ｫ
                                                 title={t.has('header.upgradeToProPlus') ? t('header.upgradeToProPlus') : 'Upgrade to Pro+'}
                                             >
                                                 {t.has('header.upgradeToProPlus') ? t('header.upgradeToProPlus') : 'Upgrade to Pro+'}
@@ -155,7 +155,7 @@ export default function Header() {
                                         </button>
                                         <button
                                             onClick={() => goPro('pro_plus')}
-                                            className="rounded bg-blue-600 px-2 py-1 text-xs text-white"  // ← 青に統一
+                                            className="rounded bg-blue-600 px-2 py-1 text-xs text-white"  // 驕ｶ鄙ｫ繝ｻ鬯ｮ・ｱ陋幢ｽｵ遶企ｦｴ縺翫・・ｱ髣包ｽｳ・つ
                                         >
                                             {t.has('nav.goProPlus') ? t('nav.goProPlus') : (t.has('billing.checkout.goProPlus') ? t('billing.checkout.goProPlus') : 'Go Pro+')}
                                         </button>
@@ -177,7 +177,7 @@ export default function Header() {
                     </div>
                 </div>
 
-                {/* 下段：説明バー */}
+                {/* 髣包ｽｳ陋ｹ・ｺ繝ｻ・ｮ繝ｻ・ｵ郢晢ｽｻ陞溷･・ｽｽ・ｪ繝ｻ・ｬ髫ｴ荳橸ｽｼ・ｱ郢晢ｽｰ驛｢譎｢・ｽ・ｼ */}
                 <div className="border-t bg-neutral-50">
                     <div className="mx-auto max-w-screen-2xl 3xl:max-w-screen-3xl 4xl:max-w-screen-4xl px-4 py-2">
                         <p className="text-[13px] leading-snug text-neutral-800">
