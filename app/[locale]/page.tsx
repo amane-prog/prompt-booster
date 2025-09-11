@@ -1,6 +1,14 @@
 // app/[locale]/page.tsx
 'use client';
 
+type PageParams = { locale: string };
+type PageSearchParams = Record<string, string | string[]>;
+
+type PageProps = {
+    params?: Promise<PageParams>;
+    searchParams?: Promise<PageSearchParams>;
+};
+
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 
@@ -16,14 +24,6 @@ import AdvancedControlsV2, {
 import CompactPlans from '@/components/CompactPlans';
 import PlanDialog from '@/components/PlanDialog';
 import CreditLimitModal from '@/components/CreditLimitModal';
-
-// ---- ルーティング型（必要なら）----
-type PageParams = { locale: string };
-type PageSearchParams = Record<string, string | string[]>;
-type PageProps = {
-    params?: Promise<PageParams>;
-    searchParams?: Promise<PageSearchParams>;
-};
 
 // ---- APIレスポンス型 ----
 type StatusResp = {
@@ -52,22 +52,12 @@ type BoostResp = {
 };
 
 // ---- util ----
-function fmtHMS(total: number): string {
-    const h = Math.floor(total / 3600);
-    const m = Math.floor((total % 3600) / 60);
-    const s = total % 60;
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${pad(h)}:${pad(m)}:${pad(s)}`;
-}
 const toHighlightsArray = (raw: string): string[] =>
     raw.split(',').map(s => s.trim()).filter(Boolean).slice(0, 10);
 
 // ---- ページ本体 ----
 export default function HomePage(_props: PageProps) {
     const t = useTranslations('ui');
-    const toastT = useTranslations('toast');
-    const creditT = useTranslations('credit');
-    const headerT = useTranslations('header');
     const f = useFormatter();
 
     // 入力
@@ -84,26 +74,21 @@ export default function HomePage(_props: PageProps) {
 
     // 出力/状態
     const [output, setOutput] = useState('');
-    const [remain, setRemain] = useState<number | null>(null); // Free用
+    const [remain, setRemain] = useState<number | null>(null);
     const [tier, setTier] = useState<'free' | 'pro' | 'pro_plus'>('free');
     const [proUntil, setProUntil] = useState<string | null>(null);
 
-    // Pro/Pro+ 残数
     const [subRemain, setSubRemain] = useState<number | null>(null);
     const [subCap, setSubCap] = useState<number | null>(null);
 
-    // Top-up
     const [topupRemain, setTopupRemain] = useState<number>(0);
     const [topups, setTopups] = useState<{ remain: number; expire_at: string }[]>([]);
-    const [buying, setBuying] = useState<'300' | '1000' | null>(null);
 
-    // トースト
+    // トースト & モーダル
     const [toastMsg, setToastMsg] = useState<string | null>(null);
     const showToast = (msg: string) => setToastMsg(msg);
 
-    // モーダル（クレジット不足・プラン詳細）
     const [limitOpen, setLimitOpen] = useState(false);
-    const [limitResetSec, setLimitResetSec] = useState<number | null>(null);
     const [planOpen, setPlanOpen] = useState(false);
 
     const isPro = tier !== 'free';
@@ -133,7 +118,7 @@ export default function HomePage(_props: PageProps) {
         void refreshStatus();
     }, [refreshStatus]);
 
-    // ---- 実行ハンドラ ----
+    // ---- Boost 実行 ----
     const handleRun = useCallback(async () => {
         try {
             showToast('Running...');
@@ -155,7 +140,6 @@ export default function HomePage(_props: PageProps) {
             });
 
             if (res.status === 402) {
-                // 残数不足 → モーダルで誘導
                 const j = await res.json().catch(() => ({}));
                 if (typeof j.remain === 'number') setRemain(j.remain);
                 setLimitOpen(true);
@@ -171,13 +155,43 @@ export default function HomePage(_props: PageProps) {
             const j = (await res.json()) as BoostResp;
             setOutput(j.text ?? j.output ?? '');
             if (typeof j.remain === 'number') setRemain(j.remain);
-            // ステータスも更新（残数など）
             void refreshStatus();
             setToastMsg(null);
         } catch (e) {
             setToastMsg((e as Error).message || 'Failed');
         }
     }, [input, emphasis, mode, color, ratio, tone, dialogueTags, genStyles, refreshStatus]);
+
+    // ---- Stripe: Portal / Topup ----
+    const openPortal = useCallback(async () => {
+        try {
+            const r = await fetch('/api/stripe/portal', { method: 'POST' });
+            const j = await r.json();
+            if (r.ok && j.url) { window.location.href = j.url; return; }
+            showToast(j.error ?? 'Failed to open portal');
+        } catch (e) { showToast((e as Error).message); }
+    }, []);
+
+    const buyTopup300 = useCallback(async () => {
+        try {
+            const r = await fetch('/api/stripe/checkout/topup?kind=300', { method: 'POST' });
+            const j = await r.json();
+            if (r.ok && j.url) { window.location.href = j.url; return; }
+            showToast(j.error ?? 'Topup 300 failed');
+        } catch (e) { showToast((e as Error).message); }
+    }, []);
+
+    const buyTopup1000 = useCallback(async () => {
+        try {
+            const r = await fetch('/api/stripe/checkout/topup?kind=1000', { method: 'POST' });
+            const j = await r.json();
+            if (r.ok && j.url) { window.location.href = j.url; return; }
+            showToast(j.error ?? 'Topup 1000 failed');
+        } catch (e) { showToast((e as Error).message); }
+    }, []);
+
+    const goPro = useCallback(async () => { await openPortal(); }, [openPortal]);
+    const goProPlus = useCallback(async () => { await openPortal(); }, [openPortal]);
 
     return (
         <main className="max-w-3xl mx-auto p-4 space-y-6">
@@ -225,11 +239,22 @@ export default function HomePage(_props: PageProps) {
                 />
             </section>
 
-            {/* 実行ボタン */}
+            {/* 実行 */}
             <ExecuteFab onRun={handleRun} isPro={isPro} canUseBoost={canUseBoost} />
 
-            <PlanDialog open={planOpen} onClose={() => setPlanOpen(false)} />
+            {/* プラン詳細モーダル */}
+            <PlanDialog
+                open={planOpen}
+                onClose={() => setPlanOpen(false)}
+                tier={tier}
+                onGoPro={goPro}
+                onGoProPlus={goProPlus}
+                onTopup300={buyTopup300}
+                onTopup1000={buyTopup1000}
+                onOpenPortal={openPortal}
+            />
 
+            {/* クレジット不足モーダル（必要ならここからプランへ誘導） */}
             <CreditLimitModal
                 open={limitOpen}
                 onClose={() => setLimitOpen(false)}
@@ -237,9 +262,15 @@ export default function HomePage(_props: PageProps) {
                 body="You've hit today’s free quota. Wait for reset or upgrade your plan."
             />
 
+            {/* プラン表・トリガー */}
             <CompactPlans />
+            <div className="mt-2">
+                <button className="rounded border px-3 py-1.5 text-sm" onClick={() => setPlanOpen(true)}>
+                    プラン詳細を見る
+                </button>
+            </div>
 
-            {/* 出力表示 */}
+            {/* 出力 */}
             <section className="space-y-2">
                 <h2 className="text-sm font-semibold text-neutral-700">Output</h2>
                 <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-24">
