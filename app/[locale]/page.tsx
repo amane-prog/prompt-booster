@@ -1,16 +1,9 @@
 // app/[locale]/page.tsx
 'use client';
 
-type PageParams = { locale: string };
-type PageSearchParams = Record<string, string | string[]>;
-
-type PageProps = {
-    params?: Promise<PageParams>;
-    searchParams?: Promise<PageSearchParams>;
-};
-
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
+
 import ExecuteFab from '@/components/ExecuteFab';
 import Toast from '@/components/Toast';
 import AdvancedControlsV2, {
@@ -19,26 +12,31 @@ import AdvancedControlsV2, {
     type Ratio,
     type DialogueTone,
     type ControlsValue,
-} from '@/components/AdvancedControlsV2'
-import { handleTopup } from '@/utils/stripe';
+} from '@/components/AdvancedControlsV2';
 import CompactPlans from '@/components/CompactPlans';
 import PlanDialog from '@/components/PlanDialog';
 import CreditLimitModal from '@/components/CreditLimitModal';
 
-// ---- 型定義 ----
+// ---- ルーティング型（必要なら）----
+type PageParams = { locale: string };
+type PageSearchParams = Record<string, string | string[]>;
+type PageProps = {
+    params?: Promise<PageParams>;
+    searchParams?: Promise<PageSearchParams>;
+};
+
+// ---- APIレスポンス型 ----
 type StatusResp = {
     planTier?: 'free' | 'pro' | 'pro_plus';
     proUntil?: string | null;
 
-    freeRemaining?: number;    // Free 残回数
-    remain?: number | null;    // 互換
+    freeRemaining?: number;
+    remain?: number | null;
 
-    // Pro/Pro+ 用
     subCap?: number | null;
     subUsed?: number | null;
     subRemaining?: number | null;
 
-    // Top-up
     topupRemain?: number;
     topups?: { remain: number; expire_at: string }[];
 
@@ -61,8 +59,10 @@ function fmtHMS(total: number): string {
     const pad = (n: number) => n.toString().padStart(2, '0');
     return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
+const toHighlightsArray = (raw: string): string[] =>
+    raw.split(',').map(s => s.trim()).filter(Boolean).slice(0, 10);
 
-// ---- コンポーネント ----
+// ---- ページ本体 ----
 export default function HomePage(_props: PageProps) {
     const t = useTranslations('ui');
     const toastT = useTranslations('toast');
@@ -112,13 +112,10 @@ export default function HomePage(_props: PageProps) {
         [isPro, remain]
     );
 
-    const toHighlightsArray = (raw: string): string[] =>
-        raw.split(',').map(s => s.trim()).filter(Boolean).slice(0, 10);
-
     // ---- ステータス再取得 ----
     const refreshStatus = useCallback(async () => {
         try {
-            const res = await fetch('/api/boost/status');
+            const res = await fetch('/api/boost/status', { cache: 'no-store' });
             const j = (await res.json()) as StatusResp;
             setRemain(j.freeRemaining ?? j.remain ?? null);
             setTier(j.planTier ?? 'free');
@@ -136,20 +133,103 @@ export default function HomePage(_props: PageProps) {
         void refreshStatus();
     }, [refreshStatus]);
 
+    // ---- 実行ハンドラ ----
+    const handleRun = useCallback(async () => {
+        try {
+            showToast('Running...');
+            const res = await fetch('/api/boost', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                    input,
+                    highlights: toHighlightsArray(emphasis),
+                    options: {
+                        mode,
+                        color,
+                        ratio,
+                        tone,
+                        tags: dialogueTags,
+                        styles: genStyles,
+                    },
+                }),
+            });
+
+            if (res.status === 402) {
+                // 残数不足 → モーダルで誘導
+                const j = await res.json().catch(() => ({}));
+                if (typeof j.remain === 'number') setRemain(j.remain);
+                setLimitOpen(true);
+                setToastMsg(null);
+                return;
+            }
+
+            if (!res.ok) {
+                const j = await res.json().catch(() => ({}));
+                throw new Error(j.error ?? `Request failed: ${res.status}`);
+            }
+
+            const j = (await res.json()) as BoostResp;
+            setOutput(j.text ?? j.output ?? '');
+            if (typeof j.remain === 'number') setRemain(j.remain);
+            // ステータスも更新（残数など）
+            void refreshStatus();
+            setToastMsg(null);
+        } catch (e) {
+            setToastMsg((e as Error).message || 'Failed');
+        }
+    }, [input, emphasis, mode, color, ratio, tone, dialogueTags, genStyles, refreshStatus]);
+
     return (
-        <main className="p-4">
-            {/* TODO: UI実装（入力欄、FAB、結果表示など） */}
+        <main className="max-w-3xl mx-auto p-4 space-y-6">
+            {/* ステータス */}
             <p className="text-sm text-neutral-600">
-                {t('status')}: {remain ?? '—'}
+                {t('status')}: {remain ?? '—'} {isPro ? '(Pro)' : '(Free)'}
             </p>
 
             {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
-            <ExecuteFab onRun={() => showToast('Running...')} isPro={isPro} canUseBoost={canUseBoost} />
+            {/* 入力欄 */}
+            <section className="space-y-3">
+                <label className="block text-sm font-medium">Input</label>
+                <textarea
+                    className="w-full h-40 border rounded-lg p-3 focus:outline-none focus:ring"
+                    placeholder="Write your brief here..."
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label className="block text-sm font-medium">Emphasis (comma-separated)</label>
+                        <input
+                            className="w-full border rounded-lg p-2"
+                            placeholder="short, brand-safe, ..."
+                            value={emphasis}
+                            onChange={(e) => setEmphasis(e.target.value)}
+                        />
+                    </div>
+                </div>
+            </section>
+
+            {/* 詳細設定 */}
+            <section className="space-y-3">
+                <AdvancedControlsV2
+                    value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
+                    onChange={(next: Partial<ControlsValue>) => {
+                        if (next.mode !== undefined) setMode(next.mode);
+                        if (next.color !== undefined) setColor(next.color);
+                        if (next.ratio !== undefined) setRatio(next.ratio);
+                        if (next.tone !== undefined) setTone(next.tone);
+                        if (next.dialogueTags !== undefined) setDialogueTags(next.dialogueTags);
+                        if (next.genStyles !== undefined) setGenStyles(next.genStyles);
+                    }}
+                />
+            </section>
+
+            {/* 実行ボタン */}
+            <ExecuteFab onRun={handleRun} isPro={isPro} canUseBoost={canUseBoost} />
 
             <PlanDialog open={planOpen} onClose={() => setPlanOpen(false)} />
 
-            {/* ← 必須 props を追加 */}
             <CreditLimitModal
                 open={limitOpen}
                 onClose={() => setLimitOpen(false)}
@@ -159,19 +239,13 @@ export default function HomePage(_props: PageProps) {
 
             <CompactPlans />
 
-            {/* AdvancedControls は value + onChange でまとめて渡す */}
-            <AdvancedControlsV2
-                value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
-                onChange={(next: Partial<ControlsValue>) => {
-                    if (next.mode !== undefined) setMode(next.mode)
-                    if (next.color !== undefined) setColor(next.color)
-                    if (next.ratio !== undefined) setRatio(next.ratio)
-                    if (next.tone !== undefined) setTone(next.tone)
-                    if (next.dialogueTags !== undefined) setDialogueTags(next.dialogueTags)
-                    if (next.genStyles !== undefined) setGenStyles(next.genStyles)
-                }}
-            />
+            {/* 出力表示 */}
+            <section className="space-y-2">
+                <h2 className="text-sm font-semibold text-neutral-700">Output</h2>
+                <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-24">
+                    {output || '—'}
+                </pre>
+            </section>
         </main>
-
     );
 }
