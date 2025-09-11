@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // app/[locale]/privacy/page.tsx
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
@@ -11,7 +10,9 @@ type PageProps = { params: Promise<Params> }
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { locale } = await params
     const t = await getTranslations({ locale, namespace: 'legal.privacy' })
-    const title = (t.has?.('title') && t('title')) || (locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy')
+    const title =
+        (t.has?.('title') && t('title')) ||
+        (locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy')
     return { title: `${title} | Prompt Booster` }
 }
 
@@ -33,7 +34,10 @@ export default async function PrivacyPage({ params }: PageProps) {
                     <ul>
                         <li>アカウント識別子: UUID、セッションメタデータ。メールアドレスは当社DBに保存しません。</li>
                         <li>認証: Supabase がマジックリンクメールを送付・保管。当社は Supabase から UUID を参照します。</li>
-                        <li>請求: Stripe が決済情報を処理し、領収のためにメールを保持する場合があります。当社は Stripe のID（例: customer/subscription）を保持しますがカード番号は保持しません。</li>
+                        <li>
+                            請求: Stripe が決済情報を処理し、領収のためにメールを保持する場合があります。当社は Stripe のID（例:
+                            customer/subscription）を保持しますがカード番号は保持しません。
+                        </li>
                         <li>利用メトリクス・ログ: リクエスト数、タイムスタンプ、プラン、アドオン消費。セキュリティ目的の限定的な技術ログ（IP, UA等）。</li>
                         <li>プロンプトと出力: サービス提供のために処理します。当社は学習には利用しません（モデル提供者は返答生成のために処理）。</li>
                         <li>クォータ保存: 日次カウンタは Redis に TTL 付きで保存。未認証時は Cookie に保持する場合あり。</li>
@@ -80,13 +84,12 @@ export default async function PrivacyPage({ params }: PageProps) {
 
                     <h2>8. お客様の権利</h2>
                     <p>
-                        法令に基づき、データのアクセス・訂正・削除・処理制限を求めることができます。アカウントは UUID で識別されるため、Supabase セッションによる本人確認が必要になる場合があります。
+                        法令に基づき、データのアクセス・訂正・削除・処理制限を求めることができます。アカウントは UUID で識別されるため、Supabase
+                        セッションによる本人確認が必要になる場合があります。
                     </p>
 
                     <h2>9. 児童の利用</h2>
-                    <p>
-                        本サービスは、地域の年齢要件（例: 13歳/16歳）未満の児童を対象としていません。該当する場合は利用しないでください。
-                    </p>
+                    <p>本サービスは、地域の年齢要件（例: 13歳/16歳）未満の児童を対象としていません。該当する場合は利用しないでください。</p>
 
                     <h2>10. 変更</h2>
                     <p>本ポリシーは更新されることがあります。重要な変更は本ページで通知します。</p>
@@ -104,7 +107,9 @@ export default async function PrivacyPage({ params }: PageProps) {
                 <>
                     <h1>Privacy Policy</h1>
                     <p>
-                        This Policy explains how Prompt Booster (“we”, “us”) processes information. We minimize personal data by identifying accounts with a UUID and not storing email addresses on our own servers. Authentication is provided by Supabase; payments by Stripe.
+                        This Policy explains how Prompt Booster (“we”, “us”) processes information. We minimize personal data by identifying
+                        accounts with a UUID and not storing email addresses on our own servers. Authentication is provided by Supabase; payments
+                        by Stripe.
                     </p>
 
                     <h2>1. What We Process</h2>
@@ -158,7 +163,8 @@ export default async function PrivacyPage({ params }: PageProps) {
 
                     <h2>8. Your Rights</h2>
                     <p>
-                        You may request access, correction, deletion, or restriction of your data. Accounts are UUID-based, so verification may require an active Supabase session.
+                        You may request access, correction, deletion, or restriction of your data. Accounts are UUID-based, so verification may
+                        require an active Supabase session.
                     </p>
 
                     <h2>9. Children</h2>
@@ -178,71 +184,5 @@ export default async function PrivacyPage({ params }: PageProps) {
                 </>
             )}
         </main>
-=======
-'use client'
-
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
-import { supabase } from '@/lib/supabaseClient' // 髫ｨ蛟･繝ｻ驍ｵ・ｺ髦ｮ蜻ｻ・ｽ讙趣ｽｸ・ｺ隶吝ｯゆｼｯ驍ｵ・ｺ郢晢ｽｻ遶雁､・ｸ・ｲ鬮ｱ・ｴannot find name 'supabase'驍ｵ・ｲ郢晢ｽｻ
-
-export default function SignInPage() {
-    const t = useTranslations()
-    const router = useRouter()
-    const [email, setEmail] = useState('')         // 髫ｨ蛟･繝ｻemail 驛｢・ｧ陜｣・､騾｡鬘鯉ｽｫ・｢隰ｫ・ｾ繝ｻ・ｼ郢晢ｽｻhorthand error髯昴・・ｽ・ｾ鬩包ｽｲ陷ｴ繝ｻ・ｽ・ｼ郢晢ｽｻ
-    const [loading, setLoading] = useState(false)
-    const [msg, setMsg] = useState<string | null>(null)
-
-    async function onSubmit(e: React.FormEvent) {
-        e.preventDefault()
-        if (!email) return
-
-        setLoading(true)
-        setMsg(null)
-        try {
-            // 髫ｨ蛟･繝ｻ髯樊ｺｽ蛻､霎溷､頑・鬮ｦ・ｪ郢晢ｽｻ 'origin' 驍ｵ・ｺ繝ｻ・ｨ鬮ｯ・ｲ繝ｻ・ｫ驛｢・ｧ驗呻ｽｫ繝ｻ繝ｻ・ｸ・ｺ陷ｷ・ｶ繝ｻ讓抵ｽｸ・ｺ繝ｻ・ｮ驍ｵ・ｺ繝ｻ・ｧ siteOrigin 驍ｵ・ｺ繝ｻ・ｫ
-            const siteOrigin =
-                typeof window !== 'undefined'
-                    ? window.location.origin
-                    : process.env.NEXT_PUBLIC_SITE_ORIGIN || 'http://localhost:3000'
-
-            const { error } = await supabase.auth.signInWithOtp({
-                email,
-                options: { emailRedirectTo: `${siteOrigin}/auth/callback` }, // 髫ｨ蛟･繝ｻcallback驍ｵ・ｺ繝ｻ・ｸ
-            })
-
-            if (error) {
-                setMsg(error.message)
-            } else {
-                setMsg(t.has('signin.checkMail') ? t('signin.checkMail') : 'Check your email for the magic link.')
-            }
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    return (
-        <div className="mx-auto max-w-md p-6">
-            <h1 className="mb-4 text-lg font-semibold">{t.has('signin.title') ? t('signin.title') : 'Sign in'}</h1>
-            <form onSubmit={onSubmit} className="flex flex-col gap-3">
-                <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full rounded border px-3 py-2"
-                />
-                <button
-                    type="submit"
-                    disabled={loading || !email}
-                    className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
-                >
-                    {loading ? (t.has('signin.sending') ? t('signin.sending') : 'Sending驕ｯ・ｶ繝ｻ・ｦ') : (t.has('signin.send') ? t('signin.send') : 'Send magic link')}
-                </button>
-            </form>
-            {msg && <p className="mt-3 text-sm text-neutral-600">{msg}</p>}
-        </div>
->>>>>>> deploy-test
     )
 }

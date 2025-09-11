@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // app/[locale]/terms/page.tsx
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
@@ -11,7 +10,9 @@ type PageProps = { params: Promise<Params> }
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { locale } = await params
     const t = await getTranslations({ locale, namespace: 'legal.terms' })
-    const title = (t.has?.('title') && t('title')) || (locale === 'ja' ? '利用規約' : 'Terms of Service')
+    const title =
+        (t.has?.('title') && t('title')) ||
+        (locale === 'ja' ? '利用規約' : 'Terms of Service')
     return { title: `${title} | Prompt Booster` }
 }
 
@@ -37,14 +38,19 @@ export default async function TermsPage({ params }: PageProps) {
                     <h2>2. アカウント</h2>
                     <ul>
                         <li>サインインはマジックリンク方式です。サインイン用メールの管理はお客様の責任で行ってください。</li>
-                        <li><strong>識別子:</strong> アカウント識別には UUID を用います。メールアドレスは当社の自社DBに保存しません（認証は Supabase を利用）。</li>
+                        <li>
+                            <strong>識別子:</strong> アカウント識別には UUID を用います。メールアドレスは当社の自社DBに保存しません（認証は
+                            Supabase を利用）。
+                        </li>
                         <li>不正利用、未払い、本規約違反などがある場合、アカウントを停止・終了することがあります。</li>
                     </ul>
 
                     <h2>3. プラン・追加パック・料金</h2>
                     <ul>
                         <li>提供プラン: <strong>Free / Pro / Pro+</strong>（各種上限・機能付き）。</li>
-                        <li><strong>追加パック（Top-up）:</strong> <code>+300（$3）</code> および <code>+1000（$5）</code>。いずれのプランでも購入可能で、プラン上限に加算されます。</li>
+                        <li>
+                            <strong>追加パック（Top-up）:</strong> <code>+300（$3）</code> および <code>+1000（$5）</code>。いずれのプランでも購入可能で、プラン上限に加算されます。
+                        </li>
                         <li>サブスクリプションは解約まで毎月自動更新。請求管理は Stripe カスタマーポータルから行えます。</li>
                         <li>税金・手数料が発生する場合があります。法令で義務づけられる場合を除き、原則として返金は行いません。</li>
                     </ul>
@@ -76,9 +82,7 @@ export default async function TermsPage({ params }: PageProps) {
                     </p>
 
                     <h2>8. 免責事項</h2>
-                    <p>
-                        本サービスは「現状有姿」「提供可能な範囲」で提供されます。法の許す最大限の範囲で、明示黙示を問わず一切の保証を行いません。
-                    </p>
+                    <p>本サービスは「現状有姿」「提供可能な範囲」で提供されます。法の許す最大限の範囲で、明示黙示を問わず一切の保証を行いません。</p>
 
                     <h2>9. 責任制限</h2>
                     <p>
@@ -91,9 +95,7 @@ export default async function TermsPage({ params }: PageProps) {
                     </p>
 
                     <h2>11. 変更</h2>
-                    <p>
-                        当社は本規約を更新することがあります。重要な変更は本ページでの掲示その他の方法で通知します。
-                    </p>
+                    <p>当社は本規約を更新することがあります。重要な変更は本ページでの掲示その他の方法で通知します。</p>
 
                     <h2>12. 準拠法</h2>
                     <p>
@@ -108,25 +110,33 @@ export default async function TermsPage({ params }: PageProps) {
                 <>
                     <h1>Terms of Service</h1>
                     <p>
-                        These Terms govern your use of Prompt Booster (the “Service”). By accessing or using the Service, you agree to these Terms.
+                        These Terms govern your use of Prompt Booster (the “Service”). By accessing or using the Service, you agree to these
+                        Terms.
                     </p>
 
                     <h2>1. Scope & Agreement</h2>
                     <p>
-                        You must have the legal capacity to enter into this agreement. If you are using the Service on behalf of an organization, you represent that you have authority to bind that organization.
+                        You must have the legal capacity to enter into this agreement. If you are using the Service on behalf of an organization,
+                        you represent that you have authority to bind that organization.
                     </p>
 
                     <h2>2. Accounts</h2>
                     <ul>
                         <li>Accounts are issued via Magic Link sign-in. Keep your sign-in email secure and do not share access.</li>
-                        <li><strong>Identifier:</strong> We identify accounts by UUID. We do not store email addresses in our own database; authentication is provided by Supabase.</li>
+                        <li>
+                            <strong>Identifier:</strong> We identify accounts by UUID. We do not store email addresses in our own database;
+                            authentication is provided by Supabase.
+                        </li>
                         <li>We may suspend or terminate accounts for misuse, non-payment, or violation of these Terms.</li>
                     </ul>
 
                     <h2>3. Plans, Add-ons & Fees</h2>
                     <ul>
                         <li>Available plans: <strong>Free / Pro / Pro+</strong> with corresponding usage limits and features.</li>
-                        <li><strong>Add-ons (Top-up):</strong> one-time packs of <code>+300 ($3)</code> and <code>+1000 ($5)</code> requests. Add-ons are available on any plan and are applied on top of plan limits.</li>
+                        <li>
+                            <strong>Add-ons (Top-up):</strong> one-time packs of <code>+300 ($3)</code> and <code>+1000 ($5)</code> requests.
+                            Add-ons are available on any plan and are applied on top of plan limits.
+                        </li>
                         <li>Subscriptions auto-renew monthly until canceled. Manage billing in the Stripe Customer Portal.</li>
                         <li>Taxes and fees may apply. Except where required by law, payments are non-refundable.</li>
                     </ul>
@@ -152,7 +162,8 @@ export default async function TermsPage({ params }: PageProps) {
 
                     <h2>7. Privacy</h2>
                     <p>
-                        We minimize personal data. See our <Link href={`/${locale}/privacy`}>Privacy Policy</Link> for details (including the use of Supabase for auth, Stripe for payments, Upstash Redis for quotas, OpenAI for inference, and our hosting provider).
+                        We minimize personal data. See our <Link href={`/${locale}/privacy`}>Privacy Policy</Link> for details (including the use
+                        of Supabase for auth, Stripe for payments, Upstash Redis for quotas, OpenAI for inference, and our hosting provider).
                     </p>
 
                     <h2>8. Disclaimers</h2>
@@ -162,22 +173,23 @@ export default async function TermsPage({ params }: PageProps) {
 
                     <h2>9. Limitation of Liability</h2>
                     <p>
-                        To the maximum extent permitted by law, our aggregate liability for all claims relating to the Service is limited to the greater of (a) the amounts you paid to us for the Service in the three (3) months before the claim arose, or (b) USD 20.
+                        To the maximum extent permitted by law, our aggregate liability for all claims relating to the Service is limited to the
+                        greater of (a) the amounts you paid to us for the Service in the three (3) months before the claim arose, or (b) USD 20.
                     </p>
 
                     <h2>10. Termination</h2>
                     <p>
-                        You may stop using the Service at any time. We may suspend or terminate the Service or your access if you breach these Terms or for operational/security reasons.
+                        You may stop using the Service at any time. We may suspend or terminate the Service or your access if you breach these
+                        Terms or for operational/security reasons.
                     </p>
 
                     <h2>11. Changes</h2>
-                    <p>
-                        We may update these Terms. Material changes will be posted on this page or otherwise notified.
-                    </p>
+                    <p>We may update these Terms. Material changes will be posted on this page or otherwise notified.</p>
 
                     <h2>12. Governing Law</h2>
                     <p>
-                        These Terms are governed by the laws of Japan. Venue is the court with jurisdiction over our principal place of business. Consumer protection rights under applicable laws remain unaffected.
+                        These Terms are governed by the laws of Japan. Venue is the court with jurisdiction over our principal place of business.
+                        Consumer protection rights under applicable laws remain unaffected.
                     </p>
 
                     <p className="text-sm text-neutral-500">Last updated: 2025-09-03</p>
@@ -186,71 +198,5 @@ export default async function TermsPage({ params }: PageProps) {
                 </>
             )}
         </main>
-=======
-'use client'
-
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
-import { supabase } from '@/lib/supabaseClient' // 髫ｨ蛟･繝ｻ驍ｵ・ｺ髦ｮ蜻ｻ・ｽ讙趣ｽｸ・ｺ隶吝ｯゆｼｯ驍ｵ・ｺ郢晢ｽｻ遶雁､・ｸ・ｲ鬮ｱ・ｴannot find name 'supabase'驍ｵ・ｲ郢晢ｽｻ
-
-export default function SignInPage() {
-    const t = useTranslations()
-    const router = useRouter()
-    const [email, setEmail] = useState('')         // 髫ｨ蛟･繝ｻemail 驛｢・ｧ陜｣・､騾｡鬘鯉ｽｫ・｢隰ｫ・ｾ繝ｻ・ｼ郢晢ｽｻhorthand error髯昴・・ｽ・ｾ鬩包ｽｲ陷ｴ繝ｻ・ｽ・ｼ郢晢ｽｻ
-    const [loading, setLoading] = useState(false)
-    const [msg, setMsg] = useState<string | null>(null)
-
-    async function onSubmit(e: React.FormEvent) {
-        e.preventDefault()
-        if (!email) return
-
-        setLoading(true)
-        setMsg(null)
-        try {
-            // 髫ｨ蛟･繝ｻ髯樊ｺｽ蛻､霎溷､頑・鬮ｦ・ｪ郢晢ｽｻ 'origin' 驍ｵ・ｺ繝ｻ・ｨ鬮ｯ・ｲ繝ｻ・ｫ驛｢・ｧ驗呻ｽｫ繝ｻ繝ｻ・ｸ・ｺ陷ｷ・ｶ繝ｻ讓抵ｽｸ・ｺ繝ｻ・ｮ驍ｵ・ｺ繝ｻ・ｧ siteOrigin 驍ｵ・ｺ繝ｻ・ｫ
-            const siteOrigin =
-                typeof window !== 'undefined'
-                    ? window.location.origin
-                    : process.env.NEXT_PUBLIC_SITE_ORIGIN || 'http://localhost:3000'
-
-            const { error } = await supabase.auth.signInWithOtp({
-                email,
-                options: { emailRedirectTo: `${siteOrigin}/auth/callback` }, // 髫ｨ蛟･繝ｻcallback驍ｵ・ｺ繝ｻ・ｸ
-            })
-
-            if (error) {
-                setMsg(error.message)
-            } else {
-                setMsg(t.has('signin.checkMail') ? t('signin.checkMail') : 'Check your email for the magic link.')
-            }
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    return (
-        <div className="mx-auto max-w-md p-6">
-            <h1 className="mb-4 text-lg font-semibold">{t.has('signin.title') ? t('signin.title') : 'Sign in'}</h1>
-            <form onSubmit={onSubmit} className="flex flex-col gap-3">
-                <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full rounded border px-3 py-2"
-                />
-                <button
-                    type="submit"
-                    disabled={loading || !email}
-                    className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
-                >
-                    {loading ? (t.has('signin.sending') ? t('signin.sending') : 'Sending驕ｯ・ｶ繝ｻ・ｦ') : (t.has('signin.send') ? t('signin.send') : 'Send magic link')}
-                </button>
-            </form>
-            {msg && <p className="mt-3 text-sm text-neutral-600">{msg}</p>}
-        </div>
->>>>>>> deploy-test
     )
 }
