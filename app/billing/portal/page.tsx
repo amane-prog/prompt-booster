@@ -1,62 +1,58 @@
 // app/billing/portal/page.tsx
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
-type PortalResponse = { url?: string; error?: string };
+type PortalResponse = { url?: string; error?: string }
 
 // .next/types が Promise<any> を許容しているため、Promise互換に揃える（any不使用）
 type PageProps = {
-    params?: Promise<Record<string, string | string[]>>;
-    searchParams?: Promise<Record<string, string | string[]>>;
-};
+    params?: Promise<Record<string, string | string[]>>
+    searchParams?: Promise<Record<string, string | string[]>>
+}
 
 export default function BillingPortalPage(_props: PageProps) {
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [unauthorized, setUnauthorized] = useState(false);
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [unauthorized, setUnauthorized] = useState(false)
 
     async function openPortal() {
-        setLoading(true);
-        setError(null);
-        setUnauthorized(false);
+        setLoading(true)
+        setError(null)
+        setUnauthorized(false)
         try {
-            const res = await fetch('/api/stripe/portal', { method: 'POST' });
+            const res = await fetch('/api/stripe/portal', { method: 'POST' })
             if (res.status === 401) {
-                setUnauthorized(true);
-                setLoading(false);
-                return;
+                setUnauthorized(true)
+                setLoading(false)
+                return
             }
-            const j = (await res.json()) as PortalResponse;
+            const j = (await res.json()) as PortalResponse
             if (j.url) {
-                window.location.href = j.url;
-                return;
+                window.location.href = j.url
+                return
             }
-            setError(j.error ?? 'Failed to open Customer Portal.');
+            setError(j.error ?? 'Failed to open Customer Portal.')
         } catch {
-            setError('Network error. Please try again.');
+            setError('Network error. Please try again.')
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
     }
 
     useEffect(() => {
-        void openPortal();
-    }, []);
+        void openPortal()
+    }, [])
 
     return (
         <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center px-4">
             <div className="w-full rounded-2xl border bg-white p-6 shadow-sm">
                 <h1 className="text-lg font-semibold">Manage subscription</h1>
                 <p className="mt-2 text-sm text-neutral-600">
-<<<<<<< HEAD
                     {loading
                         ? 'Opening Stripe Customer Portal…'
                         : error ?? (unauthorized ? 'Please sign in.' : 'Ready.')}
-=======
-                    {loading ? 'Opening Stripe Customer Portal驕ｯ・ｶ繝ｻ・ｦ' : (error ?? (unauthorized ? 'Please sign in.' : 'Ready.'))}
->>>>>>> deploy-test
                 </p>
 
                 {!loading && (error || unauthorized) && (
@@ -93,10 +89,9 @@ export default function BillingPortalPage(_props: PageProps) {
                 </div>
 
                 <p className="mt-4 text-xs text-neutral-500">
-                    You can change plan, cancel, update card, and view invoices in the
-                    Stripe Customer Portal.
+                    You can change plan, cancel, update card, and view invoices in the Stripe Customer Portal.
                 </p>
             </div>
         </div>
-    );
+    )
 }

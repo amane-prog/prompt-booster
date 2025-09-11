@@ -1,48 +1,38 @@
-<<<<<<< HEAD
+// app/[locale]/page.tsx
 'use client';
+
 type PageParams = { locale: string };
 type PageSearchParams = Record<string, string | string[]>;
 
 type PageProps = {
-  params?: Promise<PageParams>;
-  searchParams?: Promise<PageSearchParams>;
+    params?: Promise<PageParams>;
+    searchParams?: Promise<PageSearchParams>;
 };
-// app/[locale]/page.tsx
+
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import ExecuteFab from '@/components/ExecuteFab';
 import Toast from '@/components/Toast';
-import AdvancedControls, {
+import AdvancedControlsV2, {
     type Mode,
     type ColorTone,
     type Ratio,
-    type DialogueTone
-} from '@/components/AdvancedControls';
+    type DialogueTone,
+    type ControlsValue,
+} from '@/components/AdvancedControlsV2'
 import { handleTopup } from '@/utils/stripe';
 import CompactPlans from '@/components/CompactPlans';
 import PlanDialog from '@/components/PlanDialog';
 import CreditLimitModal from '@/components/CreditLimitModal';
-=======
-'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
-import { supabase } from '@/lib/supabaseClient' // 髫ｨ蛟･繝ｻ驍ｵ・ｺ髦ｮ蜻ｻ・ｽ讙趣ｽｸ・ｺ隶吝ｯゆｼｯ驍ｵ・ｺ郢晢ｽｻ遶雁､・ｸ・ｲ鬮ｱ・ｴannot find name 'supabase'驍ｵ・ｲ郢晢ｽｻ
->>>>>>> deploy-test
+// ---- 型定義 ----
+type StatusResp = {
+    planTier?: 'free' | 'pro' | 'pro_plus';
+    proUntil?: string | null;
 
-export default function SignInPage() {
-    const t = useTranslations()
-    const router = useRouter()
-    const [email, setEmail] = useState('')         // 髫ｨ蛟･繝ｻemail 驛｢・ｧ陜｣・､騾｡鬘鯉ｽｫ・｢隰ｫ・ｾ繝ｻ・ｼ郢晢ｽｻhorthand error髯昴・・ｽ・ｾ鬩包ｽｲ陷ｴ繝ｻ・ｽ・ｼ郢晢ｽｻ
-    const [loading, setLoading] = useState(false)
-    const [msg, setMsg] = useState<string | null>(null)
+    freeRemaining?: number;    // Free 残回数
+    remain?: number | null;    // 互換
 
-    async function onSubmit(e: React.FormEvent) {
-        e.preventDefault()
-        if (!email) return
-
-<<<<<<< HEAD
     // Pro/Pro+ 用
     subCap?: number | null;
     subUsed?: number | null;
@@ -72,6 +62,7 @@ function fmtHMS(total: number): string {
     return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
+// ---- コンポーネント ----
 export default function HomePage(_props: PageProps) {
     const t = useTranslations('ui');
     const toastT = useTranslations('toast');
@@ -126,53 +117,61 @@ export default function HomePage(_props: PageProps) {
 
     // ---- ステータス再取得 ----
     const refreshStatus = useCallback(async () => {
-=======
-        setLoading(true)
-        setMsg(null)
->>>>>>> deploy-test
         try {
-            // 髫ｨ蛟･繝ｻ髯樊ｺｽ蛻､霎溷､頑・鬮ｦ・ｪ郢晢ｽｻ 'origin' 驍ｵ・ｺ繝ｻ・ｨ鬮ｯ・ｲ繝ｻ・ｫ驛｢・ｧ驗呻ｽｫ繝ｻ繝ｻ・ｸ・ｺ陷ｷ・ｶ繝ｻ讓抵ｽｸ・ｺ繝ｻ・ｮ驍ｵ・ｺ繝ｻ・ｧ siteOrigin 驍ｵ・ｺ繝ｻ・ｫ
-            const siteOrigin =
-                typeof window !== 'undefined'
-                    ? window.location.origin
-                    : process.env.NEXT_PUBLIC_SITE_ORIGIN || 'http://localhost:3000'
-
-            const { error } = await supabase.auth.signInWithOtp({
-                email,
-                options: { emailRedirectTo: `${siteOrigin}/auth/callback` }, // 髫ｨ蛟･繝ｻcallback驍ｵ・ｺ繝ｻ・ｸ
-            })
-
-            if (error) {
-                setMsg(error.message)
-            } else {
-                setMsg(t.has('signin.checkMail') ? t('signin.checkMail') : 'Check your email for the magic link.')
-            }
-        } finally {
-            setLoading(false)
+            const res = await fetch('/api/boost/status');
+            const j = (await res.json()) as StatusResp;
+            setRemain(j.freeRemaining ?? j.remain ?? null);
+            setTier(j.planTier ?? 'free');
+            setProUntil(j.proUntil ?? null);
+            setSubRemain(j.subRemaining ?? null);
+            setSubCap(j.subCap ?? null);
+            setTopupRemain(j.topupRemain ?? 0);
+            setTopups(j.topups ?? []);
+        } catch {
+            /* noop */
         }
-    }
+    }, []);
+
+    useEffect(() => {
+        void refreshStatus();
+    }, [refreshStatus]);
 
     return (
-        <div className="mx-auto max-w-md p-6">
-            <h1 className="mb-4 text-lg font-semibold">{t.has('signin.title') ? t('signin.title') : 'Sign in'}</h1>
-            <form onSubmit={onSubmit} className="flex flex-col gap-3">
-                <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full rounded border px-3 py-2"
-                />
-                <button
-                    type="submit"
-                    disabled={loading || !email}
-                    className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
-                >
-                    {loading ? (t.has('signin.sending') ? t('signin.sending') : 'Sending驕ｯ・ｶ繝ｻ・ｦ') : (t.has('signin.send') ? t('signin.send') : 'Send magic link')}
-                </button>
-            </form>
-            {msg && <p className="mt-3 text-sm text-neutral-600">{msg}</p>}
-        </div>
-    )
+        <main className="p-4">
+            {/* TODO: UI実装（入力欄、FAB、結果表示など） */}
+            <p className="text-sm text-neutral-600">
+                {t('status')}: {remain ?? '—'}
+            </p>
+
+            {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
+
+            <ExecuteFab onRun={() => showToast('Running...')} isPro={isPro} canUseBoost={canUseBoost} />
+
+            <PlanDialog open={planOpen} onClose={() => setPlanOpen(false)} />
+
+            {/* ← 必須 props を追加 */}
+            <CreditLimitModal
+                open={limitOpen}
+                onClose={() => setLimitOpen(false)}
+                title="Credit limit reached"
+                body="You've hit today’s free quota. Wait for reset or upgrade your plan."
+            />
+
+            <CompactPlans />
+
+            {/* AdvancedControls は value + onChange でまとめて渡す */}
+            <AdvancedControlsV2
+                value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
+                onChange={(next: Partial<ControlsValue>) => {
+                    if (next.mode !== undefined) setMode(next.mode)
+                    if (next.color !== undefined) setColor(next.color)
+                    if (next.ratio !== undefined) setRatio(next.ratio)
+                    if (next.tone !== undefined) setTone(next.tone)
+                    if (next.dialogueTags !== undefined) setDialogueTags(next.dialogueTags)
+                    if (next.genStyles !== undefined) setGenStyles(next.genStyles)
+                }}
+            />
+        </main>
+
+    );
 }
