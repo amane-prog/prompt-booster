@@ -15,10 +15,13 @@ const PORTAL_CONFIGURATION_ID = process.env.STRIPE_PORTAL_CONFIGURATION_ID || un
 const allowlist = (origin: string) =>
     new Set(
         [process.env.APP_BASE_URL, process.env.NEXT_PUBLIC_APP_BASE_URL, 'http://localhost:3000']
-            .filter(Boolean) as string[]
+            .filter(Boolean) as string[],
     ).has(origin)
 
-const computeOrigin = (h: Headers) => {
+// ReadonlyHeaders / Headers / Promise 差を吸収するための最小インターフェイス
+type HeaderLike = { get(name: string): string | null }
+
+const computeOrigin = (h: HeaderLike) => {
     const fromOrigin = h.get('origin')
     const proto = h.get('x-forwarded-proto') ?? 'https'
     const host = h.get('host') ?? ''
@@ -34,7 +37,8 @@ export async function POST() {
             return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
         }
 
-        const hdrs = headers() // Next.js 15: 同期で Headers を取得
+        // ★ ここを await に変更（Promise<ReadonlyHeaders> 対応）
+        const hdrs = await headers()
         const origin = computeOrigin(hdrs)
         if (!allowlist(origin)) {
             return NextResponse.json({ error: 'forbidden origin' }, { status: 403 })

@@ -1,4 +1,4 @@
-﻿// components/AdvancedControls.tsx
+﻿// components/AdvancedControlsV2.tsx
 'use client'
 
 import { useId } from 'react'
@@ -8,7 +8,6 @@ export type ColorTone = 'auto' | 'warm' | 'cool' | 'mono'
 export type Ratio = 'auto' | 'short' | 'medium' | 'long'
 export type DialogueTone = 'auto' | 'friendly' | 'formal' | 'casual'
 
-// 親と共有する“状態”の型（named export）
 export type ControlsValue = {
     mode: Mode
     color: ColorTone
@@ -18,13 +17,15 @@ export type ControlsValue = {
     genStyles: string[]
 }
 
-// Props（value + onChange）のみ。**これがページ側の期待と一致**
 export type Props = {
     value: ControlsValue
     onChange: (next: Partial<ControlsValue>) => void
 }
 
-export default function AdvancedControls({ value, onChange }: Props) {
+// 署名確認用（デバッグ用に import してもOK）
+export const __ADVANCED_SIGNATURE__ = 'AdvancedControlsV2@value+onChange'
+
+export default function AdvancedControlsV2({ value, onChange }: Props) {
     const id = useId()
     const set = <K extends keyof ControlsValue>(k: K, v: ControlsValue[K]) =>
         onChange({ [k]: v } as Pick<ControlsValue, K>)
@@ -47,7 +48,7 @@ export default function AdvancedControls({ value, onChange }: Props) {
                 </select>
             </div>
 
-            {/* color / ratio / tone / dialogueTags / genStyles も同様に set(...) を呼ぶ */}
+            {/* 他の項目（color/ratio/tone/dialogueTags/genStyles）は必要になったらUI追加して set(...) を呼ぶ */}
         </div>
     )
 }

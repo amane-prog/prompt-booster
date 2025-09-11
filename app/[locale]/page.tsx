@@ -13,13 +13,13 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import ExecuteFab from '@/components/ExecuteFab';
 import Toast from '@/components/Toast';
-import AdvancedControls, {
+import AdvancedControlsV2, {
     type Mode,
     type ColorTone,
     type Ratio,
     type DialogueTone,
-    type ControlsValue, 
-} from '@/components/AdvancedControls'
+    type ControlsValue,
+} from '@/components/AdvancedControlsV2'
 import { handleTopup } from '@/utils/stripe';
 import CompactPlans from '@/components/CompactPlans';
 import PlanDialog from '@/components/PlanDialog';
@@ -160,9 +160,9 @@ export default function HomePage(_props: PageProps) {
             <CompactPlans />
 
             {/* AdvancedControls は value + onChange でまとめて渡す */}
-            <AdvancedControls
+            <AdvancedControlsV2
                 value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
-                onChange={(next: Partial<ControlsValue>) => {   // ← any禁止
+                onChange={(next: Partial<ControlsValue>) => {
                     if (next.mode !== undefined) setMode(next.mode)
                     if (next.color !== undefined) setColor(next.color)
                     if (next.ratio !== undefined) setRatio(next.ratio)

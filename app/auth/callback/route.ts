@@ -1,21 +1,13 @@
-// app/auth/callback/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/supabaseServer'
+﻿// app/auth/callback/route.ts （または app/api/auth/callback/route.ts）
+import { NextResponse } from 'next/server'
+import { headers } from 'next/headers'
 
-export async function GET(req: NextRequest) {
-    const url = new URL(req.url)
-    const code = url.searchParams.get('code')
-    const next = url.searchParams.get('next') || '/'
+export async function GET() {
+    // ... ここでセッション確立などの処理 ...
+    const hdrs = await headers()
+    const loc = hdrs.get('cookie')?.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/)?.[1] ?? 'ja'
+    const origin = hdrs.get('origin') ?? `https://${hdrs.get('host')}`
+    const redirectTo = `${origin}/${encodeURIComponent(loc)}/settings/billing`
 
-    if (!code) {
-        return NextResponse.redirect(new URL('/signin?error=missing_code', url.origin))
-    }
-
-    const sb = await supabaseServer()
-    const { error } = await sb.auth.exchangeCodeForSession(code)
-    if (error) {
-        return NextResponse.redirect(new URL('/signin?error=auth', url.origin))
-    }
-
-    return NextResponse.redirect(new URL(next, url.origin))
+    return NextResponse.redirect(redirectTo, { headers: { 'Cache-Control': 'no-store' } })
 }

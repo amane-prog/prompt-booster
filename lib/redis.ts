@@ -1,6 +1,9 @@
 // lib/redis.ts
-import { Redis } from '@upstash/redis'
+import { Redis as UpstashRedis } from '@upstash/redis'
 
-/** 型付きの Upstash Redis クライアント（環境変数必須） */
-export const redis = Redis.fromEnv()
-export type RedisClient = InstanceType<typeof Redis>
+// 明示型（unknownを許さない）
+export type RedisClient = UpstashRedis
+export const redis: RedisClient = new UpstashRedis({
+    url: process.env.UPSTASH_REDIS_REST_URL!,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+})
