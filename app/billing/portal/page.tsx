@@ -50,9 +50,13 @@ export default function BillingPortalPage(_props: PageProps) {
             <div className="w-full rounded-2xl border bg-white p-6 shadow-sm">
                 <h1 className="text-lg font-semibold">Manage subscription</h1>
                 <p className="mt-2 text-sm text-neutral-600">
+<<<<<<< HEAD
                     {loading
                         ? 'Opening Stripe Customer Portal…'
                         : error ?? (unauthorized ? 'Please sign in.' : 'Ready.')}
+=======
+                    {loading ? 'Opening Stripe Customer Portal驕ｯ・ｶ繝ｻ・ｦ' : (error ?? (unauthorized ? 'Please sign in.' : 'Ready.'))}
+>>>>>>> deploy-test
                 </p>
 
                 {!loading && (error || unauthorized) && (

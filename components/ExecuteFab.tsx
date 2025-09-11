@@ -1,5 +1,6 @@
 // components/ExecuteFab.tsx
 'use client'
+
 import { useState } from 'react'
 import Link from 'next/link'
 
@@ -10,16 +11,20 @@ type Props = {
     canUseBoost?: boolean
     onWatchAd?: () => Promise<void> | void
     goProHref?: string
-    /** 'fixed'=従来の画面左下固定 / 'inline'=その場に描画 */
+    /**
+     * placement:
+     *  - 'fixed'  : fixed FAB at bottom-left
+     *  - 'inline' : inline button (use together with className)
+     */
     placement?: 'fixed' | 'inline'
-    /** placement='inline'のときに適用するクラス */
+    /** extra class when placement='inline' */
     className?: string
     disabled?: boolean
 }
 
 export default function ExecuteFab({
     onRun,
-    label = '実行 ⚡',
+    label = '実行',
     isPro = false,
     canUseBoost = true,
     onWatchAd,
@@ -35,16 +40,28 @@ export default function ExecuteFab({
         if (loading || disabled) return
         if (isPro || canUseBoost) {
             setLoading(true)
-            try { await onRun() } finally { setLoading(false) }
+            try {
+                await onRun()
+            } finally {
+                setLoading(false)
+            }
             return
         }
         setShowDialog(true)
     }
 
     async function handleWatchAd() {
-        if (!onWatchAd) { setShowDialog(false); return }
+        if (!onWatchAd) {
+            setShowDialog(false)
+            return
+        }
         setLoading(true)
-        try { await onWatchAd(); setShowDialog(false) } finally { setLoading(false) }
+        try {
+            await onWatchAd()
+            setShowDialog(false)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const Btn = (
@@ -59,7 +76,7 @@ export default function ExecuteFab({
             aria-label="実行"
             type="button"
         >
-            {loading ? '実行中…' : label}
+            {loading ? '処理中…' : label}
         </button>
     )
 
@@ -68,10 +85,16 @@ export default function ExecuteFab({
             {Btn}
 
             {showDialog && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40" role="dialog" aria-modal="true">
+                <div
+                    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
+                    role="dialog"
+                    aria-modal="true"
+                >
                     <div className="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-                        <h2 className="text-lg font-semibold">Out of boosts today 🚫</h2>
-                        <p className="mt-2 text-sm text-gray-600">You’ve used all free boosts for today.</p>
+                        <h2 className="text-lg font-semibold">本日のブーストは上限です</h2>
+                        <p className="mt-2 text-sm text-gray-600">
+                            本日の無料ブーストは使い切りました。
+                        </p>
 
                         <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <button
@@ -79,7 +102,7 @@ export default function ExecuteFab({
                                 className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
                                 disabled={loading}
                             >
-                                {loading ? 'Processing…' : 'Watch Ad (+1)'}
+                                {loading ? '処理中…' : '広告を見る（+1）'}
                             </button>
 
                             <Link
@@ -91,8 +114,11 @@ export default function ExecuteFab({
                             </Link>
                         </div>
 
-                        <button onClick={() => setShowDialog(false)} className="mt-4 block w-full text-center text-xs text-gray-500 hover:underline">
-                            Close
+                        <button
+                            onClick={() => setShowDialog(false)}
+                            className="mt-4 block w-full text-center text-xs text-gray-500 hover:underline"
+                        >
+                            閉じる
                         </button>
                     </div>
                 </div>

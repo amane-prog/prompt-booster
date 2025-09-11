@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { locales } from '@/i18n';
 
-// 固定対応ロケール（当面は ja/en）
+// 髯懈圜・ｽ・ｺ髯橸ｽｳ陞｢・ｼ繝ｻ・ｯ繝ｻ・ｾ髯滂ｽ｢隲幄時貅ｽ・ｹ・ｧ繝ｻ・ｱ驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｫ郢晢ｽｻ闔・･繝ｻ・ｽ鬯･・ｴ隰ｫ繝ｻ・ｸ・ｺ繝ｻ・ｯ ja/en郢晢ｽｻ郢晢ｽｻ
 const enabled = ['ja', 'en'] as const;
 type EnabledLocale = typeof enabled[number];
 
@@ -13,7 +13,7 @@ function isEnabledLocale(x: string): x is EnabledLocale {
 }
 
 export default function LanguageSwitcher({ className }: { className?: string }) {
-    const current = useLocale(); // string 扱い
+    const current = useLocale(); // string 髫ｰ繝ｻ・ｽ・ｱ驍ｵ・ｺ郢晢ｽｻ
     const t = useTranslations();
     const router = useRouter();
     const pathname = usePathname() || '/';
@@ -39,7 +39,7 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
         }
     }
 
-    // current は string なので、type guard で EnabledLocale に絞る
+    // current 驍ｵ・ｺ繝ｻ・ｯ string 驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ繝ｻ・ｮ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｲ邵ｲ蜿角e guard 驍ｵ・ｺ繝ｻ・ｧ EnabledLocale 驍ｵ・ｺ繝ｻ・ｫ鬩搾ｽｨ隶抵ｽｭ繝ｻ繝ｻ
     const value: EnabledLocale = isEnabledLocale(current) ? current : enabled[0];
 
     return (

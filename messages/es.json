@@ -1,16 +1,16 @@
 {
   "app": {
-    "title": "Prompt‑Booster",
-    "loading": "Cargando…",
-    "error": "Ocurrió un error"
+    "title": "Prompt驕ｯ・ｶ髢ｻ・ｺooster",
+    "loading": "Cargando驕ｯ・ｶ繝ｻ・ｦ",
+    "error": "Ocurri繝ｻ繝ｻ・ｽ・ｳ un error"
   },
   "nav": {
     "home": "Inicio",
     "pricing": "Precios",
     "docs": "Docs",
     "language": "Idioma",
-    "signIn": "Iniciar sesión",
-    "signOut": "Cerrar sesión"
+    "signIn": "Iniciar sesi繝ｻ繝ｻ・ｽ・ｳn",
+    "signOut": "Cerrar sesi繝ｻ繝ｻ・ｽ・ｳn"
   },
   "header": {
     "plan": "Plan",
@@ -21,44 +21,44 @@
     },
     "requestsRemaining": "Solicitudes restantes",
     "requestsRemainingFmt": "{count, plural, =0 {quedan #} one {queda #} other {quedan #}}",
-    "requestsInfo": "PRO y PRO+ tienen un límite de 1.000 solicitudes/mes. Usa Top‑up si superas el límite.",
-    "topupRemaining": "Top‑ups restantes",
-    "topupEarliestExpiry": "Vencimiento más cercano: {date}",
+    "requestsInfo": "PRO y PRO+ tienen un l繝ｻ繝ｻ・ｽ・ｭmite de 1.000 solicitudes/mes. Usa Top驕ｯ・ｶ霎ｷ・ｽp si superas el l繝ｻ繝ｻ・ｽ・ｭmite.",
+    "topupRemaining": "Top驕ｯ・ｶ霎ｷ・ｽps restantes",
+    "topupEarliestExpiry": "Vencimiento m繝ｻ繝ｻ・ｽ・｡s cercano: {date}",
     "upgradeToProPlus": "Actualizar a PRO+",
-    "manageBilling": "Gestionar facturación",
-    "buyTopup": "Comprar Top‑up",
+    "manageBilling": "Gestionar facturaci繝ｻ繝ｻ・ｽ・ｳn",
+    "buyTopup": "Comprar Top驕ｯ・ｶ霎ｷ・ｽp",
     "applied": "Aplicado"
   },
   "plan": {
     "matrixTitle": "Planes",
     "monthly": "Mensual",
     "maxPerMonth": "Tope mensual",
-    "topup": "Top‑up",
+    "topup": "Top驕ｯ・ｶ霎ｷ・ｽp",
     "feature": "Funciones",
     "free": {
       "name": "Free",
       "desc": "Empieza gratis",
       "price": "$0",
-      "limit": "3/día • hasta 1.000/mes",
+      "limit": "3/d繝ｻ繝ｻ・ｽ・ｭa 驕ｯ・ｶ繝ｻ・｢ hasta 1.000/mes",
       "cta": "Empezar gratis"
     },
     "pro": {
       "name": "Pro",
-      "desc": "Estándar para indie devs",
+      "desc": "Est繝ｻ繝ｻ・ｽ・｡ndar para indie devs",
       "price": "$3",
       "limit": "Hasta 1.000/mes",
       "cta": "Subir a PRO"
     },
     "pro_plus": {
       "name": "Pro+",
-      "desc": "Más margen y prioridad",
+      "desc": "M繝ｻ繝ｻ・ｽ・｡s margen y prioridad",
       "price": "$5",
       "limit": "1.000/mes + prioridad",
       "cta": "Subir a PRO+"
     },
     "notes": {
       "commonCap": "* PRO/PRO+ comparten tope de 1.000/mes",
-      "topupNote": "* Los Top‑ups agregan créditos con vencimiento"
+      "topupNote": "* Los Top驕ｯ・ｶ霎ｷ・ｽps agregan cr繝ｻ繝ｻ・ｽ・ｩditos con vencimiento"
     }
   },
   "boost": {
@@ -73,7 +73,7 @@
     "length": {
       "label": "Longitud",
       "short": "Corto",
-      "medium": "Estándar",
+      "medium": "Est繝ｻ繝ｻ・ｽ・｡ndar",
       "long": "Largo"
     },
     "tone": {
@@ -86,16 +86,16 @@
   },
   "auth": {
     "email": "Correo",
-    "sendMagicLink": "Enviar enlace mágico",
+    "sendMagicLink": "Enviar enlace m繝ｻ繝ｻ・ｽ・｡gico",
     "checkInbox": "Revisa tu bandeja",
-    "signedIn": "Sesión iniciada",
-    "signedOut": "Sesión cerrada"
+    "signedIn": "Sesi繝ｻ繝ｻ・ｽ・ｳn iniciada",
+    "signedOut": "Sesi繝ｻ繝ｻ・ｽ・ｳn cerrada"
   },
   "billing": {
     "checkout": {
       "goPro": "Subir a PRO",
       "goProPlus": "Subir a PRO+",
-      "topup": "Comprar Top‑up"
+      "topup": "Comprar Top驕ｯ・ｶ霎ｷ・ｽp"
     },
     "result": {
       "success": "Compra completada",
@@ -105,18 +105,18 @@
   "toast": {
     "saved": "Guardado",
     "copied": "Copiado",
-    "error": "Algo salió mal"
+    "error": "Algo sali繝ｻ繝ｻ・ｽ・ｳ mal"
   },
   "errors": {
-    "unauthorized": "Se requiere inicio de sesión",
-    "rateLimited": "Inténtalo más tarde",
-    "quotaExceeded": "Se alcanzó la cuota. Considera un Top‑up.",
+    "unauthorized": "Se requiere inicio de sesi繝ｻ繝ｻ・ｽ・ｳn",
+    "rateLimited": "Int繝ｻ繝ｻ・ｽ・ｩntalo m繝ｻ繝ｻ・ｽ・｡s tarde",
+    "quotaExceeded": "Se alcanz繝ｻ繝ｻ・ｽ・ｳ la cuota. Considera un Top驕ｯ・ｶ霎ｷ・ｽp.",
     "unknown": "Error desconocido"
   },
   "language": {
-    "ja": "Japonés",
-    "en": "Inglés",
-    "es": "Español",
+    "ja": "Japon繝ｻ繝ｻ・ｽ・ｩs",
+    "en": "Ingl繝ｻ繝ｻ・ｽ・ｩs",
+    "es": "Espa繝ｻ繝ｻ・ｽ・ｱol",
     "it": "Italiano"
   }
 }

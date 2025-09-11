@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
-// 型を外でも使えるように export
+// 髯懷姓・ｹ譎｢・ｽ螳壽｣碑ｬ費ｽｶ邵ｲ蝣､・ｹ・ｧ郢ｧ繝ｻ・ｽ・ｽ繝ｻ・ｿ驍ｵ・ｺ陋ｹ・ｻ繝ｻ迢暦ｽｹ・ｧ陋ｹ・ｻ遶包ｽｧ驍ｵ・ｺ繝ｻ・ｫ export
 export type Mode = 'dialogue' | 'generation';
 export type ColorTone = 'auto' | 'bright' | 'dark' | 'pastel' | 'mono';
 export type Ratio = 'auto' | '1:1' | '16:9' | '9:16' | '4:3' | '3:4';
@@ -41,7 +41,7 @@ type Props = {
     className?: string;
 };
 
-/** 小さなタグチップ */
+/** 髯昴・・ｸ螂・ｽｼ繝ｻ・ｸ・ｺ繝ｻ・ｪ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・ｰ驛｢譏ｶ繝ｻ郢晢ｽ｣驛｢譏ｴ繝ｻ*/
 function Chip({
     active,
     children,
@@ -65,7 +65,7 @@ function Chip({
     );
 }
 
-/** 適用中のバッジ列（値→表示名は呼び出し側で変換して渡す） */
+/** 鬯ｩ蛹・ｽｽ・ｩ鬨ｾ蛹・ｽｽ・ｨ髣包ｽｳ繝ｻ・ｭ驍ｵ・ｺ繝ｻ・ｮ驛｢譎√・郢晢ｽ｣驛｢・ｧ繝ｻ・ｸ髯具ｽｻ隴会ｽｦ繝ｻ・ｼ闔・･・つ繝ｻ・､驕ｶ髮・ｽｮ螟ｲ・ｽ・｡繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ髯ｷ・ｷ鬮ｦ・ｪ郢晢ｽｻ髯ｷ・ｻ繝ｻ・ｼ驍ｵ・ｺ繝ｻ・ｳ髯ｷ繝ｻ・ｽ・ｺ驍ｵ・ｺ隲､諛翫・驍ｵ・ｺ繝ｻ・ｧ髯樊ｺｽ蛻､鬩ｪ・､驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ髮九ｑ・ｽ・｡驍ｵ・ｺ陷ｻ・ｻ繝ｻ・ｼ郢晢ｽｻ*/
 function AppliedRow({ items }: { items: string[] }) {
     const t = useTranslations('advanced.common');
     return (
@@ -86,7 +86,7 @@ function AppliedRow({ items }: { items: string[] }) {
     );
 }
 
-// 内部値（スラッグ）は固定、表示は i18n
+// 髯ｷﾂ郢晢ｽｻ・主､雁ｱ舌・・､郢晢ｽｻ陋ｹ・ｻ邵ｺ蟶ｷ・ｹ譎｢・ｽ・ｩ驛｢譏ｴ繝ｻ邵ｺ蛛ｵ繝ｻ陝ｲ・ｨ郢晢ｽｻ髯懈圜・ｽ・ｺ髯橸ｽｳ陞｢・ｹ・つ遶擾ｽｬ繝ｻ・｡繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ驍ｵ・ｺ繝ｻ・ｯ i18n
 const DIALOGUE_TAGS = [
     { value: 'reverse', key: 'reverse' },
     { value: 'substitute', key: 'substitute' },
@@ -168,7 +168,7 @@ export default function AdvancedControls({
         [t]
     );
 
-    // 表示用に値→ラベルへ変換
+    // 鬮ｯ・ｦ繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ鬨ｾ蛹・ｽｽ・ｨ驍ｵ・ｺ繝ｻ・ｫ髯区ｻゑｽｽ・､驕ｶ髮√・・主ｸｷ・ｹ譎冗函・取刮・ｸ・ｺ繝ｻ・ｸ髯樊ｺｽ蛻､鬩ｪ・､
     const appliedDialogueLabels = useMemo(
         () =>
             dialogueTags
@@ -187,7 +187,7 @@ export default function AdvancedControls({
 
     return (
         <div className={['rounded-2xl border bg-white p-4', className ?? ''].join(' ')}>
-            {/* ヘッダ：左=タイトル / 右=モード切替 */}
+            {/* 驛｢譎渉・･郢晢ｽ｣驛｢謨鳴郢晢ｽｻ陞｢・ｼ繝ｻ・ｷ繝ｻ・ｦ=驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎冗樟・弱・/ 髯ｷ・ｿ繝ｻ・ｳ=驛｢譎｢・ｽ・｢驛｢譎｢・ｽ・ｼ驛｢譎臥櫨郢晢ｽｻ髫ｴ蜴・ｽｽ・ｿ */}
             <div className="mb-2 flex items-center">
                 <h2 className="font-semibold">{t('emphasis.title')}</h2>
                 <div className="ml-auto inline-flex rounded-full bg-neutral-100 p-1" role="tablist" aria-label={t('mode.label')}>
@@ -212,7 +212,7 @@ export default function AdvancedControls({
                 </div>
             </div>
 
-            {/* 強調語句入力 */}
+            {/* 髯滓汚・ｽ・ｷ鬮ｫ・ｱ繝ｻ・ｿ鬮ｫ・ｱ隶抵ｽｫ陷夲ｽｱ髯ｷ闌ｨ・ｽ・･髯ｷ蟲ｨ繝ｻ*/}
             <input
                 value={emphasis}
                 onChange={(e) => onEmphasisChange(e.target.value)}
@@ -225,7 +225,7 @@ export default function AdvancedControls({
 
             <hr className="my-3 border-neutral-200" />
 
-            {/* 共通：色彩 */}
+            {/* 髯ｷ闌ｨ・ｽ・ｱ鬯ｨ・ｾ陞滂ｽｲ繝ｻ・ｼ陞滄｡疲ｨｪ髯溷私・ｽ・ｩ */}
             <div className="mb-3">
                 <label className="block text-sm mb-1">{t('color.label')}</label>
                 <select
@@ -244,7 +244,7 @@ export default function AdvancedControls({
 
             {mode === 'dialogue' ? (
                 <>
-                    {/* 対話：Tone */}
+                    {/* 髯昴・・ｽ・ｾ鬮ｫ・ｧ繝ｻ・ｱ郢晢ｽｻ陜蠕冢e */}
                     <div className="mb-3">
                         <label className="block text-sm mb-1">{t('tone.label')}</label>
                         <select
@@ -261,7 +261,7 @@ export default function AdvancedControls({
                         </select>
                     </div>
 
-                    {/* 対話：タグ群 */}
+                    {/* 髯昴・・ｽ・ｾ鬮ｫ・ｧ繝ｻ・ｱ郢晢ｽｻ陞｢・ｹ邵ｺ・｡驛｢・ｧ繝ｻ・ｰ鬩玲慣・ｽ・､ */}
                     <div className="text-sm mb-2 text-neutral-600">{t('tags.label')}</div>
                     <div className="flex flex-wrap gap-2">
                         {DIALOGUE_TAGS.map(({ value, key }) => (
@@ -271,7 +271,7 @@ export default function AdvancedControls({
                         ))}
                     </div>
 
-                    {/* 適用中 */}
+                    {/* 鬯ｩ蛹・ｽｽ・ｩ鬨ｾ蛹・ｽｽ・ｨ髣包ｽｳ繝ｻ・ｭ */}
                     <div className="mt-3 text-xs text-neutral-600">
                         <span className="mr-2">{t('common.applied')}:</span>
                         <AppliedRow items={appliedDialogueLabels} />
@@ -279,7 +279,7 @@ export default function AdvancedControls({
                 </>
             ) : (
                 <>
-                    {/* 生成：比率 */}
+                    {/* 鬨ｾ蠅難ｽｻ阮吶・郢晢ｽｻ陞｢・ｽ繝ｻ・ｯ騾ｧ・ｮ驍擾ｽｫ */}
                     <div className="mb-3">
                         <label className="block text-sm mb-1">{t('ratio.label')}</label>
                         <select
@@ -296,7 +296,7 @@ export default function AdvancedControls({
                         </select>
                     </div>
 
-                    {/* 生成：スタイル */}
+                    {/* 鬨ｾ蠅難ｽｻ阮吶・郢晢ｽｻ陞｢・ｹ邵ｺ蟶ｷ・ｹ・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｫ */}
                     <div className="mb-1">
                         <div className="block text-sm mb-1">{t('style.label')}</div>
                         <div className="flex flex-wrap gap-2">
@@ -308,7 +308,7 @@ export default function AdvancedControls({
                         </div>
                     </div>
 
-                    {/* 適用中 */}
+                    {/* 鬯ｩ蛹・ｽｽ・ｩ鬨ｾ蛹・ｽｽ・ｨ髣包ｽｳ繝ｻ・ｭ */}
                     <div className="mt-3 text-xs text-neutral-600">
                         <span className="mr-2">{t('common.applied')}:</span>
                         <AppliedRow items={appliedGenStyleLabels} />

@@ -39,7 +39,10 @@ export default function CreditLimitModal({
 
                 {typeof resetInSec === 'number' && resetInSec >= 0 && (
                     <div className="mt-2 rounded bg-neutral-50 p-2 text-[12px] text-neutral-600">
-                        次のリセットまで：<span className="tabular-nums font-semibold">{fmtHMS(resetInSec)}</span>
+                        <span>リセットまで: </span>
+                        <span className="tabular-nums font-semibold">
+                            {fmtHMS(resetInSec)}
+                        </span>
                     </div>
                 )}
 

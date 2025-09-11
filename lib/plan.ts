@@ -12,14 +12,14 @@ export const Plan = {
     isProLike(tier: PlanTier) { return tier === 'pro' || tier === 'pro_plus' },
 }
 
-/** pro_until が未来なら Pro 扱い */
+/** pro_until 驍ｵ・ｺ隴ｴ・ｧ隰費ｽｴ髫ｴ螟ｲ・ｽ・･驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ郢晢ｽｻPro 髫ｰ繝ｻ・ｽ・ｱ驍ｵ・ｺ郢晢ｽｻ*/
 export function isPro(proUntil: string | Date | null | undefined): boolean {
     if (!proUntil) return false
     const d = typeof proUntil === 'string' ? new Date(proUntil) : proUntil
     return Number.isFinite(d.getTime()) && d.getTime() > Date.now()
 }
 
-/** JST の yyyy-mm-dd */
+/** JST 驍ｵ・ｺ繝ｻ・ｮ yyyy-mm-dd */
 export const jstDayKey = (d = new Date()): string => {
     const utc = d.getTime() + d.getTimezoneOffset() * 60000
     const jst = new Date(utc + 9 * 3600000)

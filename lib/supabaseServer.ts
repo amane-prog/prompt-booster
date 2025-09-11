@@ -1,18 +1,36 @@
 // lib/supabaseServer.ts
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+<<<<<<< HEAD
 
 export async function supabaseServer() {
     const cookieStore = await cookies()
     return createServerClient(
+=======
+// import type { Database } from './types'
+
+export async function supabaseServer() {
+    const jar = (await cookies()) as import('next/dist/server/web/spec-extension/adapters/request-cookies').ReadonlyRequestCookies
+
+    return createServerClient/*<Database>*/(
+>>>>>>> deploy-test
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
+<<<<<<< HEAD
                 get(name: string) { return cookieStore.get(name)?.value },
                 set(name: string, value: string, options?: CookieOptions) { cookieStore.set(name, value, options) },
                 remove(name: string, options?: CookieOptions) { cookieStore.set(name, '', { ...options, maxAge: 0 }) }
             }
+=======
+                get(name: string) {
+                    return jar.get(name)?.value
+                },
+                set() { /* no-op for server */ },
+                remove() { /* no-op for server */ },
+            },
+>>>>>>> deploy-test
         }
     )
 }

@@ -20,7 +20,11 @@ export default function FeedbackPage(_props: PageProps) {
                 target="_blank"
             >
                 <textarea
+<<<<<<< HEAD
                     name="entry.123456" // ← Google Forms の input name を差し替え
+=======
+                    name="entry.123456" // 郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ 郢晢ｽｻ繝ｻ・ｽt郢晢ｽｻ繝ｻ・ｽH郢晢ｽｻ繝ｻ・ｽ[郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ繝ｻ逕ｻ隱薙・・ｿ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ陟・ｽｲ繝ｻ・ｹ郢晢ｽｻ繝ｻ・ｽ繝ｻ繝ｻ・ｿ・ｮ郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ
+>>>>>>> deploy-test
                     required
                     className="min-h-40 w-full rounded-lg border p-3"
                     placeholder="Your message..."

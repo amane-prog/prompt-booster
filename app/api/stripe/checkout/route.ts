@@ -26,13 +26,30 @@ export async function POST(req: NextRequest) {
         const { data: { user } } = await sb.auth.getUser()
         if (!user?.id || !user.email) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
+<<<<<<< HEAD
         const origin = originOf(req)
         if (!allowlist(origin)) return NextResponse.json({ error: 'forbidden origin' }, { status: 403 })
+=======
+        // CSRF鬩搾ｽｱ繝ｻ・ｩ髯ｷ・･郢晢ｽｻ Origin allowlist
+        const origin = computeOrigin(req);
+        const allowed = new Set([
+            process.env.NEXT_PUBLIC_SITE_ORIGIN,
+            'http://localhost:3000',
+        ].filter(Boolean) as string[]);
+        if (!allowed.has(origin)) {
+            return NextResponse.json({ error: 'forbidden origin' }, { status: 403 });
+        }
+>>>>>>> deploy-test
 
         const loc = req.cookies.get('NEXT_LOCALE')?.value ?? 'ja'
 
+<<<<<<< HEAD
         // find/create customer
         let customerId: string | null = null
+=======
+        // Customer 髫ｶﾂ隲帙・・ｽ・ｴ繝ｻ・｢/髣厄ｽｴ隲帛現繝ｻ
+        let customerId: string | null = null;
+>>>>>>> deploy-test
         try {
             const s = await stripe.customers.search({ query: `metadata['userId']:'${user.id}'`, limit: 1 })
             customerId = s.data[0]?.id ?? null
@@ -48,12 +65,20 @@ export async function POST(req: NextRequest) {
             customerId = created.id
         }
 
+<<<<<<< HEAD
         // (optional) persist in DB
+=======
+        // DB髣厄ｽｫ隴取得・ｽ・ｭ陋帙・・ｽ・ｼ闔・･郢晢ｽｻ鬩包ｽｲ郢晢ｽｻupsert郢晢ｽｻ郢晢ｽｻ
+>>>>>>> deploy-test
         await sb.from('user_billing').upsert(
             { user_id: user.id, stripe_customer_id: customerId },
             { onConflict: 'user_id' }
         )
 
+<<<<<<< HEAD
+=======
+        // 髣憺屮・ｽ・｡髫ｴ・ｬ繝ｻ・ｼID
+>>>>>>> deploy-test
         const priceId =
             plan === 'pro_plus'
                 ? process.env.STRIPE_PRICE_ID_PRO_PLUS

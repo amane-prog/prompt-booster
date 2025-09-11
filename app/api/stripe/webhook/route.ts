@@ -44,7 +44,11 @@ async function resolveUserIdFromCustomerId(customerId: string): Promise<string |
     return null;
 }
 
+<<<<<<< HEAD
 // 笨・Basil莉･髯・ 繧ｵ繝悶せ繧ｯ縺ｮ縲檎樟蝨ｨ縺ｮ隱ｲ驥第悄髢薙・邨ゆｺ・阪・ items 縺ｮ current_period_end 縺ｮ譛蟆丞､繧呈治逕ｨ
+=======
+// 髫ｨ・ｨ郢晢ｽｻBasil髣比ｼ夲ｽｽ・･鬯ｮ・ｯ郢晢ｽｻ 驛｢・ｧ繝ｻ・ｵ驛｢譎・§邵ｺ蟶ｷ・ｹ・ｧ繝ｻ・ｯ驍ｵ・ｺ繝ｻ・ｮ驍ｵ・ｲ隶吝叙・ｨ貅ｯ闊峨・・ｨ驍ｵ・ｺ繝ｻ・ｮ鬮ｫ・ｱ繝ｻ・ｲ鬯ｩ・･髫ｨ・ｬ隰斐・・ｫ・｢髦ｮ蜷ｶ繝ｻ鬩搾ｽｨ郢ｧ繝ｻ・ｽ・ｺ郢晢ｽｻ・つ鬮ｦ・ｪ郢晢ｽｻ items 驍ｵ・ｺ繝ｻ・ｮ current_period_end 驍ｵ・ｺ繝ｻ・ｮ髫ｴ蟠｢ﾂ髯昴・・ｸ讌ｪﾂ繝ｻ・､驛｢・ｧ陷ｻ蝓滂ｽｲ・ｻ鬨ｾ蛹・ｽｽ・ｨ
+>>>>>>> deploy-test
 function minItemPeriodEnd(sub: Stripe.Subscription): number | null {
     const ends = (sub.items?.data ?? [])
         .map(i => (i as any).current_period_end as number | undefined)
@@ -77,7 +81,11 @@ export async function POST(req: NextRequest) {
                 const userId = userIdFromMeta(s.metadata) ?? (await resolveUserIdFromCustomerId(customerId));
                 if (!userId) break;
 
+<<<<<<< HEAD
                 // --- Top-up・磯・蠎ｦ謇輔＞・・---
+=======
+                // --- Top-up郢晢ｽｻ騾趣ｽｯ郢晢ｽｻ髯溯ｶ｣・ｽ・ｦ髫ｰ繝ｻ・ｼ雋ｻ・ｼ讒ｭ繝ｻ郢晢ｽｻ---
+>>>>>>> deploy-test
                 const isTopup = s.mode === 'payment' || !s.subscription;
                 if (isTopup && s.payment_status === 'paid') {
                     const lineItems = await stripe.checkout.sessions.listLineItems(s.id, { limit: 10 });
@@ -105,7 +113,11 @@ export async function POST(req: NextRequest) {
                     }
                 }
 
+<<<<<<< HEAD
                 // --- 繧ｵ繝悶せ繧ｯ ---
+=======
+                // --- 驛｢・ｧ繝ｻ・ｵ驛｢譎・§邵ｺ蟶ｷ・ｹ・ｧ繝ｻ・ｯ ---
+>>>>>>> deploy-test
                 if (s.subscription) {
                     const subId = typeof s.subscription === 'string' ? s.subscription : s.subscription.id;
                     if (subId) {

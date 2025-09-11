@@ -34,6 +34,10 @@ export async function POST(req: NextRequest) {
 
         const loc = req.cookies.get('NEXT_LOCALE')?.value ?? 'ja'
 
+<<<<<<< HEAD
+=======
+        // 鬯ｯ蛛・ｽｽ・ｧ髯橸ｽｳ繝ｻ・｢驛｢・ｧ陜｣・､繝ｻ・｢繝ｻ・ｺ髣厄ｽｫ郢晢ｽｻ
+>>>>>>> deploy-test
         let customerId: string | null = null
         try {
             const s = await stripe.customers.search({ query: `metadata['userId']:'${user.id}'`, limit: 1 })

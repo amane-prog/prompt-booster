@@ -55,7 +55,11 @@ export async function GET(req: NextRequest) {
             }
         }
 
+<<<<<<< HEAD
         // Free 残数計算
+=======
+        // Free 驍ｵ・ｺ繝ｻ・ｮ髫ｹ・ｿ陷ｿ・･陞ｻ讌｢・ｬ・ｨ繝ｻ・ｰ郢晢ｽｻ郢晢ｽｻro/Pro+ 驍ｵ・ｺ繝ｻ・ｯ null郢晢ｽｻ郢晢ｽｻ
+>>>>>>> deploy-test
         let freeRemaining: number | null = null
         if (planTier === 'free') {
             if (userId && redis) {
@@ -77,12 +81,20 @@ export async function GET(req: NextRequest) {
             }
         }
 
+<<<<<<< HEAD
         // Pro/Pro+ の月間残数
+=======
+        // 髫ｨ蛟･繝ｻPro/Pro+ 驍ｵ・ｺ繝ｻ・ｮ髫ｴ蟶帶ｲｺ繝ｻ・ｬ繝ｻ・｡驛｢・ｧ繝ｻ・ｵ驛｢譎・§邵ｺ蟶ｷ・ｹ・ｧ繝ｻ・ｯ髫ｹ・ｿ陋ｹ・ｺ霎溘・
+>>>>>>> deploy-test
         let subCap: number | null = null
         let subUsed: number | null = null
         let subRemaining: number | null = null
         if (planTier !== 'free' && userId) {
+<<<<<<< HEAD
             subCap = 1000
+=======
+            subCap = 1000 // tier 驍ｵ・ｺ繝ｻ・ｧ髯樊ｺｷ・ｳ・ｨ遶擾ｽｴ驛｢・ｧ闕ｵ譏ｶ繝ｻ驛｢・ｧ陝ｲ・ｨ繝ｻ繝ｻ・ｸ・ｺ髦ｮ蜷ｶﾂ螳壼ｴ慕ｹ晢ｽｻ繝ｻ・ｲ郢晢ｽｻ
+>>>>>>> deploy-test
             if (redis) {
                 const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
                 const key = `pb:m:${userId}:${cycleId}`
@@ -96,7 +108,11 @@ export async function GET(req: NextRequest) {
             }
         }
 
+<<<<<<< HEAD
         // Top-up
+=======
+        // Top-up 髫ｹ・ｿ驕擾ｽｩ繝ｻ・ｫ陋帙・・ｽ・ｼ陜捺ｻ督蜑ｰ諤上・・ｹ髫ｴ蟶ｶ・ｻ繝ｻ蠢憺匚ﾂ郢晢ｽｻ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｿ驛｢譎｢・ｽ・ｻFIFO鬨ｾ蛹・ｽｽ・ｨ驍ｵ・ｺ繝ｻ・ｫ髫ｴ蟶ｶ・ｻ繝ｻ蠢憺垓荳翫・繝ｻ・ｰ郢晢ｽｻ繝ｻ・ｼ郢晢ｽｻ
+>>>>>>> deploy-test
         let topupRemain = 0
         let topups: { remain: number; expire_at: string }[] = []
         if (userId) {
@@ -124,6 +140,11 @@ export async function GET(req: NextRequest) {
             freeRemaining,
             isPro: planTier !== 'free',
             remain: freeRemaining,
+<<<<<<< HEAD
+=======
+
+            // 驛｢・ｧ繝ｻ・ｵ驛｢譎・§邵ｺ蟶ｷ・ｹ・ｧ繝ｻ・ｯ髫ｹ・ｿ陋ｹ・ｺ霎溷｣ｹ繝ｻ郢晢ｽｻro/Pro+ 鬨ｾ蛹・ｽｽ・ｨ郢晢ｽｻ郢晢ｽｻ
+>>>>>>> deploy-test
             subCap,
             subUsed,
             subRemaining,

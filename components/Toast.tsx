@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 type ToastProps = {
     message: string
     onClose: () => void
-    /** 自動で閉じるまでのミリ秒 */
+    /** 鬮｢・ｾ繝ｻ・ｪ髯ｷ蟠趣ｽｼ譁青蟶晢ｽｫ・｢陝ｲ・ｨ・ゑｽｧ驛｢・ｧ闕ｵ譏ｶ遨宣し・ｺ繝ｻ・ｧ驍ｵ・ｺ繝ｻ・ｮ驛｢譎・ｽｺ菴ｩ諞ｺﾂｧ郢晢ｽｻ*/
     duration?: number
 }
 
