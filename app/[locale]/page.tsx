@@ -221,14 +221,13 @@ export default function HomePage(_props: PageProps) {
                     </section>
                 </div>
 
-                {/* 中央：Input（右9列のうち1/3 = 3列） */}
-                <section className="md:col-span-3 rounded-2xl border bg-white p-4
+                {/* 中央：Input（右9列のうち 6列 = 主役） */}
+                <section className="md:col-span-6 rounded-2xl border bg-white p-4
                     min-h-[360px] flex flex-col min-w-0">
                     <label className="mb-2 block text-sm font-medium">Input</label>
 
                     <textarea
-                        className="flex-1 w-full min-h-[180px] resize-y border rounded-lg p-3
-               focus:outline-none focus:ring"
+                        className="flex-1 w-full min-h-[220px] md:min-h-[320px] resize-y border rounded-lg p-3 focus:outline-none focus:ring"
                         placeholder="Write your brief here..."
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
@@ -246,8 +245,8 @@ export default function HomePage(_props: PageProps) {
                     </div>
                 </section>
 
-                {/* 右：条件式（2/3 = 6列） */}
-                <aside className="rounded-2xl border bg-white p-4 md:col-span-6 space-y-4">
+                {/* 右：条件式（1/3 = 3列） */}
+                <aside className="rounded-2xl border bg-white p-4 md:col-span-3 space-y-4">
                     <h3 className="text-sm font-medium">条件式</h3>
 
                     {/* Emphasis */}
