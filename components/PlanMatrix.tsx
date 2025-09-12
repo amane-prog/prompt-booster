@@ -1,3 +1,4 @@
+//表部分
 'use client';
 
 import { useTranslations } from 'next-intl';
@@ -5,12 +6,13 @@ import React from 'react';
 
 export default function PlanMatrix() {
     const t = useTranslations('plan');
+    const lastUpdated = '2025-09-02'; // 必要なら props / env / git rev 連携に差し替えOK
 
     const Row = ({
         label,
         free,
         pro,
-        proPlus
+        proPlus,
     }: {
         label: React.ReactNode;
         free: React.ReactNode;
@@ -18,7 +20,10 @@ export default function PlanMatrix() {
         proPlus: React.ReactNode;
     }) => (
         <tr className="[&>td]:border [&>td]:px-3 [&>td]:py-2 [&>td]:align-top [&>td]:text-sm">
-            <th scope="row" className="sticky left-0 z-10 bg-neutral-50 border px-3 py-2 text-sm whitespace-nowrap">
+            <th
+                scope="row"
+                className="sticky left-0 z-10 bg-neutral-50 border px-3 py-2 text-sm whitespace-nowrap"
+            >
                 {label}
             </th>
             <td className="whitespace-nowrap">{free}</td>
@@ -32,15 +37,24 @@ export default function PlanMatrix() {
             <h3 className="mb-3 text-sm font-medium">{t('matrixTitle')}</h3>
 
             <div className="-mx-4 overflow-x-auto md:mx-0">
-                <table className="w-full border-collapse min-w-[900px]">
+                <table className="w-full border-collapse min-w-[900px]" aria-label={t('matrixTitle')}>
                     <thead>
                         <tr className="[&>th]:border [&>th]:px-3 [&>th]:py-2 bg-neutral-50 text-left">
-                            <th className="sticky left-0 z-10 bg-neutral-50 w-40 min-w-[160px] whitespace-nowrap">
+                            <th
+                                className="sticky left-0 z-10 bg-neutral-50 w-40 min-w-[160px] whitespace-nowrap"
+                                scope="col"
+                            >
                                 {t('feature')}
                             </th>
-                            <th className="w-60 min-w-[220px] whitespace-nowrap">{t('free.name')}</th>
-                            <th className="w-60 min-w-[220px] whitespace-nowrap">{t('pro.name')}</th>
-                            <th className="w-60 min-w-[220px] whitespace-nowrap">{t('pro_plus.name')}</th>
+                            <th className="w-60 min-w-[220px] whitespace-nowrap" scope="col">
+                                {t('free.name')}
+                            </th>
+                            <th className="w-60 min-w-[220px] whitespace-nowrap" scope="col">
+                                {t('pro.name')}
+                            </th>
+                            <th className="w-60 min-w-[220px] whitespace-nowrap" scope="col">
+                                {t('pro_plus.name')}
+                            </th>
                         </tr>
                     </thead>
 
@@ -79,8 +93,7 @@ export default function PlanMatrix() {
             </ol>
 
             <p className="mt-2 text-right text-[11px] text-neutral-400">
-                {/* 髣比ｼ夲ｽｽ・ｻ髫ｲ・｢隰ｫ・ｾ繝ｻ・ｼ陞｢・ｹ繝ｻ繝ｻ・ｸ・ｺ髦ｮ蜻ｻ・ｽ繝ｻi18n 髯具ｽｹ隰費ｽｶ繝ｻ・ｰ驍ｵ・ｺ雋・∞・ｿ・ｰ驛｢・ｧ陟募ｾ後・驛｢・ｧ繝ｻ・ｭ驛｢譎｢・ｽ・ｼ驛｢・ｧ陞ｳ螟ｲ・ｽ・ｿ繝ｻ・ｽ髯ｷ莨夲ｽ｣・ｰ */}
-                髫ｴ蟠｢ﾂ鬩搾ｽｨ郢ｧ莠･・ｳ・ｩ髫ｴ繝ｻ・ｽ・ｰ: 2025-09-02
+                {t('lastUpdated', { date: lastUpdated })}
             </p>
         </section>
     );
