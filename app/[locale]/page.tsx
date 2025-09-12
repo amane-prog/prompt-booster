@@ -199,30 +199,22 @@ export default function HomePage(_props: PageProps) {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6">
 
-                {/* 左：上=プラン / 下=ステータス */}
+                {/* 左：上=プラン（横スクロール） / 下=ステータス */}
                 <div className="md:col-span-3 space-y-4">
-                    {/* プラン */}
-                    <section className="rounded-2xl border bg-white p-3">
-                        <div className="mb-2 flex items-center justify-between">
-                            <h3 className="text-sm font-medium">プラン</h3>
-                            <button
-                                type="button"
-                                onClick={() => setPlanOpen(true)}
-                                className="text-[12px] underline text-neutral-600 hover:text-neutral-900"
-                            >
-                                詳細を見る
-                            </button>
+                    {/* CompactPlans を単体で。外枠は付けない＝二重「プラン」解消 */}
+                    <div className="-mx-2 overflow-x-auto px-2">
+                        {/* 中身に最低幅を与えて横スクロールに */}
+                        <div className="min-w-[780px]">
+                            <CompactPlans
+                                tier={tier}
+                                onGoPro={goPro}
+                                onGoProPlus={goProPlus}
+                                onOpenPortal={openPortal}
+                            />
                         </div>
+                    </div>
 
-                        <CompactPlans
-                            tier={tier}
-                            onGoPro={goPro}
-                            onGoProPlus={goProPlus}
-                            onOpenPortal={openPortal}
-                        />
-                    </section>
-
-                    {/* ステータス */}
+                    {/* ステータス（左下） */}
                     <section className="rounded-2xl border bg-white p-3">
                         <h3 className="mb-2 text-sm font-medium">ステータス</h3>
                         <p className="text-sm text-neutral-700">
@@ -236,33 +228,37 @@ export default function HomePage(_props: PageProps) {
                     </section>
                 </div>
 
-                {/* 中央：入力（下に実行） */}
+                {/* 中央：入力（高さ控えめ） */}
                 <section className="rounded-2xl border bg-white p-4 md:col-span-6 space-y-3">
                     <label className="block text-sm font-medium">Input</label>
                     <textarea
-                        className="w-full h-40 border rounded-lg p-3 focus:outline-none focus:ring"
+                        className="w-full h-32 border rounded-lg p-3 focus:outline-none focus:ring"
                         placeholder="Write your brief here..."
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                     />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <label className="block text-sm font-medium">Emphasis (comma-separated)</label>
-                            <input
-                                className="w-full border rounded-lg p-2"
-                                placeholder="short, brand-safe, ..."
-                                value={emphasis}
-                                onChange={(e) => setEmphasis(e.target.value)}
-                            />
-                        </div>
-                    </div>
 
+                    {/* Emphasis は右側に移動したのでここは削除 */}
+
+                    {/* 実行ボタン */}
                     <ExecuteFab onRun={handleRun} isPro={isPro} canUseBoost={canUseBoost} />
                 </section>
 
-                {/* 右：条件式 */}
-                <aside className="rounded-2xl border bg-white p-4 md:col-span-3">
-                    <h3 className="mb-3 text-sm font-medium">条件式</h3>
+                {/* 右：条件式 + Emphasis */}
+                <aside className="rounded-2xl border bg-white p-4 md:col-span-3 space-y-4">
+                    <h3 className="text-sm font-medium">条件式</h3>
+
+                    {/* Emphasis をこちらへ */}
+                    <div>
+                        <label className="mb-1 block text-sm font-medium">Emphasis (comma-separated)</label>
+                        <input
+                            className="w-full border rounded-lg p-2"
+                            placeholder="short, brand-safe, ..."
+                            value={emphasis}
+                            onChange={(e) => setEmphasis(e.target.value)}
+                        />
+                    </div>
+
                     <AdvancedControlsV2
                         value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
                         onChange={(next: Partial<ControlsValue>) => {
@@ -276,16 +272,42 @@ export default function HomePage(_props: PageProps) {
                     />
                 </aside>
 
-                {/* 出力：中央〜右を横断（下段ワイド） */}
+                {/* 出力：中央〜右を横断（大きめに） */}
                 <section className="rounded-2xl border bg-white p-4 md:col-span-9 md:col-start-4">
                     <h2 className="mb-2 text-sm font-semibold text-neutral-700">Output</h2>
-                    <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-24">
+                    <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-[280px] md:min-h-[360px]">
                         {output || '—'}
                     </pre>
+
+                    {/* コピー / 共有 */}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                            type="button"
+                            className="rounded border px-3 py-1.5 text-sm"
+                            onClick={() => navigator.clipboard?.writeText(output || '')}
+                            disabled={!output}
+                        >
+                            コピー
+                        </button>
+                        <button
+                            type="button"
+                            className="rounded border px-3 py-1.5 text-sm"
+                            onClick={async () => {
+                                if (navigator.share && output) {
+                                    try { await navigator.share({ text: output }); } catch { /* noop */ }
+                                } else {
+                                    await navigator.clipboard?.writeText(output || '');
+                                }
+                            }}
+                            disabled={!output}
+                        >
+                            共有
+                        </button>
+                    </div>
                 </section>
             </div>
 
-            {/* モーダルたち（配置は末尾のままでOK） */}
+            {/* モーダルたち（末尾でOK） */}
             <PlanDialog
                 open={planOpen}
                 onClose={() => setPlanOpen(false)}
@@ -305,5 +327,6 @@ export default function HomePage(_props: PageProps) {
             />
         </main>
     );
+
 
 }
