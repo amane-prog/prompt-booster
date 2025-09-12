@@ -200,7 +200,7 @@ export default function HomePage(_props: PageProps) {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6">
 
                 {/* 左：プラン + ステータス */}
-                <div className="md:col-span-4 space-y-4">
+                <div className="md:col-span-3 space-y-4 md:sticky md:top-4 self-start">
                     <CompactPlans
                         tier={tier}
                         onGoPro={goPro}
@@ -221,7 +221,7 @@ export default function HomePage(_props: PageProps) {
                     </section>
                 </div>
 
-                {/* 中央：Input（セクション全体にフィット） */}
+                {/* 中央：Input（右9列のうち1/3 = 3列） */}
                 <section className="md:col-span-3 rounded-2xl border bg-white p-4
                     min-h-[360px] flex flex-col min-w-0">
                     <label className="mb-2 block text-sm font-medium">Input</label>
@@ -246,8 +246,8 @@ export default function HomePage(_props: PageProps) {
                     </div>
                 </section>
 
-                {/* 右：条件式（Emphasis / Tags / Styles + AdvancedControls） */}
-                <aside className="md:col-span-5 rounded-2xl border bg-white p-4 md:col-span-5 space-y-4">
+                {/* 右：条件式（2/3 = 6列） */}
+                <aside className="rounded-2xl border bg-white p-4 md:col-span-6 space-y-4">
                     <h3 className="text-sm font-medium">条件式</h3>
 
                     {/* Emphasis */}
