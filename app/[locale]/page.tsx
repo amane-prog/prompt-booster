@@ -194,55 +194,98 @@ export default function HomePage(_props: PageProps) {
     const goProPlus = useCallback(async () => { await openPortal(); }, [openPortal]);
 
     return (
-        <main className="max-w-3xl mx-auto p-4 space-y-6">
-            {/* ステータス */}
-            <p className="text-sm text-neutral-600">
-                {t('status')}: {remain ?? '—'} {isPro ? '(Pro)' : '(Free)'}
-            </p>
-
+        <main className="mx-auto max-w-screen-xl px-4 md:px-6 py-6">
             {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
-            {/* 入力欄 */}
-            <section className="space-y-3">
-                <label className="block text-sm font-medium">Input</label>
-                <textarea
-                    className="w-full h-40 border rounded-lg p-3 focus:outline-none focus:ring"
-                    placeholder="Write your brief here..."
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                        <label className="block text-sm font-medium">Emphasis (comma-separated)</label>
-                        <input
-                            className="w-full border rounded-lg p-2"
-                            placeholder="short, brand-safe, ..."
-                            value={emphasis}
-                            onChange={(e) => setEmphasis(e.target.value)}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6">
+
+                {/* 左：上=プラン / 下=ステータス */}
+                <div className="md:col-span-3 space-y-4">
+                    {/* プラン */}
+                    <section className="rounded-2xl border bg-white p-3">
+                        <div className="mb-2 flex items-center justify-between">
+                            <h3 className="text-sm font-medium">プラン</h3>
+                            <button
+                                type="button"
+                                onClick={() => setPlanOpen(true)}
+                                className="text-[12px] underline text-neutral-600 hover:text-neutral-900"
+                            >
+                                詳細を見る
+                            </button>
+                        </div>
+
+                        <CompactPlans
+                            tier={tier}
+                            onGoPro={goPro}
+                            onGoProPlus={goProPlus}
+                            onOpenPortal={openPortal}
                         />
-                    </div>
+                    </section>
+
+                    {/* ステータス */}
+                    <section className="rounded-2xl border bg-white p-3">
+                        <h3 className="mb-2 text-sm font-medium">ステータス</h3>
+                        <p className="text-sm text-neutral-700">
+                            {t('status')}: {remain ?? '—'} {isPro ? '(Pro)' : '(Free)'}
+                        </p>
+                        {typeof subRemain === 'number' && typeof subCap === 'number' && (
+                            <p className="mt-1 text-xs text-neutral-500">
+                                Subscription: {subRemain}/{subCap}
+                            </p>
+                        )}
+                    </section>
                 </div>
-            </section>
 
-            {/* 詳細設定 */}
-            <section className="space-y-3">
-                <AdvancedControlsV2
-                    value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
-                    onChange={(next: Partial<ControlsValue>) => {
-                        if (next.mode !== undefined) setMode(next.mode);
-                        if (next.color !== undefined) setColor(next.color);
-                        if (next.ratio !== undefined) setRatio(next.ratio);
-                        if (next.tone !== undefined) setTone(next.tone);
-                        if (next.dialogueTags !== undefined) setDialogueTags(next.dialogueTags);
-                        if (next.genStyles !== undefined) setGenStyles(next.genStyles);
-                    }}
-                />
-            </section>
+                {/* 中央：入力（下に実行） */}
+                <section className="rounded-2xl border bg-white p-4 md:col-span-6 space-y-3">
+                    <label className="block text-sm font-medium">Input</label>
+                    <textarea
+                        className="w-full h-40 border rounded-lg p-3 focus:outline-none focus:ring"
+                        placeholder="Write your brief here..."
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-sm font-medium">Emphasis (comma-separated)</label>
+                            <input
+                                className="w-full border rounded-lg p-2"
+                                placeholder="short, brand-safe, ..."
+                                value={emphasis}
+                                onChange={(e) => setEmphasis(e.target.value)}
+                            />
+                        </div>
+                    </div>
 
-            {/* 実行 */}
-            <ExecuteFab onRun={handleRun} isPro={isPro} canUseBoost={canUseBoost} />
+                    <ExecuteFab onRun={handleRun} isPro={isPro} canUseBoost={canUseBoost} />
+                </section>
 
-            {/* プラン詳細モーダル */}
+                {/* 右：条件式 */}
+                <aside className="rounded-2xl border bg-white p-4 md:col-span-3">
+                    <h3 className="mb-3 text-sm font-medium">条件式</h3>
+                    <AdvancedControlsV2
+                        value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
+                        onChange={(next: Partial<ControlsValue>) => {
+                            if (next.mode !== undefined) setMode(next.mode);
+                            if (next.color !== undefined) setColor(next.color);
+                            if (next.ratio !== undefined) setRatio(next.ratio);
+                            if (next.tone !== undefined) setTone(next.tone);
+                            if (next.dialogueTags !== undefined) setDialogueTags(next.dialogueTags);
+                            if (next.genStyles !== undefined) setGenStyles(next.genStyles);
+                        }}
+                    />
+                </aside>
+
+                {/* 出力：中央〜右を横断（下段ワイド） */}
+                <section className="rounded-2xl border bg-white p-4 md:col-span-9 md:col-start-4">
+                    <h2 className="mb-2 text-sm font-semibold text-neutral-700">Output</h2>
+                    <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-24">
+                        {output || '—'}
+                    </pre>
+                </section>
+            </div>
+
+            {/* モーダルたち（配置は末尾のままでOK） */}
             <PlanDialog
                 open={planOpen}
                 onClose={() => setPlanOpen(false)}
@@ -254,29 +297,13 @@ export default function HomePage(_props: PageProps) {
                 onOpenPortal={openPortal}
             />
 
-            {/* クレジット不足モーダル（必要ならここからプランへ誘導） */}
             <CreditLimitModal
                 open={limitOpen}
                 onClose={() => setLimitOpen(false)}
                 title="Credit limit reached"
                 body="You've hit today’s free quota. Wait for reset or upgrade your plan."
             />
-
-            {/* プラン表・トリガー */}
-            <CompactPlans />
-            <div className="mt-2">
-                <button className="rounded border px-3 py-1.5 text-sm" onClick={() => setPlanOpen(true)}>
-                    プラン詳細を見る
-                </button>
-            </div>
-
-            {/* 出力 */}
-            <section className="space-y-2">
-                <h2 className="text-sm font-semibold text-neutral-700">Output</h2>
-                <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-24">
-                    {output || '—'}
-                </pre>
-            </section>
         </main>
     );
+
 }
