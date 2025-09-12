@@ -25,7 +25,7 @@ export default function CompactPlans(props: Props) {
             </div>
 
             {/* 横スクロールのカードレール */}
-            <div className="flex gap-3 overflow-x-auto no-scrollbar">
+            <div className="flex flex-col gap-3">
                 <PlanComparison {...props} />
             </div>
 
