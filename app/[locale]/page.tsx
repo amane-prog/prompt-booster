@@ -199,9 +199,8 @@ export default function HomePage(_props: PageProps) {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6">
 
-                {/* 左：プラン（このサイズでOK）＋ ステータス */}
+                {/* 左：プラン + ステータス */}
                 <div className="md:col-span-3 space-y-4">
-                    {/* 縦でもOK / 横スクロール不要ならこのまま */}
                     <CompactPlans
                         tier={tier}
                         onGoPro={goPro}
@@ -215,13 +214,15 @@ export default function HomePage(_props: PageProps) {
                             {t('status')}: {remain ?? '—'} {isPro ? '(Pro)' : '(Free)'}
                         </p>
                         {typeof subRemain === 'number' && typeof subCap === 'number' && (
-                            <p className="mt-1 text-xs text-neutral-500">Subscription: {subRemain}/{subCap}</p>
+                            <p className="mt-1 text-xs text-neutral-500">
+                                Subscription: {subRemain}/{subCap}
+                            </p>
                         )}
                     </section>
                 </div>
 
-                {/* 中央：入力（高さ控えめ／右下に生成ボタン） */}
-                <section className="relative rounded-2xl border bg-white p-4 md:col-span-5 space-y-3">
+                {/* 中央：Input（右下に実行） */}
+                <section className="rounded-2xl border bg-white p-4 md:col-span-4 space-y-3">
                     <label className="block text-sm font-medium">Input</label>
                     <textarea
                         className="w-full h-32 border rounded-lg p-3 focus:outline-none focus:ring"
@@ -229,8 +230,6 @@ export default function HomePage(_props: PageProps) {
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                     />
-
-                    {/* 右下 固定の生成ボタン */}
                     <div className="mt-4 flex justify-end">
                         <button
                             type="button"
@@ -243,11 +242,11 @@ export default function HomePage(_props: PageProps) {
                     </div>
                 </section>
 
-                {/* 右：条件式（幅を広く） */}
-                <aside className="rounded-2xl border bg-white p-4 md:col-span-4 space-y-4">
+                {/* 右：条件式（Emphasis / Tags / Styles + AdvancedControls） */}
+                <aside className="rounded-2xl border bg-white p-4 md:col-span-5 space-y-4">
                     <h3 className="text-sm font-medium">条件式</h3>
 
-                    {/* Emphasis をこちらへ */}
+                    {/* Emphasis */}
                     <div>
                         <label className="mb-1 block text-sm font-medium">Emphasis (comma-separated)</label>
                         <input
@@ -256,17 +255,17 @@ export default function HomePage(_props: PageProps) {
                             value={emphasis}
                             onChange={(e) => setEmphasis(e.target.value)}
                         />
+                        <p className="mt-1 text-[11px] text-neutral-500">
+                            角括弧 [must include] で入力しても抽出されます（サーバ側で自動抽出）。
+                        </p>
                     </div>
 
-                    {/* Tags（dialogueTags を直接編集） */}
+                    {/* Tags */}
                     <div>
                         <label className="mb-1 block text-sm font-medium">Tags</label>
                         <div className="mb-2 flex flex-wrap gap-2">
                             {dialogueTags.map((tag, i) => (
-                                <span
-                                    key={`${tag}-${i}`}
-                                    className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
-                                >
+                                <span key={`${tag}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
                                     {tag}
                                     <button
                                         type="button"
@@ -281,7 +280,7 @@ export default function HomePage(_props: PageProps) {
                         </div>
                         <input
                             className="w-full border rounded-lg p-2 text-sm"
-                            placeholder="タグを入力して Enter or , で追加"
+                            placeholder="タグを入力して Enter / , で追加"
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' || e.key === ',') {
                                     e.preventDefault();
@@ -293,6 +292,39 @@ export default function HomePage(_props: PageProps) {
                         />
                     </div>
 
+                    {/* Styles */}
+                    <div>
+                        <label className="mb-1 block text-sm font-medium">Styles</label>
+                        <div className="mb-2 flex flex-wrap gap-2">
+                            {genStyles.map((st, i) => (
+                                <span key={`${st}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
+                                    {st}
+                                    <button
+                                        type="button"
+                                        className="text-neutral-500 hover:text-neutral-800"
+                                        aria-label="remove"
+                                        onClick={() => setGenStyles(genStyles.filter((_, idx) => idx !== i))}
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                        <input
+                            className="w-full border rounded-lg p-2 text-sm"
+                            placeholder="例) clean, playful, academic…（Enter / , で追加）"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ',') {
+                                    e.preventDefault();
+                                    const v = (e.currentTarget.value || '').trim();
+                                    if (v && !genStyles.includes(v)) setGenStyles([...genStyles, v]);
+                                    e.currentTarget.value = '';
+                                }
+                            }}
+                        />
+                    </div>
+
+                    {/* 既存の Mode / Color / Ratio / Tone コントロール */}
                     <AdvancedControlsV2
                         value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
                         onChange={(next: Partial<ControlsValue>) => {
@@ -306,10 +338,10 @@ export default function HomePage(_props: PageProps) {
                     />
                 </aside>
 
-                {/* 下段：Output を大きく。コピー/共有は右寄せ */}
+                {/* 下段：Output（大きめ）＋ 右寄せのコマンド */}
                 <section className="rounded-2xl border bg-white p-4 md:col-span-9 md:col-start-4">
                     <h2 className="mb-2 text-sm font-semibold text-neutral-700">Output</h2>
-                    <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-[320px] md:min-h-[420px]">
+                    <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-[360px] md:min-h-[480px]">
                         {output || '—'}
                     </pre>
 
@@ -340,7 +372,7 @@ export default function HomePage(_props: PageProps) {
                 </section>
             </div>
 
-            {/* モーダル類（末尾でOK） */}
+            {/* モーダル */}
             <PlanDialog
                 open={planOpen}
                 onClose={() => setPlanOpen(false)}
@@ -359,6 +391,5 @@ export default function HomePage(_props: PageProps) {
             />
         </main>
     );
-
 
 }
