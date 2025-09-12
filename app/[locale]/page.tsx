@@ -194,42 +194,34 @@ export default function HomePage(_props: PageProps) {
     const goProPlus = useCallback(async () => { await openPortal(); }, [openPortal]);
 
     return (
-        <main className="mx-auto max-w-screen-xl px-4 md:px-6 py-6">
+        <main className="w-full px-4 md:px-6 py-6">
             {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6">
 
-                {/* 左：上=プラン（横スクロール） / 下=ステータス */}
+                {/* 左：プラン（このサイズでOK）＋ ステータス */}
                 <div className="md:col-span-3 space-y-4">
-                    {/* CompactPlans を単体で。外枠は付けない＝二重「プラン」解消 */}
-                    <div className="-mx-2 overflow-x-auto px-2">
-                        {/* 中身に最低幅を与えて横スクロールに */}
-                        <div className="min-w-[780px]">
-                            <CompactPlans
-                                tier={tier}
-                                onGoPro={goPro}
-                                onGoProPlus={goProPlus}
-                                onOpenPortal={openPortal}
-                            />
-                        </div>
-                    </div>
+                    {/* 縦でもOK / 横スクロール不要ならこのまま */}
+                    <CompactPlans
+                        tier={tier}
+                        onGoPro={goPro}
+                        onGoProPlus={goProPlus}
+                        onOpenPortal={openPortal}
+                    />
 
-                    {/* ステータス（左下） */}
                     <section className="rounded-2xl border bg-white p-3">
                         <h3 className="mb-2 text-sm font-medium">ステータス</h3>
                         <p className="text-sm text-neutral-700">
                             {t('status')}: {remain ?? '—'} {isPro ? '(Pro)' : '(Free)'}
                         </p>
                         {typeof subRemain === 'number' && typeof subCap === 'number' && (
-                            <p className="mt-1 text-xs text-neutral-500">
-                                Subscription: {subRemain}/{subCap}
-                            </p>
+                            <p className="mt-1 text-xs text-neutral-500">Subscription: {subRemain}/{subCap}</p>
                         )}
                     </section>
                 </div>
 
-                {/* 中央：入力（高さ控えめ） */}
-                <section className="rounded-2xl border bg-white p-4 md:col-span-6 space-y-3">
+                {/* 中央：入力（高さ控えめ／右下に生成ボタン） */}
+                <section className="relative rounded-2xl border bg-white p-4 md:col-span-5 space-y-3">
                     <label className="block text-sm font-medium">Input</label>
                     <textarea
                         className="w-full h-32 border rounded-lg p-3 focus:outline-none focus:ring"
@@ -238,14 +230,21 @@ export default function HomePage(_props: PageProps) {
                         onChange={(e) => setInput(e.target.value)}
                     />
 
-                    {/* Emphasis は右側に移動したのでここは削除 */}
-
-                    {/* 実行ボタン */}
-                    <ExecuteFab onRun={handleRun} isPro={isPro} canUseBoost={canUseBoost} />
+                    {/* 右下 固定の生成ボタン */}
+                    <div className="mt-4 flex justify-end">
+                        <button
+                            type="button"
+                            onClick={handleRun}
+                            className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+                            disabled={!canUseBoost}
+                        >
+                            実行
+                        </button>
+                    </div>
                 </section>
 
-                {/* 右：条件式 + Emphasis */}
-                <aside className="rounded-2xl border bg-white p-4 md:col-span-3 space-y-4">
+                {/* 右：条件式（幅を広く） */}
+                <aside className="rounded-2xl border bg-white p-4 md:col-span-4 space-y-4">
                     <h3 className="text-sm font-medium">条件式</h3>
 
                     {/* Emphasis をこちらへ */}
@@ -256,6 +255,41 @@ export default function HomePage(_props: PageProps) {
                             placeholder="short, brand-safe, ..."
                             value={emphasis}
                             onChange={(e) => setEmphasis(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Tags（dialogueTags を直接編集） */}
+                    <div>
+                        <label className="mb-1 block text-sm font-medium">Tags</label>
+                        <div className="mb-2 flex flex-wrap gap-2">
+                            {dialogueTags.map((tag, i) => (
+                                <span
+                                    key={`${tag}-${i}`}
+                                    className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
+                                >
+                                    {tag}
+                                    <button
+                                        type="button"
+                                        className="text-neutral-500 hover:text-neutral-800"
+                                        aria-label="remove"
+                                        onClick={() => setDialogueTags(dialogueTags.filter((_, idx) => idx !== i))}
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                        <input
+                            className="w-full border rounded-lg p-2 text-sm"
+                            placeholder="タグを入力して Enter or , で追加"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ',') {
+                                    e.preventDefault();
+                                    const v = (e.currentTarget.value || '').trim();
+                                    if (v && !dialogueTags.includes(v)) setDialogueTags([...dialogueTags, v]);
+                                    e.currentTarget.value = '';
+                                }
+                            }}
                         />
                     </div>
 
@@ -272,15 +306,14 @@ export default function HomePage(_props: PageProps) {
                     />
                 </aside>
 
-                {/* 出力：中央〜右を横断（大きめに） */}
+                {/* 下段：Output を大きく。コピー/共有は右寄せ */}
                 <section className="rounded-2xl border bg-white p-4 md:col-span-9 md:col-start-4">
                     <h2 className="mb-2 text-sm font-semibold text-neutral-700">Output</h2>
-                    <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-[280px] md:min-h-[360px]">
+                    <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-[320px] md:min-h-[420px]">
                         {output || '—'}
                     </pre>
 
-                    {/* コピー / 共有 */}
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-3 flex justify-end gap-2">
                         <button
                             type="button"
                             className="rounded border px-3 py-1.5 text-sm"
@@ -307,7 +340,7 @@ export default function HomePage(_props: PageProps) {
                 </section>
             </div>
 
-            {/* モーダルたち（末尾でOK） */}
+            {/* モーダル類（末尾でOK） */}
             <PlanDialog
                 open={planOpen}
                 onClose={() => setPlanOpen(false)}
@@ -318,7 +351,6 @@ export default function HomePage(_props: PageProps) {
                 onTopup1000={buyTopup1000}
                 onOpenPortal={openPortal}
             />
-
             <CreditLimitModal
                 open={limitOpen}
                 onClose={() => setLimitOpen(false)}
