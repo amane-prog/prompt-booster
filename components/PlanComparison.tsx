@@ -1,4 +1,4 @@
-//ƒJ[ƒh•”•ª
+ï»¿//ã‚«ãƒ¼ãƒ‰éƒ¨åˆ†
 'use client'
 
 import { useTranslations } from 'next-intl'

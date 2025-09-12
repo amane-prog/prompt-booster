@@ -1,4 +1,4 @@
-'use client';
+ï»¿'use client';
 
 import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
@@ -36,7 +36,7 @@ export default function PlanDialog({
   const tBilling = useTranslations('billing.checkout');
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Escape ‚Å•Â‚¶‚é
+  // Escape ã§é–‰ã˜ã‚‹
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {

@@ -1,4 +1,4 @@
-// components/CompactPlans.tsx
+﻿// components/CompactPlans.tsx
 'use client'
 
 import { useState } from 'react'
