@@ -197,125 +197,184 @@ export default function HomePage(_props: PageProps) {
         <main className="w-full px-4 md:px-6 py-6">
             {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6 min-h-[calc(100vh-140px)]">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6">
 
-                {/* 左：プラン＋ステータス（中だけスクロール） */}
-                <div className="md:col-span-3 flex flex-col min-h-0">
-                    <section className="rounded-2xl border bg-white p-3 flex flex-col max-h-[76vh] min-h-0">
-                        <div className="mb-2 flex items-center justify-between sticky top-0 bg-white z-10">
-                            <h3 className="text-sm font-medium">プラン</h3>
-                            <button className="text-[12px] underline text-neutral-600" onClick={() => setPlanOpen(true)}>
-                                詳細を見る
-                            </button>
-                        </div>
+                {/* 左：プラン + ステータス */}
+                <div className="md:col-span-3 space-y-4">
+                    <CompactPlans
+                        tier={tier}
+                        onGoPro={goPro}
+                        onGoProPlus={goProPlus}
+                        onOpenPortal={openPortal}
+                    />
 
-                        <div className="overflow-y-auto min-h-0 space-y-4">
-                            <CompactPlans tier={tier} onGoPro={goPro} onGoProPlus={goProPlus} onOpenPortal={openPortal} />
-                            <section className="rounded-2xl border bg-white p-3">
-                                <h4 className="mb-1 text-sm font-medium">ステータス</h4>
-                                <p className="text-sm text-neutral-700">
-                                    {t('status')}: {remain ?? '—'} {isPro ? '(Pro)' : '(Free)'}
-                                </p>
-                                {typeof subRemain === 'number' && typeof subCap === 'number' && (
-                                    <p className="mt-1 text-xs text-neutral-500">Subscription: {subRemain}/{subCap}</p>
-                                )}
-                            </section>
-                        </div>
+                    <section className="rounded-2xl border bg-white p-3">
+                        <h3 className="mb-2 text-sm font-medium">ステータス</h3>
+                        <p className="text-sm text-neutral-700">
+                            {t('status')}: {remain ?? '—'} {isPro ? '(Pro)' : '(Free)'}
+                        </p>
+                        {typeof subRemain === 'number' && typeof subCap === 'number' && (
+                            <p className="mt-1 text-xs text-neutral-500">
+                                Subscription: {subRemain}/{subCap}
+                            </p>
+                        )}
                     </section>
                 </div>
 
-                {/* 中央：Input（本文は伸縮、下にボタン固定） */}
-                <section className="md:col-span-4 rounded-2xl border bg-white p-4 flex flex-col max-h-[76vh] min-h-0">
+                {/* 中央：Input（セクション全体にフィット） */}
+                <section className="md:col-span-4 rounded-2xl border bg-white p-4
+                    min-h-[360px] flex flex-col min-w-0">
                     <label className="mb-2 block text-sm font-medium">Input</label>
 
                     <textarea
-                        className="flex-1 w-full min-h-[180px] resize-y border rounded-lg p-3 focus:outline-none focus:ring"
+                        className="flex-1 w-full min-h-[180px] resize-y border rounded-lg p-3
+               focus:outline-none focus:ring"
                         placeholder="Write your brief here..."
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                     />
 
-                    <div className="sticky bottom-0 pt-3 bg-white/90">
-                        <div className="flex justify-end">
-                            <button
-                                type="button"
-                                onClick={handleRun}
-                                className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
-                                disabled={!canUseBoost}
-                            >
-                                実行
-                            </button>
-                        </div>
+                    <div className="pt-3 flex justify-end">
+                        <button
+                            type="button"
+                            onClick={handleRun}
+                            className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+                            disabled={!canUseBoost}
+                        >
+                            実行
+                        </button>
                     </div>
                 </section>
 
-                {/* 右：条件式（上見出し固定・中スクロール） */}
-                <aside className="md:col-span-5 rounded-2xl border bg-white p-4 flex flex-col max-h-[76vh] min-h-0">
-                    <h3 className="text-sm font-medium sticky top-0 bg-white z-10 pb-2">条件式</h3>
+                {/* 右：条件式（Emphasis / Tags / Styles + AdvancedControls） */}
+                <aside className="rounded-2xl border bg-white p-4 md:col-span-5 space-y-4">
+                    <h3 className="text-sm font-medium">条件式</h3>
 
-                    <div className="overflow-y-auto min-h-0 space-y-4">
-                        {/* Emphasis */}
-                        <div>
-                            <label className="mb-1 block text-sm font-medium">Emphasis (comma-separated)</label>
-                            <input
-                                className="w-full border rounded-lg p-2"
-                                placeholder="short, brand-safe, ..."
-                                value={emphasis}
-                                onChange={(e) => setEmphasis(e.target.value)}
-                            />
-                            <p className="mt-1 text-[11px] text-neutral-500">[must include] の角括弧でも抽出されます。</p>
+                    {/* Emphasis */}
+                    <div>
+                        <label className="mb-1 block text-sm font-medium">Emphasis (comma-separated)</label>
+                        <input
+                            className="w-full border rounded-lg p-2"
+                            placeholder="short, brand-safe, ..."
+                            value={emphasis}
+                            onChange={(e) => setEmphasis(e.target.value)}
+                        />
+                        <p className="mt-1 text-[11px] text-neutral-500">
+                            角括弧 [must include] で入力しても抽出されます（サーバ側で自動抽出）。
+                        </p>
+                    </div>
+
+                    {/* Tags */}
+                    <div>
+                        <label className="mb-1 block text-sm font-medium">Tags</label>
+                        <div className="mb-2 flex flex-wrap gap-2">
+                            {dialogueTags.map((tag, i) => (
+                                <span key={`${tag}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
+                                    {tag}
+                                    <button
+                                        type="button"
+                                        className="text-neutral-500 hover:text-neutral-800"
+                                        aria-label="remove"
+                                        onClick={() => setDialogueTags(dialogueTags.filter((_, idx) => idx !== i))}
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            ))}
                         </div>
-
-                        {/* Tags / Styles はそのまま */}
-                        {/* …既存の Tags / Styles / AdvancedControlsV2 をここに… */}
-                        <AdvancedControlsV2
-                            value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
-                            onChange={(next) => {
-                                if (next.mode !== undefined) setMode(next.mode);
-                                if (next.color !== undefined) setColor(next.color);
-                                if (next.ratio !== undefined) setRatio(next.ratio);
-                                if (next.tone !== undefined) setTone(next.tone);
-                                if (next.dialogueTags !== undefined) setDialogueTags(next.dialogueTags);
-                                if (next.genStyles !== undefined) setGenStyles(next.genStyles);
+                        <input
+                            className="w-full border rounded-lg p-2 text-sm"
+                            placeholder="タグを入力して Enter / , で追加"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ',') {
+                                    e.preventDefault();
+                                    const v = (e.currentTarget.value || '').trim();
+                                    if (v && !dialogueTags.includes(v)) setDialogueTags([...dialogueTags, v]);
+                                    e.currentTarget.value = '';
+                                }
                             }}
                         />
                     </div>
+
+                    {/* Styles */}
+                    <div>
+                        <label className="mb-1 block text-sm font-medium">Styles</label>
+                        <div className="mb-2 flex flex-wrap gap-2">
+                            {genStyles.map((st, i) => (
+                                <span key={`${st}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
+                                    {st}
+                                    <button
+                                        type="button"
+                                        className="text-neutral-500 hover:text-neutral-800"
+                                        aria-label="remove"
+                                        onClick={() => setGenStyles(genStyles.filter((_, idx) => idx !== i))}
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                        <input
+                            className="w-full border rounded-lg p-2 text-sm"
+                            placeholder="例) clean, playful, academic…（Enter / , で追加）"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ',') {
+                                    e.preventDefault();
+                                    const v = (e.currentTarget.value || '').trim();
+                                    if (v && !genStyles.includes(v)) setGenStyles([...genStyles, v]);
+                                    e.currentTarget.value = '';
+                                }
+                            }}
+                        />
+                    </div>
+
+                    {/* 既存の Mode / Color / Ratio / Tone コントロール */}
+                    <AdvancedControlsV2
+                        value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
+                        onChange={(next: Partial<ControlsValue>) => {
+                            if (next.mode !== undefined) setMode(next.mode);
+                            if (next.color !== undefined) setColor(next.color);
+                            if (next.ratio !== undefined) setRatio(next.ratio);
+                            if (next.tone !== undefined) setTone(next.tone);
+                            if (next.dialogueTags !== undefined) setDialogueTags(next.dialogueTags);
+                            if (next.genStyles !== undefined) setGenStyles(next.genStyles);
+                        }}
+                    />
                 </aside>
 
-                {/* 下段：Output（本文スクロール、操作は下固定） */}
-                <section className="rounded-2xl border bg-white p-4 md:col-span-9 md:col-start-4 flex flex-col max-h-[70vh] min-h-[40vh]">
+                {/* 下段：Output（大きめ）＋ 右寄せのコマンド */}
+                <section className="rounded-2xl border bg-white p-4 md:col-span-9 md:col-start-4">
                     <h2 className="mb-2 text-sm font-semibold text-neutral-700">Output</h2>
-
-                    <pre className="flex-1 overflow-y-auto whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50">
+                    <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-[360px] md:min-h-[480px]">
                         {output || '—'}
                     </pre>
 
-                    <div className="sticky bottom-0 bg-white/90 pt-2">
-                        <div className="mt-2 flex justify-end gap-2">
-                            <button
-                                type="button"
-                                className="rounded border px-3 py-1.5 text-sm"
-                                onClick={() => navigator.clipboard?.writeText(output || '')}
-                                disabled={!output}
-                            >
-                                コピー
-                            </button>
-                            <button
-                                type="button"
-                                className="rounded border px-3 py-1.5 text-sm"
-                                onClick={async () => {
-                                    if (navigator.share && output) { try { await navigator.share({ text: output }); } catch { } }
-                                    else { await navigator.clipboard?.writeText(output || '') }
-                                }}
-                                disabled={!output}
-                            >
-                                共有
-                            </button>
-                        </div>
+                    <div className="mt-3 flex justify-end gap-2">
+                        <button
+                            type="button"
+                            className="rounded border px-3 py-1.5 text-sm"
+                            onClick={() => navigator.clipboard?.writeText(output || '')}
+                            disabled={!output}
+                        >
+                            コピー
+                        </button>
+                        <button
+                            type="button"
+                            className="rounded border px-3 py-1.5 text-sm"
+                            onClick={async () => {
+                                if (navigator.share && output) {
+                                    try { await navigator.share({ text: output }); } catch { /* noop */ }
+                                } else {
+                                    await navigator.clipboard?.writeText(output || '');
+                                }
+                            }}
+                            disabled={!output}
+                        >
+                            共有
+                        </button>
                     </div>
                 </section>
             </div>
-
 
             {/* モーダル */}
             <PlanDialog
