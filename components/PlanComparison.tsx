@@ -58,10 +58,16 @@ export default function PlanComparison({
     const tCommon = useTranslations('common')
 
     const isFree = tier === 'free'
+    const isPro = tier === 'pro'
+    const isProPlus = tier === 'pro_plus'
+
+    // ProカードのCTA/ハンドラ
     const ctaPro = isFree ? tNav('goPro') : tCommon('managePlan')
-    const ctaProPlus = isFree ? tNav('goProPlus') : tCommon('managePlan')
     const clickPro = isFree ? onGoPro : onOpenPortal
-    const clickProPlus = isFree ? onGoProPlus : onOpenPortal
+
+    // Pro+カードのCTA/ハンドラ（Proのときは必ずCheckoutでアップグレード）
+    const ctaProPlus = (isFree || isPro) ? tNav('goProPlus') : tCommon('managePlan')
+    const clickProPlus = (isFree || isPro) ? onGoProPlus : onOpenPortal
 
     return (
         <section>
@@ -71,8 +77,7 @@ export default function PlanComparison({
                     title={t('free.name')}
                     price={t('free.price')}
                     bullets={[t('bullets.daily3'), t('bullets.chars500'), t('bullets.topup')]}
-                    cta={t('cta.free')}
-                    onClick={onOpenPortal}
+                // 現在のプラン表示。CTA無し（または disabled ボタンにしたいなら onClick 渡さない）
                 />
                 <Card
                     title={t('pro.name')}
@@ -83,14 +88,25 @@ export default function PlanComparison({
                     onClick={clickPro}
                     highlight
                 />
-                <Card
-                    title={t('pro_plus.name')}
-                    badge={t('badges.bestValue')}
-                    price={t('pro_plus.price')}
-                    bullets={[t('bullets.cap1000'), t('bullets.chars2000'), t('bullets.priority')]}
-                    cta={ctaProPlus}
-                    onClick={clickProPlus}
-                />
+                {isProPlus ? (
+                    <Card
+                        title={t('pro_plus.name')}
+                        badge={t('badges.bestValue')}
+                        price={t('pro_plus.price')}
+                        bullets={[t('bullets.cap1000'), t('bullets.chars2000'), t('bullets.priority')]}
+                        cta={tCommon('managePlan')}
+                        onClick={onOpenPortal}
+                    />
+                ) : (
+                    <Card
+                        title={t('pro_plus.name')}
+                        badge={t('badges.bestValue')}
+                        price={t('pro_plus.price')}
+                        bullets={[t('bullets.cap1000'), t('bullets.chars2000'), t('bullets.priority')]}
+                        cta={tNav('goProPlus')}
+                        onClick={onGoProPlus}
+                    />
+                )}
             </div>
         </section>
     )
