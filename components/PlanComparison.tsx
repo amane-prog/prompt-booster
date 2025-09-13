@@ -21,7 +21,7 @@ function Card({
 }) {
     return (
         <div className={[
-            'flex flex-col rounded-2xl border bg-white p-4',
+            'w-full min-w-0 flex flex-col rounded-2xl border bg-white p-4',
             highlight ? 'ring-1 ring-blue-400 shadow-[0_0_0_1px_rgba(59,130,246,.2)]' : ''
         ].join(' ')}>
             <div className="mb-2 flex items-center justify-between">
@@ -66,7 +66,7 @@ export default function PlanComparison({
     return (
         <section>
             <h3 className="mb-2 text-sm font-medium">{tPC('title')}</h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4">
                 <Card
                     title={t('free.name')}
                     price={t('free.price')}
