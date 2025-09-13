@@ -1,4 +1,4 @@
-// app/[locale]/auth/callback/page.tsx
+ï»¿// app/[locale]/auth/callback/page.tsx
 'use client';
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -19,10 +19,10 @@ export default function AuthCallback() {
 
         (async () => {
             const { error } = await supabase.auth.exchangeCodeForSession(code);
-            // ¬Œ÷/¸”s‚Ç‚Á‚¿‚Å‚àƒz[ƒ€‚ÖiD‚İ‚ÅƒŠƒ_ƒCƒŒƒNƒgæ’²®j
+            // æˆåŠŸ/å¤±æ•—ã©ã£ã¡ã§ã‚‚ãƒ›ãƒ¼ãƒ ã¸ï¼ˆå¥½ã¿ã§ãƒªãƒ€ã‚¤ãƒ¬ã‚¯ãƒˆå…ˆèª¿æ•´ï¼‰
             router.replace('/');
         })();
     }, [router, sp]);
 
-    return <div className="p-6 text-sm text-neutral-600">Signing you inc</div>;
+    return <div className="p-6 text-sm text-neutral-600">Signing you inâ€¦</div>;
 }
