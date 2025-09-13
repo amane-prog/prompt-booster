@@ -1,4 +1,4 @@
-﻿// app/[locale]/billing/canceled/page.tsx
+﻿// \prompt-booster\app\[locale]\billing\canceled
 'use client';
 
 import Link from 'next/link';

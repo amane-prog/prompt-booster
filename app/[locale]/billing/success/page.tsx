@@ -1,4 +1,4 @@
-﻿// app/[locale]/billing/success/page.tsx
+﻿// \app\[locale]\billing\success
 'use client';
 
 import { useEffect } from 'react';

@@ -1,3 +1,4 @@
+//\prompt - booster\app\[locale]\billing\portal
 'use client'
 
 import { useEffect, useState } from 'react'
