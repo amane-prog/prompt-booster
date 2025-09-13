@@ -217,6 +217,20 @@ export default function HomePage(_props: PageProps) {
                                 Subscription: {subRemain}/{subCap}
                             </p>
                         )}
+                        <div className="mt-3 flex gap-2">
+                            <button
+                                className="rounded-lg border px-3 py-1.5 text-sm"
+                                onClick={buyTopup300}
+                            >
+                                追加パック 300
+                            </button>
+                            <button
+                                className="rounded-lg border px-3 py-1.5 text-sm"
+                                onClick={buyTopup1000}
+                            >
+                                追加パック 1000
+                            </button>
+                        </div>
                     </section>
                 </div>
 
