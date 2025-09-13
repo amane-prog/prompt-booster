@@ -222,18 +222,17 @@ export default function HomePage(_props: PageProps) {
                 </div>
 
                 {/* 中央：Input（右9列のうち 6列 = 主役） */}
-                <section className="md:col-span-6 rounded-2xl border bg-white p-4
-                    min-h-[360px] flex flex-col min-w-0">
+                <section className="md:col-span-6 rounded-2xl border bg-white p-3 flex flex-col min-w-0">
+
                     <label className="mb-2 block text-sm font-medium">Input</label>
 
                     <textarea
-                        className="flex-1 w-full min-h-[220px] md:min-h-[320px] resize-y border rounded-lg p-3 focus:outline-none focus:ring"
-                        placeholder="Write your brief here..."
+                        className="w-full h-40 md:h-56 resize-y border rounded-lg p-3 focus:outline-none focus:ring" placeholder="Write your brief here..."
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                     />
 
-                    <div className="pt-3 flex justify-end">
+                    <div className="pt-2 flex justify-end">
                         <button
                             type="button"
                             onClick={handleRun}
@@ -246,7 +245,7 @@ export default function HomePage(_props: PageProps) {
                 </section>
 
                 {/* 右：条件式（1/3 = 3列） */}
-                <aside className="rounded-2xl border bg-white p-4 md:col-span-3 space-y-4">
+                <aside className="rounded-2xl border bg-white p-3 md:col-span-3 space-y-3">
                     <h3 className="text-sm font-medium">条件式</h3>
 
                     {/* Emphasis */}
