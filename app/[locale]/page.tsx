@@ -199,7 +199,7 @@ export default function HomePage(_props: PageProps) {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6 items-start">
 
-                {/* 左：プラン + ステータス */}
+                {/* 左：プラン + ステータス（固定） */}
                 <div className="md:col-span-3 space-y-4 md:sticky md:top-4 self-start">
                     <CompactPlans
                         tier={tier}
@@ -207,7 +207,6 @@ export default function HomePage(_props: PageProps) {
                         onGoProPlus={goProPlus}
                         onOpenPortal={openPortal}
                     />
-
                     <section className="rounded-2xl border bg-white p-3">
                         <h3 className="mb-2 text-sm font-medium">ステータス</h3>
                         <p className="text-sm text-neutral-700">
@@ -221,157 +220,159 @@ export default function HomePage(_props: PageProps) {
                     </section>
                 </div>
 
-                {/* 中央：Input（右9列のうち 6列 = 主役） */}
-                <section className="md:col-span-6 self-start rounded-2xl border bg-white p-4 flex flex-col min-w-0">
+                {/* 右9列：Input/Output と 条件式のネストグリッド */}
+                <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-9 md:grid-rows-[auto_auto] gap-6 items-start">
 
-                    <label className="mb-2 block text-sm font-medium">Input</label>
-
-                    <textarea
-                        className="w-full h-40 md:h-56 resize-y border rounded-lg p-3 focus:outline-none focus:ring" placeholder="Write your brief here..."
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                    />
-
-                    <div className="pt-2 flex justify-end">
-                        <button
-                            type="button"
-                            onClick={handleRun}
-                            className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
-                            disabled={!canUseBoost}
-                        >
-                            実行
-                        </button>
-                    </div>
-                </section>
-
-                {/* 右：条件式（1/3 = 3列） */}
-                <aside className="md:col-span-3 self-start rounded-2xl border bg-white p-4 space-y-4">
-                    <h3 className="text-sm font-medium">条件式</h3>
-
-                    {/* Emphasis */}
-                    <div>
-                        <label className="mb-1 block text-sm font-medium">Emphasis (comma-separated)</label>
-                        <input
-                            className="w-full border rounded-lg p-2"
-                            placeholder="short, brand-safe, ..."
-                            value={emphasis}
-                            onChange={(e) => setEmphasis(e.target.value)}
+                    {/* 中央：Input（左6, 1行目） */}
+                    <section className="md:col-span-6 row-start-1 self-start rounded-2xl border bg-white p-4 flex flex-col min-w-0">
+                        <label className="mb-2 block text-sm font-medium">Input</label>
+                        <textarea
+                            className="w-full h-40 md:h-56 resize-y border rounded-lg p-3 focus:outline-none focus:ring"
+                            placeholder="Write your brief here..."
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
                         />
-                        <p className="mt-1 text-[11px] text-neutral-500">
-                            角括弧 [must include] で入力しても抽出されます（サーバ側で自動抽出）。
-                        </p>
-                    </div>
-
-                    {/* Tags */}
-                    <div>
-                        <label className="mb-1 block text-sm font-medium">Tags</label>
-                        <div className="mb-2 flex flex-wrap gap-2">
-                            {dialogueTags.map((tag, i) => (
-                                <span key={`${tag}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
-                                    {tag}
-                                    <button
-                                        type="button"
-                                        className="text-neutral-500 hover:text-neutral-800"
-                                        aria-label="remove"
-                                        onClick={() => setDialogueTags(dialogueTags.filter((_, idx) => idx !== i))}
-                                    >
-                                        ×
-                                    </button>
-                                </span>
-                            ))}
+                        <div className="pt-2 flex justify-end">
+                            <button
+                                type="button"
+                                onClick={handleRun}
+                                className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+                                disabled={!canUseBoost}
+                            >
+                                実行
+                            </button>
                         </div>
-                        <input
-                            className="w-full border rounded-lg p-2 text-sm"
-                            placeholder="タグを入力して Enter / , で追加"
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ',') {
-                                    e.preventDefault();
-                                    const v = (e.currentTarget.value || '').trim();
-                                    if (v && !dialogueTags.includes(v)) setDialogueTags([...dialogueTags, v]);
-                                    e.currentTarget.value = '';
-                                }
-                            }}
-                        />
-                    </div>
+                    </section>
 
-                    {/* Styles */}
-                    <div>
-                        <label className="mb-1 block text-sm font-medium">Styles</label>
-                        <div className="mb-2 flex flex-wrap gap-2">
-                            {genStyles.map((st, i) => (
-                                <span key={`${st}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
-                                    {st}
-                                    <button
-                                        type="button"
-                                        className="text-neutral-500 hover:text-neutral-800"
-                                        aria-label="remove"
-                                        onClick={() => setGenStyles(genStyles.filter((_, idx) => idx !== i))}
-                                    >
-                                        ×
-                                    </button>
-                                </span>
-                            ))}
+                    {/* 右：条件式（右3, 2行ぶち抜き） */}
+                    <aside className="md:col-span-3 md:row-span-2 self-start rounded-2xl border bg-white p-4 space-y-4">
+                        <h3 className="text-sm font-medium">条件式</h3>
+
+                        {/* Emphasis */}
+                        <div>
+                            <label className="mb-1 block text-sm font-medium">Emphasis (comma-separated)</label>
+                            <input
+                                className="w-full border rounded-lg p-2"
+                                placeholder="short, brand-safe, ..."
+                                value={emphasis}
+                                onChange={(e) => setEmphasis(e.target.value)}
+                            />
+                            <p className="mt-1 text-[11px] text-neutral-500">
+                                角括弧 [must include] で入力しても抽出されます（サーバ側で自動抽出）。
+                            </p>
                         </div>
-                        <input
-                            className="w-full border rounded-lg p-2 text-sm"
-                            placeholder="例) clean, playful, academic…（Enter / , で追加）"
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ',') {
-                                    e.preventDefault();
-                                    const v = (e.currentTarget.value || '').trim();
-                                    if (v && !genStyles.includes(v)) setGenStyles([...genStyles, v]);
-                                    e.currentTarget.value = '';
-                                }
+
+                        {/* Tags */}
+                        <div>
+                            <label className="mb-1 block text-sm font-medium">Tags</label>
+                            <div className="mb-2 flex flex-wrap gap-2">
+                                {dialogueTags.map((tag, i) => (
+                                    <span key={`${tag}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
+                                        {tag}
+                                        <button
+                                            type="button"
+                                            className="text-neutral-500 hover:text-neutral-800"
+                                            aria-label="remove"
+                                            onClick={() => setDialogueTags(dialogueTags.filter((_, idx) => idx !== i))}
+                                        >
+                                            ×
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                            <input
+                                className="w-full border rounded-lg p-2 text-sm"
+                                placeholder="タグを入力して Enter / , で追加"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ',') {
+                                        e.preventDefault();
+                                        const v = (e.currentTarget.value || '').trim();
+                                        if (v && !dialogueTags.includes(v)) setDialogueTags([...dialogueTags, v]);
+                                        e.currentTarget.value = '';
+                                    }
+                                }}
+                            />
+                        </div>
+
+                        {/* Styles */}
+                        <div>
+                            <label className="mb-1 block text-sm font-medium">Styles</label>
+                            <div className="mb-2 flex flex-wrap gap-2">
+                                {genStyles.map((st, i) => (
+                                    <span key={`${st}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
+                                        {st}
+                                        <button
+                                            type="button"
+                                            className="text-neutral-500 hover:text-neutral-800"
+                                            aria-label="remove"
+                                            onClick={() => setGenStyles(genStyles.filter((_, idx) => idx !== i))}
+                                        >
+                                            ×
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                            <input
+                                className="w-full border rounded-lg p-2 text-sm"
+                                placeholder="例) clean, playful, academic…（Enter / , で追加）"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ',') {
+                                        e.preventDefault();
+                                        const v = (e.currentTarget.value || '').trim();
+                                        if (v && !genStyles.includes(v)) setGenStyles([...genStyles, v]);
+                                        e.currentTarget.value = '';
+                                    }
+                                }}
+                            />
+                        </div>
+
+                        {/* 既存の Mode / Color / Ratio / Tone コントロール */}
+                        <AdvancedControlsV2
+                            value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
+                            onChange={(next: Partial<ControlsValue>) => {
+                                if (next.mode !== undefined) setMode(next.mode);
+                                if (next.color !== undefined) setColor(next.color);
+                                if (next.ratio !== undefined) setRatio(next.ratio);
+                                if (next.tone !== undefined) setTone(next.tone);
+                                if (next.dialogueTags !== undefined) setDialogueTags(next.dialogueTags);
+                                if (next.genStyles !== undefined) setGenStyles(next.genStyles);
                             }}
                         />
-                    </div>
+                    </aside>
 
-                    {/* 既存の Mode / Color / Ratio / Tone コントロール */}
-                    <AdvancedControlsV2
-                        value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
-                        onChange={(next: Partial<ControlsValue>) => {
-                            if (next.mode !== undefined) setMode(next.mode);
-                            if (next.color !== undefined) setColor(next.color);
-                            if (next.ratio !== undefined) setRatio(next.ratio);
-                            if (next.tone !== undefined) setTone(next.tone);
-                            if (next.dialogueTags !== undefined) setDialogueTags(next.dialogueTags);
-                            if (next.genStyles !== undefined) setGenStyles(next.genStyles);
-                        }}
-                    />
-                </aside>
+                    {/* Output（左6, 2行目：Inputの直下） */}
+                    <section className="md:col-span-6 row-start-2 self-start rounded-2xl border bg-white p-4">
+                        <h2 className="mb-2 text-sm font-semibold text-neutral-700">Output</h2>
+                        <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-[280px] md:min-h-[360px]">
+                            {output || '—'}
+                        </pre>
+                        <div className="mt-3 flex justify-end gap-2">
+                            <button
+                                type="button"
+                                className="rounded border px-3 py-1.5 text-sm"
+                                onClick={() => navigator.clipboard?.writeText(output || '')}
+                                disabled={!output}
+                            >
+                                コピー
+                            </button>
+                            <button
+                                type="button"
+                                className="rounded border px-3 py-1.5 text-sm"
+                                onClick={async () => {
+                                    if (navigator.share && output) {
+                                        try { await navigator.share({ text: output }); } catch { /* noop */ }
+                                    } else {
+                                        await navigator.clipboard?.writeText(output || '');
+                                    }
+                                }}
+                                disabled={!output}
+                            >
+                                共有
+                            </button>
+                        </div>
+                    </section>
 
-                {/* 下段：Output（大きめ）＋ 右寄せのコマンド */}
-                <section className="rounded-2xl border bg-white p-4 md:col-span-9 md:col-start-4">
-                    <h2 className="mb-2 text-sm font-semibold text-neutral-700">Output</h2>
-                    <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-[360px] md:min-h-[480px]">
-                        {output || '—'}
-                    </pre>
-
-                    <div className="mt-3 flex justify-end gap-2">
-                        <button
-                            type="button"
-                            className="rounded border px-3 py-1.5 text-sm"
-                            onClick={() => navigator.clipboard?.writeText(output || '')}
-                            disabled={!output}
-                        >
-                            コピー
-                        </button>
-                        <button
-                            type="button"
-                            className="rounded border px-3 py-1.5 text-sm"
-                            onClick={async () => {
-                                if (navigator.share && output) {
-                                    try { await navigator.share({ text: output }); } catch { /* noop */ }
-                                } else {
-                                    await navigator.clipboard?.writeText(output || '');
-                                }
-                            }}
-                            disabled={!output}
-                        >
-                            共有
-                        </button>
-                    </div>
-                </section>
+                </div>
             </div>
 
             {/* モーダル */}
@@ -393,5 +394,6 @@ export default function HomePage(_props: PageProps) {
             />
         </main>
     );
+
 
 }
