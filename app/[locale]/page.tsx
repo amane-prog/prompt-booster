@@ -92,10 +92,11 @@ export default function HomePage(_props: PageProps) {
     const [planOpen, setPlanOpen] = useState(false);
 
     const isPro = tier !== 'free';
-    const canUseBoost = useMemo(
-        () => (isPro ? true : typeof remain === 'number' ? remain > 0 : true),
-        [isPro, remain]
-    );
+    const canUseBoost = useMemo(() => {
+        if (isPro) return (subRemain ?? 0) > 0 || (topupRemain ?? 0) > 0;
+        if (typeof remain === 'number') return remain > 0 || (topupRemain ?? 0) > 0;
+        return true;
+    }, [isPro, remain, subRemain, topupRemain]);
 
     // ---- ステータス再取得 ----
     const refreshStatus = useCallback(async () => {
@@ -215,6 +216,11 @@ export default function HomePage(_props: PageProps) {
                         {typeof subRemain === 'number' && typeof subCap === 'number' && (
                             <p className="mt-1 text-xs text-neutral-500">
                                 Subscription: {subRemain}/{subCap}
+                            </p>
+                        )}
+                        {topupRemain > 0 && (
+                            <p className="mt-1 text-xs text-neutral-500">
+                                追加パック残: {topupRemain}
                             </p>
                         )}
                         <div className="mt-3 flex gap-2">

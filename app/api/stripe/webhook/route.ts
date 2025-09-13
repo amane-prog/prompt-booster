@@ -88,28 +88,37 @@ export async function POST(req: NextRequest) {
                 // --- Top-up（one-time payment）処理 ---
                 const isTopup = s.mode === 'payment' || !s.subscription
                 if (isTopup && s.payment_status === 'paid') {
-                    const lineItems = await stripe.checkout.sessions.listLineItems(s.id, { limit: 10 })
-                    for (const item of lineItems.data) {
-                        const priceId = typeof item.price === 'string' ? item.price : item.price?.id
-                        const qty = item.quantity ?? 1
-                        let amount = 0
-                        if (priceId === TOPUP_300_PRICE_ID) amount = 300 * qty
-                        if (priceId === TOPUP_1000_PRICE_ID) amount = 1000 * qty
-                        if (amount <= 0) continue
+                    const items = await stripe.checkout.sessions.listLineItems(s.id, { limit: 20 })
+                    const add = items.data.reduce((sum, li) => {
+                        const pid = typeof li.price === 'string' ? li.price : li.price?.id
+                        const qty = li.quantity ?? 1
+                        if (!pid) return sum
+                        if (pid === TOPUP_300_PRICE_ID) return sum + 300 * qty
+                        if (pid === TOPUP_1000_PRICE_ID) return sum + 1000 * qty
+                        return sum
+                    }, 0)
 
+                    if (add > 0) {
                         const expireAt = new Date()
-                        expireAt.setMonth(expireAt.getMonth() + 3) // 3ヶ月有効
-
-                        await sb.from('user_topups').upsert(
+                        expireAt.setMonth(expireAt.getMonth() + 3) // 3ヶ月
+                        const { error } = await sb.from('user_topups').upsert(
                             {
                                 user_id: userId,
-                                amount,
-                                remain: amount,
+                                amount: add,
+                                remain: add,
                                 expire_at: expireAt.toISOString(),
                                 stripe_event_id: event.id,
                             },
                             { onConflict: 'stripe_event_id' }
                         )
+                        if (error) {
+                            console.error('[topup upsert error]', error)
+                            // 重要: ここで throw しない（Stripeに5xx返すとリトライ地獄になる）
+                        }
+                    } else {
+                        console.warn('[topup] priceId mismatch or env not set', {
+                            TOPUP_300_PRICE_ID, TOPUP_1000_PRICE_ID, sessionId: s.id
+                        })
                     }
                 }
 
