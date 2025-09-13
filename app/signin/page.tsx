@@ -33,11 +33,14 @@ export default function SignInPage(_props: PageProps) {
                     ? window.location.origin
                     : process.env.NEXT_PUBLIC_SITE_ORIGIN || 'http://localhost:3000';
 
+            const loc =
+                (typeof document !== 'undefined' &&
+                    document.cookie.match(/(?:^|; )NEXT_LOCALE=([^;]+)/)?.[1]) ||
+                'ja'
             const { error } = await supabase.auth.signInWithOtp({
                 email,
-                options: { emailRedirectTo: `${siteOrigin}/auth/callback` },
-            });
-
+                options: { emailRedirectTo: `${siteOrigin}/${loc}/auth/callback` },
+            })
             if (error) {
                 setMsg(error.message);
             } else {

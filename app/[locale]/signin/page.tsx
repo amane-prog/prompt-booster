@@ -1,4 +1,5 @@
-﻿'use client'
+﻿//prompt-booster\app\[locale]\signin
+'use client'
 
 import { useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
@@ -19,8 +20,16 @@ export default function SignInPage() {
         setLoading(true)
         try {
             const next = params.get('next') || `/${locale}`
-            const redirectTo = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/auth/callback?next=${encodeURIComponent(next)}`
-            const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } })
+            const origin =
+                typeof window !== 'undefined'
+                    ? window.location.origin
+                    : (process.env.NEXT_PUBLIC_SITE_ORIGIN || process.env.NEXT_PUBLIC_APP_BASE_URL)!
+            const redirectTo = `${origin}/${locale}/auth/callback?next=${encodeURIComponent(next)}`
+            const { error } = await supabase.auth.signInWithOtp({
+                email,
+                options: { emailRedirectTo: redirectTo }
+            })
+
             if (error) throw error
             setSent(true)
         } catch (err) {
