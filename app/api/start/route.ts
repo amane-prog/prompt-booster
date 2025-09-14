@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from 'next/server'
+ï»¿import { NextResponse, type NextRequest } from 'next/server'
 import Stripe from 'stripe'
 import { supabaseServer } from '@/lib/supabaseServer'
 import { isPro as isProDate } from '@/lib/plan'
@@ -17,7 +17,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 const PRICE_PRO = process.env.STRIPE_PRICE_PRO!         // price_xxx
 const PRICE_PRO_PLUS = process.env.STRIPE_PRICE_PRO_PLUS! // price_xxx
-const APP_BASE_URL = process.env.APP_BASE_URL!           // —á: https://prompt-booster.app
+const APP_BASE_URL = process.env.APP_BASE_URL!           // ä¾‹: https://prompt-booster.app
 
 export async function POST(req: NextRequest) {
     try {
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
         const user = auth.user
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-        // ---- 1) ¿‹—p‚ÌStripe Customer‚ğ—pˆÓi‚È‚¯‚ê‚Îì¬j
+        // ---- 1) è«‹æ±‚ç”¨ã®Stripe Customerã‚’ç”¨æ„ï¼ˆãªã‘ã‚Œã°ä½œæˆï¼‰
         const { data: billingRaw } = await sb
             .from('user_billing')
             .select('pro_until, plan_tier, stripe_customer_id')
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
         let stripeCustomerId = billing?.stripe_customer_id ?? null
         if (!stripeCustomerId) {
-            // email‚Íƒ}ƒWƒbƒNƒŠƒ“ƒN‚Ì‚İ‚Æ‚Ì‚±‚Æ‚È‚Ì‚Åauth.user‚©‚çæ“¾
+            // emailã¯ãƒã‚¸ãƒƒã‚¯ãƒªãƒ³ã‚¯ã®ã¿ã¨ã®ã“ã¨ãªã®ã§auth.userã‹ã‚‰å–å¾—
             const email = user.email ?? undefined
             const customer = await stripe.customers.create({
                 email,
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
             })
             stripeCustomerId = customer.id
 
-            // •Û‘¶iRLS‚Í‚±‚ÌAPI‚ªserver‘¤‚È‚çOKj
+            // ä¿å­˜ï¼ˆRLSã¯ã“ã®APIãŒserverå´ãªã‚‰OKï¼‰
             await sb
                 .from('user_billing')
                 .upsert({
@@ -59,11 +59,11 @@ export async function POST(req: NextRequest) {
                 }, { onConflict: 'user_id' })
         }
 
-        // ---- 2) Œ»İó‘Ô‚ğ”»’èipro_until‚ª—LŒø‚È‚çactiveˆµ‚¢j
+        // ---- 2) ç¾åœ¨çŠ¶æ…‹ã‚’åˆ¤å®šï¼ˆpro_untilãŒæœ‰åŠ¹ãªã‚‰activeæ‰±ã„ï¼‰
         const active = isProDate(billing?.pro_until ?? null)
 
         if (active) {
-            // Šù‘¶ƒTƒuƒXƒNŠÇ—‚ÍPortal‚Ö
+            // æ—¢å­˜ã‚µãƒ–ã‚¹ã‚¯ç®¡ç†ã¯Portalã¸
             const portal = await stripe.billingPortal.sessions.create({
                 customer: stripeCustomerId,
                 return_url: `${APP_BASE_URL}/account`,
@@ -71,11 +71,11 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ url: portal.url })
         }
 
-        // ---- 3) V‹Kw“ü‚ÍCheckout‚Ö
+        // ---- 3) æ–°è¦è³¼å…¥ã¯Checkoutã¸
         const price = plan === 'pro' ? PRICE_PRO : PRICE_PRO_PLUS
         const session = await stripe.checkout.sessions.create({
             mode: 'subscription',
-            customer: stripeCustomerId, // Šù‘¶Customer‚É•R•t‚¯
+            customer: stripeCustomerId, // æ—¢å­˜Customerã«ç´ä»˜ã‘
             line_items: [{ price, quantity: 1 }],
             success_url: `${APP_BASE_URL}/account?ok=1`,
             cancel_url: `${APP_BASE_URL}/pricing?canceled=1`,
