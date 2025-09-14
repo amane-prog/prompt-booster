@@ -1,8 +1,8 @@
-'use client'
+ï»¿'use client'
 import { ButtonHTMLAttributes } from 'react'
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
-    /** –³Œø‚Éƒc[ƒ‹ƒ`ƒbƒv‚Åo‚·——Ri”CˆÓj */
+    /** ç„¡åŠ¹æ™‚ã«ãƒ„ãƒ¼ãƒ«ãƒãƒƒãƒ—ã§å‡ºã™ç†ç”±ï¼ˆä»»æ„ï¼‰ */
     reasonWhenDisabled?: string | null
 }
 
@@ -18,7 +18,7 @@ export default function RunButton({
             {...rest}
             disabled={disabled}
             aria-disabled={disabled}
-            title={disabled ? (reasonWhenDisabled || 'Œ»İ‚ÍÀs‚Å‚«‚Ü‚¹‚ñ') : rest.title}
+            title={disabled ? (reasonWhenDisabled || 'ç¾åœ¨ã¯å®Ÿè¡Œã§ãã¾ã›ã‚“') : rest.title}
             className={[
                 'rounded bg-blue-600 px-4 py-2 text-sm text-white',
                 'enabled:hover:bg-blue-700',
