@@ -12,7 +12,6 @@ type PageProps = {
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslations, useFormatter, useLocale } from 'next-intl';
 
-import ExecuteFab from '@/components/ExecuteFab';
 import Toast from '@/components/Toast';
 import AdvancedControlsV2, {
     type Mode, type ColorTone, type Ratio, type DialogueTone, type ControlsValue,
@@ -23,6 +22,7 @@ import CreditLimitModal from '@/components/CreditLimitModal';
 
 import { startBilling, handleTopup } from '@/utils/stripe';
 import RunButton from '@/components/ui/RunButton';
+import { countGraphemes, sliceGraphemes } from '@/utils/grapheme';
 
 // ---- API型 ----
 type StatusResp = {
@@ -36,7 +36,7 @@ type StatusResp = {
     topupRemain?: number;
     topups?: { remain: number; expire_at: string }[];
     isPro?: boolean;
-    loggedIn?: boolean; // ★ 追加
+    loggedIn?: boolean;
 };
 
 type BoostResp = {
@@ -78,7 +78,7 @@ export default function HomePage(_props: PageProps) {
     const [subCap, setSubCap] = useState<number | null>(null);
     const [topupRemain, setTopupRemain] = useState<number>(0);
     const [topups, setTopups] = useState<{ remain: number; expire_at: string }[]>([]);
-    const [loggedIn, setLoggedIn] = useState<boolean>(false); // ★ 追加
+    const [loggedIn, setLoggedIn] = useState<boolean>(false);
 
     // トースト & モーダル
     const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -88,16 +88,31 @@ export default function HomePage(_props: PageProps) {
 
     const isPro = tier !== 'free';
 
+    // ★ 入力上限（tier による）＋カウント
+    const inputLimit = useMemo(() => (tier === 'pro_plus' ? 2000 : 500), [tier]);
+    const inputCount = useMemo(() => countGraphemes(input), [input]);
+    const remainingChars = inputLimit - inputCount;
+
+    const handleInputChange = useCallback((v: string) => {
+        const len = countGraphemes(v);
+        if (len <= inputLimit) {
+            setInput(v);
+        } else {
+            setInput(sliceGraphemes(v, inputLimit));
+        }
+    }, [inputLimit]);
+
     const canUseBoost = useMemo(() => {
-        // ★ ログインしていなければ常に不可
         if (!loggedIn) return false;
+        if (inputCount <= 0) return false;
         if (isPro) return (subRemain ?? 0) > 0 || (topupRemain ?? 0) > 0;
         if (typeof remain === 'number') return remain > 0 || (topupRemain ?? 0) > 0;
         return true;
-    }, [loggedIn, isPro, remain, subRemain, topupRemain]);
+    }, [loggedIn, inputCount, isPro, remain, subRemain, topupRemain]);
 
     const runDisabledReason = useMemo(() => {
         if (!loggedIn) return 'ログインが必要です';
+        if (inputCount <= 0) return '入力が空です';
         if (isPro) {
             const noSub = (subRemain ?? 0) <= 0;
             const noTop = (topupRemain ?? 0) <= 0;
@@ -108,7 +123,7 @@ export default function HomePage(_props: PageProps) {
             return '無料枠の上限に達しました。アップグレードまたは追加パックをご検討ください。';
         }
         return null;
-    }, [loggedIn, isPro, subRemain, remain, topupRemain]);
+    }, [loggedIn, inputCount, isPro, subRemain, remain, topupRemain]);
 
     const overlayActive = planOpen || limitOpen;
 
@@ -124,7 +139,7 @@ export default function HomePage(_props: PageProps) {
             setSubCap(j.subCap ?? null);
             setTopupRemain(j.topupRemain ?? 0);
             setTopups(j.topups ?? []);
-            setLoggedIn(!!j.loggedIn); // ★ 追加
+            setLoggedIn(!!j.loggedIn);
         } catch { /* noop */ }
     }, []);
 
@@ -146,7 +161,6 @@ export default function HomePage(_props: PageProps) {
 
             if (res.status === 401) {
                 setToastMsg(null);
-                // ログインを促す（ロケール付き）
                 window.location.href = `/${locale}/signin`;
                 return;
             }
@@ -227,10 +241,18 @@ export default function HomePage(_props: PageProps) {
                             <label className="mb-2 block text-sm font-medium">Input</label>
                             <textarea
                                 className="w-full h-40 md:h-56 resize-y border rounded-lg p-3 focus:outline-none focus:ring"
-                                placeholder="Write your brief here..."
+                                placeholder={`最大 ${inputLimit} 文字（${tier === 'pro_plus' ? 'Pro+' : 'Free/Pro'}）`}
                                 value={input}
-                                onChange={(e) => setInput(e.target.value)}
+                                onChange={(e) => handleInputChange(e.target.value)}
                             />
+                            <div className="mt-1 flex items-center justify-between">
+                                <span className="text-[11px] text-neutral-500">
+                                    {tier === 'pro_plus' ? 'Pro+ 上限' : 'Free/Pro 上限'}: {inputCount} / {inputLimit}
+                                </span>
+                                <span className={`text-[11px] ${remainingChars <= 50 ? 'text-rose-600' : 'text-neutral-400'}`}>
+                                    残り {Math.max(0, remainingChars)} 文字
+                                </span>
+                            </div>
                             <div className="pt-2 flex justify-end">
                                 <RunButton
                                     onClick={handleRun}
@@ -245,18 +267,34 @@ export default function HomePage(_props: PageProps) {
                         {/* 条件式 */}
                         <aside className="md:col-span-3 md:row-span-2 self-start rounded-2xl border bg-white p-4 space-y-4">
                             <h3 className="text-sm font-medium">条件式</h3>
+
                             <div>
                                 <label className="mb-1 block text-sm font-medium">Emphasis (comma-separated)</label>
-                                <input className="w-full border rounded-lg p-2" placeholder="short, brand-safe, ..." value={emphasis} onChange={(e) => setEmphasis(e.target.value)} />
-                                <p className="mt-1 text-[11px] text-neutral-500">角括弧 [must include] で入力しても抽出されます（サーバ側で自動抽出）。</p>
+                                <input
+                                    className="w-full border rounded-lg p-2"
+                                    placeholder="short, brand-safe, ..."
+                                    value={emphasis}
+                                    onChange={(e) => setEmphasis(e.target.value)}
+                                />
+                                <p className="mt-1 text-[11px] text-neutral-500">
+                                    角括弧 [must include] で入力しても抽出されます（サーバ側で自動抽出）。
+                                </p>
                             </div>
+
                             <div>
                                 <label className="mb-1 block text-sm font-medium">Tags</label>
                                 <div className="mb-2 flex flex-wrap gap-2">
                                     {dialogueTags.map((tag, i) => (
                                         <span key={`${tag}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
                                             {tag}
-                                            <button type="button" className="text-neutral-500 hover:text-neutral-800" aria-label="remove" onClick={() => setDialogueTags(dialogueTags.filter((_, idx) => idx !== i))}>×</button>
+                                            <button
+                                                type="button"
+                                                className="text-neutral-500 hover:text-neutral-800"
+                                                aria-label="remove"
+                                                onClick={() => setDialogueTags(dialogueTags.filter((_, idx) => idx !== i))}
+                                            >
+                                                ×
+                                            </button>
                                         </span>
                                     ))}
                                 </div>
@@ -273,13 +311,21 @@ export default function HomePage(_props: PageProps) {
                                     }}
                                 />
                             </div>
+
                             <div>
                                 <label className="mb-1 block text-sm font-medium">Styles</label>
                                 <div className="mb-2 flex flex-wrap gap-2">
                                     {genStyles.map((st, i) => (
                                         <span key={`${st}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
                                             {st}
-                                            <button type="button" className="text-neutral-500 hover:text-neutral-800" aria-label="remove" onClick={() => setGenStyles(genStyles.filter((_, idx) => idx !== i))}>×</button>
+                                            <button
+                                                type="button"
+                                                className="text-neutral-500 hover:text-neutral-800"
+                                                aria-label="remove"
+                                                onClick={() => setGenStyles(genStyles.filter((_, idx) => idx !== i))}
+                                            >
+                                                ×
+                                            </button>
                                         </span>
                                     ))}
                                 </div>
@@ -296,6 +342,7 @@ export default function HomePage(_props: PageProps) {
                                     }}
                                 />
                             </div>
+
                             <AdvancedControlsV2
                                 value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
                                 onChange={(next: Partial<ControlsValue>) => {
@@ -316,7 +363,14 @@ export default function HomePage(_props: PageProps) {
                                 {output || '—'}
                             </pre>
                             <div className="mt-3 flex justify-end gap-2">
-                                <button type="button" className="rounded border px-3 py-1.5 text-sm" onClick={() => navigator.clipboard?.writeText(output || '')} disabled={!output}>コピー</button>
+                                <button
+                                    type="button"
+                                    className="rounded border px-3 py-1.5 text-sm"
+                                    onClick={() => navigator.clipboard?.writeText(output || '')}
+                                    disabled={!output}
+                                >
+                                    コピー
+                                </button>
                                 <button
                                     type="button"
                                     className="rounded border px-3 py-1.5 text-sm"

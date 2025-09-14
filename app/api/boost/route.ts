@@ -3,6 +3,7 @@ import { supabaseServer } from '@/lib/supabaseServer'
 import { isPro as isProDate } from '@/lib/plan'
 import { Redis } from '@upstash/redis'
 import OpenAI from 'openai'
+import { countGraphemes, sliceGraphemes } from '@/utils/grapheme'
 
 export const runtime = 'nodejs'
 
@@ -130,8 +131,9 @@ function normalizeHighlights(h: string[] | string | null | undefined): string[] 
 
 function enforceCharLimit(text: string, tier: 'free' | 'pro' | 'pro_plus'): { text: string; truncated: boolean } {
     const limit = tier === 'pro_plus' ? 2000 : 500
-    if (text.length <= limit) return { text, truncated: false }
-    return { text: text.slice(0, limit), truncated: true }
+    const len = countGraphemes(text)
+    if (len <= limit) return { text, truncated: false }
+    return { text: sliceGraphemes(text, limit), truncated: true }
 }
 
 // ===== OpenAI call =====
