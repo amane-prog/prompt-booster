@@ -6,59 +6,91 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+// ---- ENV ----
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY as string
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string
-
 if (!STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY not set')
 if (!WEBHOOK_SECRET) throw new Error('STRIPE_WEBHOOK_SECRET not set')
 
-// apiVersion は明示しない（アカウント既定を使用して将来の互換性エラーを避ける）
+// apiVersion は明示しない（アカウント既定）
+// 型周りは helper 側で吸収する
 const stripe = new Stripe(STRIPE_SECRET_KEY)
 
 type PlanTier = 'free' | 'pro' | 'pro_plus'
 
-const PRO_PLUS_PRICE_ID = process.env.STRIPE_PRICE_ID_PRO_PLUS
+// Price IDs
 const PRO_PRICE_ID = process.env.STRIPE_PRICE_ID_PRO ?? process.env.STRIPE_PRICE_ID
+const PRO_PLUS_PRICE_ID = process.env.STRIPE_PRICE_ID_PRO_PLUS
 const TOPUP_300_PRICE_ID = process.env.STRIPE_PRICE_ID_TOPUP_300
 const TOPUP_1000_PRICE_ID = process.env.STRIPE_PRICE_ID_TOPUP_1000
 
-function isCustomer(obj: Stripe.Customer | Stripe.DeletedCustomer): obj is Stripe.Customer {
-    return !('deleted' in obj)
+// Topup 有効期限（90日）
+const TOPUP_EXPIRES_IN_DAYS = Number(process.env.TOPUP_EXPIRES_IN_DAYS ?? 90)
+
+// ---- helpers (TS 型吸収用) ----
+const toIso = (sec?: number | null) => (typeof sec === 'number' ? new Date(sec * 1000).toISOString() : null)
+const addDays = (d: Date, days: number) => {
+    const x = new Date(d)
+    x.setUTCDate(x.getUTCDate() + days)
+    return x
 }
 
-function toIso(sec?: number | null): string | null {
-    return typeof sec === 'number' ? new Date(sec * 1000).toISOString() : null
+/** `Response<Subscription>` でも `Subscription` でも扱えるように any 経由で読む */
+function getSubPeriodEndTs(sub: Stripe.Subscription | Stripe.Response<Stripe.Subscription>): number | null {
+    const s: any = sub
+    // 将来の item 側拡張に備え、一応 item 側にあれば最小値を使う
+    const items: any[] = s?.items?.data ?? []
+    const itemEnds = items
+        .map(it => (typeof it?.current_period_end === 'number' ? it.current_period_end : undefined))
+        .filter((n: any): n is number => typeof n === 'number' && Number.isFinite(n))
+    if (itemEnds.length) return Math.min(...itemEnds)
+    const end = s?.current_period_end
+    return typeof end === 'number' ? end : null
 }
 
-function userIdFromMeta(m: Stripe.Metadata | null | undefined): string | null {
-    const v = m?.['userId']
-    return typeof v === 'string' && v.length > 0 ? v : null
+/** price.id の配列を安全に取り出す */
+function priceIdsOfSub(sub: Stripe.Subscription | Stripe.Response<Stripe.Subscription>): string[] {
+    const s: any = sub
+    const items: any[] = s?.items?.data ?? []
+    return items.map(it => it?.price?.id).filter((v: any) => typeof v === 'string')
 }
 
-async function resolveUserIdFromCustomerId(customerId: string): Promise<string | null> {
-    try {
-        const custResp = await stripe.customers.retrieve(customerId)
-        if (isCustomer(custResp)) {
-            const u = custResp.metadata?.userId
-            if (typeof u === 'string' && u) return u
-        }
-    } catch {
-        // noop
+function tierFromPriceIds(ids: string[]): PlanTier | null {
+    if (ids?.length) {
+        if (PRO_PLUS_PRICE_ID && ids.includes(PRO_PLUS_PRICE_ID)) return 'pro_plus'
+        if (PRO_PRICE_ID && ids.includes(PRO_PRICE_ID)) return 'pro'
     }
     return null
 }
 
-// Basil系の item.current_period_end だけに依存せず、無ければ subscription.current_period_end を使う
-function minItemPeriodEnd(sub: Stripe.Subscription): number | null {
-    const ends = (sub.items?.data ?? [])
-        .map(i => (i as any).current_period_end as number | undefined)
-        .filter((n): n is number => typeof n === 'number' && Number.isFinite(n))
-
-    if (ends.length) return Math.min(...ends)
-    const subEnd = (sub as any).current_period_end as number | undefined
-    return typeof subEnd === 'number' ? subEnd : null
+function userIdFromMeta(meta: Stripe.Metadata | null | undefined): string | null {
+    const v = meta?.['userId'] ?? meta?.['uid']
+    return typeof v === 'string' && v.length > 0 ? v : null
 }
 
+async function resolveUserIdFromCustomerId(
+    customerId: string,
+    sb: Awaited<ReturnType<typeof supabaseAdmin>>
+): Promise<string | null> {
+    // 1) DB マッピング
+    try {
+        const { data } = await sb.from('user_billing').select('user_id').eq('stripe_customer_id', customerId).limit(1)
+        if (data?.[0]?.user_id) return data[0].user_id as string
+    } catch { /* noop */ }
+
+    // 2) Stripe Customer metadata
+    try {
+        const cust = await stripe.customers.retrieve(customerId)
+        if (!('deleted' in cust)) {
+            const u = userIdFromMeta(cust.metadata)
+            if (u) return u
+        }
+    } catch { /* noop */ }
+
+    return null
+}
+
+// ---- handler ----
 export async function POST(req: NextRequest) {
     const sig = req.headers.get('stripe-signature')
     if (!sig) return NextResponse.json({ error: 'missing signature' }, { status: 400 })
@@ -69,126 +101,124 @@ export async function POST(req: NextRequest) {
     try {
         event = stripe.webhooks.constructEvent(raw, sig, WEBHOOK_SECRET)
     } catch (e) {
-        const msg = e instanceof Error ? e.message : 'bad signature'
-        return NextResponse.json({ error: msg }, { status: 400 })
+        return NextResponse.json({ error: (e as Error).message || 'bad signature' }, { status: 400 })
     }
 
     try {
         const sb = await supabaseAdmin()
 
         switch (event.type) {
+            // ------------------------------------------------
+            // Checkout 完了（Topup / Subscription 初回）
+            // ------------------------------------------------
             case 'checkout.session.completed': {
                 const s = event.data.object as Stripe.Checkout.Session
                 const customerId = typeof s.customer === 'string' ? s.customer : s.customer?.id
                 if (!customerId) break
 
-                const userId = userIdFromMeta(s.metadata) ?? (await resolveUserIdFromCustomerId(customerId))
+                const userId = userIdFromMeta(s.metadata) || (await resolveUserIdFromCustomerId(customerId, sb))
                 if (!userId) break
 
-                // --- Top-up（one-time payment）処理 ---
+                // ---- Topup（one-time）----
                 const isTopup = s.mode === 'payment' || !s.subscription
                 if (isTopup && s.payment_status === 'paid') {
-                    const items = await stripe.checkout.sessions.listLineItems(s.id, { limit: 20 })
-                    const add = items.data.reduce((sum, li) => {
-                        const pid = typeof li.price === 'string' ? li.price : li.price?.id
-                        const qty = li.quantity ?? 1
-                        if (!pid) return sum
-                        if (pid === TOPUP_300_PRICE_ID) return sum + 300 * qty
-                        if (pid === TOPUP_1000_PRICE_ID) return sum + 1000 * qty
-                        return sum
-                    }, 0)
+                    try {
+                        const items = await stripe.checkout.sessions.listLineItems(s.id, { limit: 20 })
+                        const add = items.data.reduce((sum, li) => {
+                            const pid = typeof li.price === 'string' ? li.price : li.price?.id
+                            const qty = li.quantity ?? 1
+                            if (!pid) return sum
+                            if (pid === TOPUP_300_PRICE_ID) return sum + 300 * qty
+                            if (pid === TOPUP_1000_PRICE_ID) return sum + 1000 * qty
+                            return sum
+                        }, 0)
 
-                    if (add > 0) {
-                        const expireAt = new Date()
-                        expireAt.setMonth(expireAt.getMonth() + 3) // 3ヶ月
-                        const { error } = await sb.from('user_topups').upsert(
-                            {
-                                user_id: userId,
-                                amount: add,
-                                remain: add,
-                                expire_at: expireAt.toISOString(),
-                                stripe_event_id: event.id,
-                            },
-                            { onConflict: 'stripe_event_id' }
-                        )
-                        if (error) {
-                            console.error('[topup upsert error]', error)
-                            // 重要: ここで throw しない（Stripeに5xx返すとリトライ地獄になる）
+                        if (add > 0) {
+                            const expireAt = addDays(new Date(), TOPUP_EXPIRES_IN_DAYS).toISOString()
+                            const { error } = await sb
+                                .from('user_topups')
+                                .upsert(
+                                    {
+                                        user_id: userId,
+                                        amount: add,
+                                        remain: add,
+                                        expire_at: expireAt,
+                                        stripe_event_id: event.id, // unique で冪等
+                                    },
+                                    { onConflict: 'stripe_event_id' }
+                                )
+                            if (error) console.error('[topup upsert error]', error)
+                        } else {
+                            console.warn('[topup] priceId mismatch or env not set', { TOPUP_300_PRICE_ID, TOPUP_1000_PRICE_ID, sessionId: s.id })
                         }
-                    } else {
-                        console.warn('[topup] priceId mismatch or env not set', {
-                            TOPUP_300_PRICE_ID, TOPUP_1000_PRICE_ID, sessionId: s.id
-                        })
+                    } catch (e) {
+                        console.error('[topup process error]', e)
                     }
                 }
 
-                // --- サブスク確定（初回） ---
+                // ---- Subscription（初回確定）----
                 if (s.subscription) {
                     const subId = typeof s.subscription === 'string' ? s.subscription : s.subscription.id
                     if (subId) {
-                        const sub = (await stripe.subscriptions.retrieve(subId)) as Stripe.Subscription
-                        const items = sub.items?.data ?? []
-                        const priceIds = items.map(i => i.price?.id).filter(Boolean) as string[]
-
-                        let plan: Exclude<PlanTier, 'free'> = 'pro'
-                        if (PRO_PLUS_PRICE_ID && priceIds.includes(PRO_PLUS_PRICE_ID)) plan = 'pro_plus'
-
-                        const periodEndTs = minItemPeriodEnd(sub)
-                        const periodEnd = toIso(periodEndTs)
-
-                        await sb.from('user_billing').upsert(
-                            {
-                                user_id: userId,
-                                stripe_customer_id: customerId,
-                                plan_tier: plan,
-                                pro_until: periodEnd,
-                            },
-                            { onConflict: 'user_id' }
-                        )
+                        const sub = await stripe.subscriptions.retrieve(subId) // Response<Subscription>
+                        const ids = priceIdsOfSub(sub)
+                        const tier = tierFromPriceIds(ids)
+                        if (tier) {
+                            const until = toIso(getSubPeriodEndTs(sub))
+                            await sb.from('user_billing').upsert(
+                                { user_id: userId, stripe_customer_id: customerId, plan_tier: tier, pro_until: until },
+                                { onConflict: 'user_id' }
+                            )
+                        } else {
+                            console.warn('[sub] unknown price ids:', ids)
+                        }
                     }
                 }
-
                 break
             }
 
+            // ------------------------------------------------
+            // サブスク更新/作成（プランや期間の更新）
+            // ------------------------------------------------
             case 'customer.subscription.created':
             case 'customer.subscription.updated': {
                 const sub = event.data.object as Stripe.Subscription
                 const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id
-                const userId = userIdFromMeta(sub.metadata) ?? (await resolveUserIdFromCustomerId(customerId))
-                if (!userId) break
+                const uid =
+                    userIdFromMeta(sub.metadata) ||
+                    (await resolveUserIdFromCustomerId(customerId, sb))
+                if (!uid) break
 
-                const items = sub.items?.data ?? []
-                const priceIds = items.map(i => i.price?.id).filter(Boolean) as string[]
+                const ids = priceIdsOfSub(sub)
+                const tier = tierFromPriceIds(ids)
+                if (!tier) break
 
-                let plan: Exclude<PlanTier, 'free'> = 'pro'
-                if (PRO_PLUS_PRICE_ID && priceIds.includes(PRO_PLUS_PRICE_ID)) plan = 'pro_plus'
-
-                const periodEndTs = minItemPeriodEnd(sub)
-                const periodEnd = toIso(periodEndTs)
-
+                const until = toIso(getSubPeriodEndTs(sub))
                 await sb.from('user_billing').upsert(
-                    { user_id: userId, stripe_customer_id: customerId, plan_tier: plan, pro_until: periodEnd },
+                    { user_id: uid, stripe_customer_id: customerId, plan_tier: tier, pro_until: until },
                     { onConflict: 'user_id' }
                 )
                 break
             }
 
+            // ------------------------------------------------
+            // サブスク削除（free 化）
+            // ------------------------------------------------
             case 'customer.subscription.deleted': {
                 const sub = event.data.object as Stripe.Subscription
                 const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id
-                const userId = userIdFromMeta(sub.metadata) ?? (await resolveUserIdFromCustomerId(customerId))
-                if (!userId) break
+                const uid = await resolveUserIdFromCustomerId(customerId, sb)
+                if (!uid) break
 
                 await sb.from('user_billing').upsert(
-                    { user_id: userId, stripe_customer_id: customerId, plan_tier: 'free', pro_until: null },
+                    { user_id: uid, stripe_customer_id: customerId, plan_tier: 'free', pro_until: null },
                     { onConflict: 'user_id' }
                 )
                 break
             }
 
             default:
-                // 未使用イベントは 200 で握りつぶす
+                // 使わないイベントは 200
                 break
         }
 
@@ -197,8 +227,7 @@ export async function POST(req: NextRequest) {
             headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
         })
     } catch (e) {
-        const msg = e instanceof Error ? e.message : 'webhook error'
         console.error('[stripe webhook error]', e)
-        return NextResponse.json({ error: msg }, { status: 500 })
+        return NextResponse.json({ error: (e as Error).message || 'webhook error' }, { status: 500 })
     }
 }
