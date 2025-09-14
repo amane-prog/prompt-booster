@@ -1,4 +1,3 @@
-// app/[locale]/page.tsx
 'use client';
 
 type PageParams = { locale: string };
@@ -25,7 +24,8 @@ import CompactPlans from '@/components/CompactPlans';
 import PlanDialog from '@/components/PlanDialog';
 import CreditLimitModal from '@/components/CreditLimitModal';
 
-import { startBilling, handleTopup } from '@/utils/stripe'; // ★ 追加：統合関数を利用
+import { startBilling, handleTopup } from '@/utils/stripe'; // 統合関数
+import RunButton from '@/components/ui/RunButton';           // ★ 追加：共有実行ボタン
 
 // ---- APIレスポンス型 ----
 type StatusResp = {
@@ -100,6 +100,17 @@ export default function HomePage(_props: PageProps) {
         return true;
     }, [isPro, remain, subRemain, topupRemain]);
 
+    // 無効理由（canUseBoost と整合）
+    const runDisabledReason = useMemo(() => {
+        if (canUseBoost) return null;
+        return isPro
+            ? 'クレジットがありません。Manage から追加してください。'
+            : '無料枠の上限に達しました。アップグレードまたは追加パックをご検討ください。';
+    }, [canUseBoost, isPro]);
+
+    // モーダルが開いているか（背面のクリック/hoverを遮断）
+    const overlayActive = planOpen || limitOpen;
+
     // ---- ステータス再取得 ----
     const refreshStatus = useCallback(async () => {
         try {
@@ -168,8 +179,7 @@ export default function HomePage(_props: PageProps) {
     // ---- Stripe: Portal / Topup（統合APIに差し替え） ----
     const openPortal = useCallback(async () => {
         try {
-            // activeならPortalへ、freeならCheckout（plan既定pro）へ誘導。サーバ側で自動分岐
-            await startBilling(null);
+            await startBilling(null); // active→Portal / free→Checkout(pro)
         } catch (e) {
             showToast((e as Error).message || 'Failed to open billing');
         }
@@ -193,7 +203,7 @@ export default function HomePage(_props: PageProps) {
 
     const goPro = useCallback(async () => {
         try {
-            await startBilling('pro'); // free→Checkout(pro) / active→Portal
+            await startBilling('pro');
         } catch (e) {
             showToast((e as Error).message || 'Go Pro failed');
         }
@@ -201,7 +211,7 @@ export default function HomePage(_props: PageProps) {
 
     const goProPlus = useCallback(async () => {
         try {
-            await startBilling('pro_plus'); // free→Checkout(pro+) / active→Portal
+            await startBilling('pro_plus');
         } catch (e) {
             showToast((e as Error).message || 'Go Pro+ failed');
         }
@@ -211,204 +221,206 @@ export default function HomePage(_props: PageProps) {
         <main className="w-full px-4 md:px-6 py-6">
             {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6 items-start">
+            {/* ▼ モーダル開いている間は背面の hover/クリックを遮断 */}
+            <div className={overlayActive ? 'pointer-events-none select-none' : ''} aria-hidden={overlayActive}>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6 items-start">
 
-                {/* 左：プラン + ステータス（固定） */}
-                <div className="md:col-span-3 space-y-4 md:sticky md:top-4 self-start">
-                    <CompactPlans
-                        tier={tier}
-                        onGoPro={goPro}
-                        onGoProPlus={goProPlus}
-                        onOpenPortal={openPortal}
-                    />
-                    <section className="rounded-2xl border bg-white p-3">
-                        <h3 className="mb-2 text-sm font-medium">ステータス</h3>
-                        <p className="text-sm text-neutral-700">
-                            {t('status')}: {remain ?? '—'} {isPro ? '(Pro)' : '(Free)'}
-                        </p>
-                        {typeof subRemain === 'number' && typeof subCap === 'number' && (
-                            <p className="mt-1 text-xs text-neutral-500">
-                                Subscription: {subRemain}/{subCap}
-                            </p>
-                        )}
-                        {topupRemain > 0 && (
-                            <p className="mt-1 text-xs text-neutral-500">
-                                追加パック残: {topupRemain}
-                            </p>
-                        )}
-                        <div className="mt-3 flex gap-2">
-                            <button
-                                className="rounded-lg border px-3 py-1.5 text-sm"
-                                onClick={buyTopup300}
-                            >
-                                追加パック 300
-                            </button>
-                            <button
-                                className="rounded-lg border px-3 py-1.5 text-sm"
-                                onClick={buyTopup1000}
-                            >
-                                追加パック 1000
-                            </button>
-                        </div>
-                    </section>
-                </div>
-
-                {/* 右9列：Input/Output と 条件式のネストグリッド */}
-                <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-9 md:grid-rows-[auto_auto] gap-6 items-start">
-
-                    {/* 中央：Input（左6, 1行目） */}
-                    <section className="md:col-span-6 row-start-1 self-start rounded-2xl border bg-white p-4 flex flex-col min-w-0">
-                        <label className="mb-2 block text-sm font-medium">Input</label>
-                        <textarea
-                            className="w-full h-40 md:h-56 resize-y border rounded-lg p-3 focus:outline-none focus:ring"
-                            placeholder="Write your brief here..."
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
+                    {/* 左：プラン + ステータス（固定） */}
+                    <div className="md:col-span-3 space-y-4 md:sticky md:top-4 self-start">
+                        <CompactPlans
+                            tier={tier}
+                            onGoPro={goPro}
+                            onGoProPlus={goProPlus}
+                            onOpenPortal={openPortal}
                         />
-                        <div className="pt-2 flex justify-end">
-                            <button
-                                type="button"
-                                onClick={handleRun}
-                                className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
-                                disabled={!canUseBoost}
-                            >
-                                実行
-                            </button>
-                        </div>
-                    </section>
-
-                    {/* 右：条件式（右3, 2行ぶち抜き） */}
-                    <aside className="md:col-span-3 md:row-span-2 self-start rounded-2xl border bg-white p-4 space-y-4">
-                        <h3 className="text-sm font-medium">条件式</h3>
-
-                        {/* Emphasis */}
-                        <div>
-                            <label className="mb-1 block text-sm font-medium">Emphasis (comma-separated)</label>
-                            <input
-                                className="w-full border rounded-lg p-2"
-                                placeholder="short, brand-safe, ..."
-                                value={emphasis}
-                                onChange={(e) => setEmphasis(e.target.value)}
-                            />
-                            <p className="mt-1 text-[11px] text-neutral-500">
-                                角括弧 [must include] で入力しても抽出されます（サーバ側で自動抽出）。
+                        <section className="rounded-2xl border bg-white p-3">
+                            <h3 className="mb-2 text-sm font-medium">ステータス</h3>
+                            <p className="text-sm text-neutral-700">
+                                {t('status')}: {remain ?? '—'} {isPro ? '(Pro)' : '(Free)'}
                             </p>
-                        </div>
-
-                        {/* Tags */}
-                        <div>
-                            <label className="mb-1 block text-sm font-medium">Tags</label>
-                            <div className="mb-2 flex flex-wrap gap-2">
-                                {dialogueTags.map((tag, i) => (
-                                    <span key={`${tag}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
-                                        {tag}
-                                        <button
-                                            type="button"
-                                            className="text-neutral-500 hover:text-neutral-800"
-                                            aria-label="remove"
-                                            onClick={() => setDialogueTags(dialogueTags.filter((_, idx) => idx !== i))}
-                                        >
-                                            ×
-                                        </button>
-                                    </span>
-                                ))}
+                            {typeof subRemain === 'number' && typeof subCap === 'number' && (
+                                <p className="mt-1 text-xs text-neutral-500">
+                                    Subscription: {subRemain}/{subCap}
+                                </p>
+                            )}
+                            {topupRemain > 0 && (
+                                <p className="mt-1 text-xs text-neutral-500">
+                                    追加パック残: {topupRemain}
+                                </p>
+                            )}
+                            <div className="mt-3 flex gap-2">
+                                <button
+                                    className="rounded-lg border px-3 py-1.5 text-sm"
+                                    onClick={buyTopup300}
+                                >
+                                    追加パック 300
+                                </button>
+                                <button
+                                    className="rounded-lg border px-3 py-1.5 text-sm"
+                                    onClick={buyTopup1000}
+                                >
+                                    追加パック 1000
+                                </button>
                             </div>
-                            <input
-                                className="w-full border rounded-lg p-2 text-sm"
-                                placeholder="タグを入力して Enter / , で追加"
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ',') {
-                                        e.preventDefault();
-                                        const v = (e.currentTarget.value || '').trim();
-                                        if (v && !dialogueTags.includes(v)) setDialogueTags([...dialogueTags, v]);
-                                        e.currentTarget.value = '';
-                                    }
+                        </section>
+                    </div>
+
+                    {/* 右9列：Input/Output と 条件式のネストグリッド */}
+                    <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-9 md:grid-rows-[auto_auto] gap-6 items-start">
+
+                        {/* 中央：Input（左6, 1行目） */}
+                        <section className="md:col-span-6 row-start-1 self-start rounded-2xl border bg-white p-4 flex flex-col min-w-0">
+                            <label className="mb-2 block text-sm font-medium">Input</label>
+                            <textarea
+                                className="w-full h-40 md:h-56 resize-y border rounded-lg p-3 focus:outline-none focus:ring"
+                                placeholder="Write your brief here..."
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                            />
+                            <div className="pt-2 flex justify-end">
+                                <RunButton
+                                    onClick={handleRun}
+                                    disabled={!!runDisabledReason}
+                                    reasonWhenDisabled={runDisabledReason}
+                                >
+                                    実行
+                                </RunButton>
+                            </div>
+                        </section>
+
+                        {/* 右：条件式（右3, 2行ぶち抜き） */}
+                        <aside className="md:col-span-3 md:row-span-2 self-start rounded-2xl border bg-white p-4 space-y-4">
+                            <h3 className="text-sm font-medium">条件式</h3>
+
+                            {/* Emphasis */}
+                            <div>
+                                <label className="mb-1 block text-sm font-medium">Emphasis (comma-separated)</label>
+                                <input
+                                    className="w-full border rounded-lg p-2"
+                                    placeholder="short, brand-safe, ..."
+                                    value={emphasis}
+                                    onChange={(e) => setEmphasis(e.target.value)}
+                                />
+                                <p className="mt-1 text-[11px] text-neutral-500">
+                                    角括弧 [must include] で入力しても抽出されます（サーバ側で自動抽出）。
+                                </p>
+                            </div>
+
+                            {/* Tags */}
+                            <div>
+                                <label className="mb-1 block text-sm font-medium">Tags</label>
+                                <div className="mb-2 flex flex-wrap gap-2">
+                                    {dialogueTags.map((tag, i) => (
+                                        <span key={`${tag}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
+                                            {tag}
+                                            <button
+                                                type="button"
+                                                className="text-neutral-500 hover:text-neutral-800"
+                                                aria-label="remove"
+                                                onClick={() => setDialogueTags(dialogueTags.filter((_, idx) => idx !== i))}
+                                            >
+                                                ×
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                                <input
+                                    className="w-full border rounded-lg p-2 text-sm"
+                                    placeholder="タグを入力して Enter / , で追加"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ',') {
+                                            e.preventDefault();
+                                            const v = (e.currentTarget.value || '').trim();
+                                            if (v && !dialogueTags.includes(v)) setDialogueTags([...dialogueTags, v]);
+                                            e.currentTarget.value = '';
+                                        }
+                                    }}
+                                />
+                            </div>
+
+                            {/* Styles */}
+                            <div>
+                                <label className="mb-1 block text-sm font-medium">Styles</label>
+                                <div className="mb-2 flex flex-wrap gap-2">
+                                    {genStyles.map((st, i) => (
+                                        <span key={`${st}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
+                                            {st}
+                                            <button
+                                                type="button"
+                                                className="text-neutral-500 hover:text-neutral-800"
+                                                aria-label="remove"
+                                                onClick={() => setGenStyles(genStyles.filter((_, idx) => idx !== i))}
+                                            >
+                                                ×
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                                <input
+                                    className="w-full border rounded-lg p-2 text-sm"
+                                    placeholder="例) clean, playful, academic…（Enter / , で追加）"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ',') {
+                                            e.preventDefault();
+                                            const v = (e.currentTarget.value || '').trim();
+                                            if (v && !genStyles.includes(v)) setGenStyles([...genStyles, v]);
+                                            e.currentTarget.value = '';
+                                        }
+                                    }}
+                                />
+                            </div>
+
+                            {/* 既存の Mode / Color / Ratio / Tone コントロール */}
+                            <AdvancedControlsV2
+                                value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
+                                onChange={(next: Partial<ControlsValue>) => {
+                                    if (next.mode !== undefined) setMode(next.mode);
+                                    if (next.color !== undefined) setColor(next.color);
+                                    if (next.ratio !== undefined) setRatio(next.ratio);
+                                    if (next.tone !== undefined) setTone(next.tone);
+                                    if (next.dialogueTags !== undefined) setDialogueTags(next.dialogueTags);
+                                    if (next.genStyles !== undefined) setGenStyles(next.genStyles);
                                 }}
                             />
-                        </div>
+                        </aside>
 
-                        {/* Styles */}
-                        <div>
-                            <label className="mb-1 block text-sm font-medium">Styles</label>
-                            <div className="mb-2 flex flex-wrap gap-2">
-                                {genStyles.map((st, i) => (
-                                    <span key={`${st}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
-                                        {st}
-                                        <button
-                                            type="button"
-                                            className="text-neutral-500 hover:text-neutral-800"
-                                            aria-label="remove"
-                                            onClick={() => setGenStyles(genStyles.filter((_, idx) => idx !== i))}
-                                        >
-                                            ×
-                                        </button>
-                                    </span>
-                                ))}
+                        {/* Output（左6, 2行目：Inputの直下） */}
+                        <section className="md:col-span-6 row-start-2 self-start rounded-2xl border bg-white p-4">
+                            <h2 className="mb-2 text-sm font-semibold text-neutral-700">Output</h2>
+                            <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-[280px] md:min-h-[360px]">
+                                {output || '—'}
+                            </pre>
+                            <div className="mt-3 flex justify-end gap-2">
+                                <button
+                                    type="button"
+                                    className="rounded border px-3 py-1.5 text-sm"
+                                    onClick={() => navigator.clipboard?.writeText(output || '')}
+                                    disabled={!output}
+                                >
+                                    コピー
+                                </button>
+                                <button
+                                    type="button"
+                                    className="rounded border px-3 py-1.5 text-sm"
+                                    onClick={async () => {
+                                        if (navigator.share && output) {
+                                            try { await navigator.share({ text: output }); } catch { /* noop */ }
+                                        } else {
+                                            await navigator.clipboard?.writeText(output || '');
+                                        }
+                                    }}
+                                    disabled={!output}
+                                >
+                                    共有
+                                </button>
                             </div>
-                            <input
-                                className="w-full border rounded-lg p-2 text-sm"
-                                placeholder="例) clean, playful, academic…（Enter / , で追加）"
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ',') {
-                                        e.preventDefault();
-                                        const v = (e.currentTarget.value || '').trim();
-                                        if (v && !genStyles.includes(v)) setGenStyles([...genStyles, v]);
-                                        e.currentTarget.value = '';
-                                    }
-                                }}
-                            />
-                        </div>
+                        </section>
 
-                        {/* 既存の Mode / Color / Ratio / Tone コントロール */}
-                        <AdvancedControlsV2
-                            value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
-                            onChange={(next: Partial<ControlsValue>) => {
-                                if (next.mode !== undefined) setMode(next.mode);
-                                if (next.color !== undefined) setColor(next.color);
-                                if (next.ratio !== undefined) setRatio(next.ratio);
-                                if (next.tone !== undefined) setTone(next.tone);
-                                if (next.dialogueTags !== undefined) setDialogueTags(next.dialogueTags);
-                                if (next.genStyles !== undefined) setGenStyles(next.genStyles);
-                            }}
-                        />
-                    </aside>
-
-                    {/* Output（左6, 2行目：Inputの直下） */}
-                    <section className="md:col-span-6 row-start-2 self-start rounded-2xl border bg-white p-4">
-                        <h2 className="mb-2 text-sm font-semibold text-neutral-700">Output</h2>
-                        <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-[280px] md:min-h-[360px]">
-                            {output || '—'}
-                        </pre>
-                        <div className="mt-3 flex justify-end gap-2">
-                            <button
-                                type="button"
-                                className="rounded border px-3 py-1.5 text-sm"
-                                onClick={() => navigator.clipboard?.writeText(output || '')}
-                                disabled={!output}
-                            >
-                                コピー
-                            </button>
-                            <button
-                                type="button"
-                                className="rounded border px-3 py-1.5 text-sm"
-                                onClick={async () => {
-                                    if (navigator.share && output) {
-                                        try { await navigator.share({ text: output }); } catch { /* noop */ }
-                                    } else {
-                                        await navigator.clipboard?.writeText(output || '');
-                                    }
-                                }}
-                                disabled={!output}
-                            >
-                                共有
-                            </button>
-                        </div>
-                    </section>
-
+                    </div>
                 </div>
             </div>
 
-            {/* モーダル */}
+            {/* モーダル（別レイヤ。背面遮断の影響を受けない） */}
             <PlanDialog
                 open={planOpen}
                 onClose={() => setPlanOpen(false)}
