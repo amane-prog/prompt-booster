@@ -1,4 +1,5 @@
-﻿import { NextResponse, type NextRequest } from 'next/server'
+﻿// app/api/billing/start/route.ts
+import { NextResponse, type NextRequest } from 'next/server'
 import Stripe from 'stripe'
 import { supabaseServer } from '@/lib/supabaseServer'
 import { isPro as isProDate } from '@/lib/plan'
@@ -14,24 +15,24 @@ type BillingRow = {
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+const PRICE_PRO = process.env.STRIPE_PRICE_PRO!
+const PRICE_PRO_PLUS = process.env.STRIPE_PRICE_PRO_PLUS!
+const APP_BASE_URL = process.env.APP_BASE_URL!
 
-const PRICE_PRO = process.env.STRIPE_PRICE_PRO!         // price_xxx
-const PRICE_PRO_PLUS = process.env.STRIPE_PRICE_PRO_PLUS! // price_xxx
-const APP_BASE_URL = process.env.APP_BASE_URL!           // 例: https://prompt-booster.app
-
-export async function POST(req: NextRequest) {
+async function handleStart(req: NextRequest) {
     try {
-        const { plan }: { plan: Plan } = await req.json()
-        if (plan !== 'pro' && plan !== 'pro_plus') {
-            return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
-        }
+        // ❶ JSON安全読み込み（空でも落とさない）
+        let plan: Plan | null = null
+        try {
+            const body = (await req.json()) as Partial<{ plan: Plan }>
+            plan = (body?.plan ?? null) as Plan | null
+        } catch {/* bodyなしでもOK */ }
 
         const sb = await supabaseServer()
         const { data: auth } = await sb.auth.getUser()
         const user = auth.user
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-        // ---- 1) 請求用のStripe Customerを用意（なければ作成）
         const { data: billingRaw } = await sb
             .from('user_billing')
             .select('pro_until, plan_tier, stripe_customer_id')
@@ -40,30 +41,23 @@ export async function POST(req: NextRequest) {
 
         const billing = (billingRaw ?? null) as BillingRow | null
 
+        // ❷ Stripe Customer 確保
         let stripeCustomerId = billing?.stripe_customer_id ?? null
         if (!stripeCustomerId) {
-            // emailはマジックリンクのみとのことなのでauth.userから取得
             const email = user.email ?? undefined
-            const customer = await stripe.customers.create({
-                email,
-                metadata: { user_id: user.id },
-            })
+            const customer = await stripe.customers.create({ email, metadata: { user_id: user.id } })
             stripeCustomerId = customer.id
-
-            // 保存（RLSはこのAPIがserver側ならOK）
-            await sb
-                .from('user_billing')
-                .upsert({
-                    user_id: user.id,
-                    stripe_customer_id: stripeCustomerId,
-                }, { onConflict: 'user_id' })
+            await sb.from('user_billing').upsert(
+                { user_id: user.id, stripe_customer_id: stripeCustomerId },
+                { onConflict: 'user_id' }
+            )
         }
 
-        // ---- 2) 現在状態を判定（pro_untilが有効ならactive扱い）
+        // ❸ 現在の課金状態
         const active = isProDate(billing?.pro_until ?? null)
 
         if (active) {
-            // 既存サブスク管理はPortalへ
+            // 既存サブスクの管理へ（Portal）
             const portal = await stripe.billingPortal.sessions.create({
                 customer: stripeCustomerId,
                 return_url: `${APP_BASE_URL}/account`,
@@ -71,20 +65,30 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ url: portal.url })
         }
 
-        // ---- 3) 新規購入はCheckoutへ
-        const price = plan === 'pro' ? PRICE_PRO : PRICE_PRO_PLUS
+        // free → Checkout（planがnullなら既定pro）
+        const chosen = plan ?? 'pro'
+        const price = chosen === 'pro' ? PRICE_PRO : PRICE_PRO_PLUS
         const session = await stripe.checkout.sessions.create({
             mode: 'subscription',
-            customer: stripeCustomerId, // 既存Customerに紐付け
+            customer: stripeCustomerId,
             line_items: [{ price, quantity: 1 }],
             success_url: `${APP_BASE_URL}/account?ok=1`,
             cancel_url: `${APP_BASE_URL}/pricing?canceled=1`,
             allow_promotion_codes: true,
         })
-
         return NextResponse.json({ url: session.url })
     } catch (e) {
-        console.error(e)
+        console.error('[/api/billing/start] error:', e)
         return NextResponse.json({ error: 'Failed to start billing' }, { status: 500 })
     }
+}
+
+// ✅ POST本体
+export async function POST(req: NextRequest) {
+    return handleStart(req)
+}
+
+// ✅ デバッグ/スモークテスト用：GETでも同じ挙動にしておく
+export async function GET(req: NextRequest) {
+    return handleStart(req)
 }

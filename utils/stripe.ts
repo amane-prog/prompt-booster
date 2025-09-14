@@ -4,7 +4,6 @@ export type TopupKind = '300' | '1000'
 
 type CheckoutResp = { url: string } | { error: string }
 
-/** ブラウザならそのまま遷移。SSR/Node環境ならURLを返す */
 function goOrReturn(url: string): string | void {
     if (typeof window !== 'undefined' && typeof window.location !== 'undefined') {
         window.location.href = url
@@ -13,42 +12,50 @@ function goOrReturn(url: string): string | void {
     return url
 }
 
-/** 共通: fetch -> JSON -> URL or throw (GET/POST bodyなし用) */
-async function createSession(endpoint: string): Promise<string> {
-    const res = await fetch(endpoint, { method: 'POST' })
-    const data = (await res.json()) as CheckoutResp
-    if ('url' in data && data.url) return data.url
-    throw new Error(('error' in data && data.error) ? data.error : 'Checkout URL error')
+async function parseJsonSafely(res: Response): Promise<CheckoutResp | null> {
+    try { return (await res.json()) as CheckoutResp }
+    catch {
+        try {
+            const txt = await res.text()
+            console.group('[billing] non-JSON response')
+            console.log('status:', res.status)
+            console.log('text:', txt.slice(0, 1000))
+            console.groupEnd()
+        } catch {/* ignore */ }
+        return null
+    }
 }
 
-/** 共通: JSONボディPOST版 */
 async function createSessionJson(endpoint: string, body: unknown): Promise<string> {
     const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
     })
-    const data = (await res.json()) as CheckoutResp
-    if ('url' in data && data.url) return data.url
-    throw new Error(('error' in data && data.error) ? data.error : 'Checkout URL error')
+    const data = await parseJsonSafely(res)
+    if (res.ok && data && 'url' in data && data.url) return data.url
+    const err = data && 'error' in data ? data.error : `HTTP ${res.status}`
+    throw new Error(err)
 }
 
-/** ✅ 統合API: free→Checkout, active→Portal（サーバ側で自動分岐） */
 export async function startBilling(plan: Plan | null): Promise<string | void> {
-    // plan=null のときはサーバ側で「activeならPortal」へ送る用途（Manageボタン等）
-    const payload = plan ? { plan } : { plan: 'pro' as Plan }
+    const payload = plan ? { plan } : {} // ← null時は空ボディでもOK（サーバ側で既定pro）
     const url = await createSessionJson('/api/billing/start', payload)
     return goOrReturn(url)
 }
 
-/** 既存: サブスク用チェックアウト（直接Checkoutに行きたいときだけ使用） */
 export async function startCheckout(plan: Plan): Promise<string | void> {
-    const url = await createSession(`/api/stripe/checkout?plan=${plan}`)
-    return goOrReturn(url)
+    const res = await fetch(`/api/stripe/checkout?plan=${plan}`, { method: 'POST' })
+    const data = await parseJsonSafely(res)
+    if (res.ok && data && 'url' in data && data.url) return goOrReturn(data.url)
+    const err = data && 'error' in data ? data.error : `HTTP ${res.status}`
+    throw new Error(err)
 }
 
-/** 既存: Top-up用チェックアウト（+300 / +1000） */
 export async function handleTopup(kind: TopupKind): Promise<string | void> {
-    const url = await createSession(`/api/stripe/checkout/topup?kind=${kind}`)
-    return goOrReturn(url)
+    const res = await fetch(`/api/stripe/checkout/topup?kind=${kind}`, { method: 'POST' })
+    const data = await parseJsonSafely(res)
+    if (res.ok && data && 'url' in data && data.url) return goOrReturn(data.url)
+    const err = data && 'error' in data ? data.error : `HTTP ${res.status}`
+    throw new Error(err)
 }
