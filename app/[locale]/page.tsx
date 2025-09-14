@@ -1,3 +1,4 @@
+// app/[locale]/page.tsx
 'use client';
 
 type PageParams = { locale: string };
@@ -9,40 +10,33 @@ type PageProps = {
 };
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { useTranslations, useFormatter } from 'next-intl';
+import { useTranslations, useFormatter, useLocale } from 'next-intl';
 
 import ExecuteFab from '@/components/ExecuteFab';
 import Toast from '@/components/Toast';
 import AdvancedControlsV2, {
-    type Mode,
-    type ColorTone,
-    type Ratio,
-    type DialogueTone,
-    type ControlsValue,
+    type Mode, type ColorTone, type Ratio, type DialogueTone, type ControlsValue,
 } from '@/components/AdvancedControlsV2';
 import CompactPlans from '@/components/CompactPlans';
 import PlanDialog from '@/components/PlanDialog';
 import CreditLimitModal from '@/components/CreditLimitModal';
 
-import { startBilling, handleTopup } from '@/utils/stripe'; // 統合関数
-import RunButton from '@/components/ui/RunButton';           // ★ 追加：共有実行ボタン
+import { startBilling, handleTopup } from '@/utils/stripe';
+import RunButton from '@/components/ui/RunButton';
 
-// ---- APIレスポンス型 ----
+// ---- API型 ----
 type StatusResp = {
     planTier?: 'free' | 'pro' | 'pro_plus';
     proUntil?: string | null;
-
     freeRemaining?: number;
     remain?: number | null;
-
     subCap?: number | null;
     subUsed?: number | null;
     subRemaining?: number | null;
-
     topupRemain?: number;
     topups?: { remain: number; expire_at: string }[];
-
     isPro?: boolean;
+    loggedIn?: boolean; // ★ 追加
 };
 
 type BoostResp = {
@@ -57,10 +51,11 @@ type BoostResp = {
 const toHighlightsArray = (raw: string): string[] =>
     raw.split(',').map(s => s.trim()).filter(Boolean).slice(0, 10);
 
-// ---- ページ本体 ----
+// ---- 本体 ----
 export default function HomePage(_props: PageProps) {
     const t = useTranslations('ui');
     const f = useFormatter();
+    const locale = useLocale();
 
     // 入力
     const [input, setInput] = useState('');
@@ -79,36 +74,42 @@ export default function HomePage(_props: PageProps) {
     const [remain, setRemain] = useState<number | null>(null);
     const [tier, setTier] = useState<'free' | 'pro' | 'pro_plus'>('free');
     const [proUntil, setProUntil] = useState<string | null>(null);
-
     const [subRemain, setSubRemain] = useState<number | null>(null);
     const [subCap, setSubCap] = useState<number | null>(null);
-
     const [topupRemain, setTopupRemain] = useState<number>(0);
     const [topups, setTopups] = useState<{ remain: number; expire_at: string }[]>([]);
+    const [loggedIn, setLoggedIn] = useState<boolean>(false); // ★ 追加
 
     // トースト & モーダル
     const [toastMsg, setToastMsg] = useState<string | null>(null);
     const showToast = (msg: string) => setToastMsg(msg);
-
     const [limitOpen, setLimitOpen] = useState(false);
     const [planOpen, setPlanOpen] = useState(false);
 
     const isPro = tier !== 'free';
+
     const canUseBoost = useMemo(() => {
+        // ★ ログインしていなければ常に不可
+        if (!loggedIn) return false;
         if (isPro) return (subRemain ?? 0) > 0 || (topupRemain ?? 0) > 0;
         if (typeof remain === 'number') return remain > 0 || (topupRemain ?? 0) > 0;
         return true;
-    }, [isPro, remain, subRemain, topupRemain]);
+    }, [loggedIn, isPro, remain, subRemain, topupRemain]);
 
-    // 無効理由（canUseBoost と整合）
     const runDisabledReason = useMemo(() => {
-        if (canUseBoost) return null;
-        return isPro
-            ? 'クレジットがありません。Manage から追加してください。'
-            : '無料枠の上限に達しました。アップグレードまたは追加パックをご検討ください。';
-    }, [canUseBoost, isPro]);
+        if (!loggedIn) return 'ログインが必要です';
+        if (isPro) {
+            const noSub = (subRemain ?? 0) <= 0;
+            const noTop = (topupRemain ?? 0) <= 0;
+            if (noSub && noTop) return 'クレジットがありません。Manage から追加してください。';
+            return null;
+        }
+        if (typeof remain === 'number' && remain <= 0 && (topupRemain ?? 0) <= 0) {
+            return '無料枠の上限に達しました。アップグレードまたは追加パックをご検討ください。';
+        }
+        return null;
+    }, [loggedIn, isPro, subRemain, remain, topupRemain]);
 
-    // モーダルが開いているか（背面のクリック/hoverを遮断）
     const overlayActive = planOpen || limitOpen;
 
     // ---- ステータス再取得 ----
@@ -123,14 +124,11 @@ export default function HomePage(_props: PageProps) {
             setSubCap(j.subCap ?? null);
             setTopupRemain(j.topupRemain ?? 0);
             setTopups(j.topups ?? []);
-        } catch {
-            /* noop */
-        }
+            setLoggedIn(!!j.loggedIn); // ★ 追加
+        } catch { /* noop */ }
     }, []);
 
-    useEffect(() => {
-        void refreshStatus();
-    }, [refreshStatus]);
+    useEffect(() => { void refreshStatus(); }, [refreshStatus]);
 
     // ---- Boost 実行 ----
     const handleRun = useCallback(async () => {
@@ -142,16 +140,16 @@ export default function HomePage(_props: PageProps) {
                 body: JSON.stringify({
                     input,
                     highlights: toHighlightsArray(emphasis),
-                    options: {
-                        mode,
-                        color,
-                        ratio,
-                        tone,
-                        tags: dialogueTags,
-                        styles: genStyles,
-                    },
+                    options: { mode, color, ratio, tone, tags: dialogueTags, styles: genStyles },
                 }),
             });
+
+            if (res.status === 401) {
+                setToastMsg(null);
+                // ログインを促す（ロケール付き）
+                window.location.href = `/${locale}/signin`;
+                return;
+            }
 
             if (res.status === 402) {
                 const j = await res.json().catch(() => ({}));
@@ -174,101 +172,57 @@ export default function HomePage(_props: PageProps) {
         } catch (e) {
             setToastMsg((e as Error).message || 'Failed');
         }
-    }, [input, emphasis, mode, color, ratio, tone, dialogueTags, genStyles, refreshStatus]);
+    }, [input, emphasis, mode, color, ratio, tone, dialogueTags, genStyles, refreshStatus, locale]);
 
-    // ---- Stripe: Portal / Topup（統合APIに差し替え） ----
+    // ---- Billing / Topup ----
     const openPortal = useCallback(async () => {
-        try {
-            await startBilling(null); // active→Portal / free→Checkout(pro)
-        } catch (e) {
-            showToast((e as Error).message || 'Failed to open billing');
-        }
+        try { await startBilling(null); }
+        catch (e) { showToast((e as Error).message || 'Failed to open billing'); }
     }, []);
-
     const buyTopup300 = useCallback(async () => {
-        try {
-            await handleTopup('300');
-        } catch (e) {
-            showToast((e as Error).message || 'Topup 300 failed');
-        }
+        try { await handleTopup('300'); }
+        catch (e) { showToast((e as Error).message || 'Topup 300 failed'); }
     }, []);
-
     const buyTopup1000 = useCallback(async () => {
-        try {
-            await handleTopup('1000');
-        } catch (e) {
-            showToast((e as Error).message || 'Topup 1000 failed');
-        }
+        try { await handleTopup('1000'); }
+        catch (e) { showToast((e as Error).message || 'Topup 1000 failed'); }
     }, []);
-
-    const goPro = useCallback(async () => {
-        try {
-            await startBilling('pro');
-        } catch (e) {
-            showToast((e as Error).message || 'Go Pro failed');
-        }
-    }, []);
-
-    const goProPlus = useCallback(async () => {
-        try {
-            await startBilling('pro_plus');
-        } catch (e) {
-            showToast((e as Error).message || 'Go Pro+ failed');
-        }
-    }, []);
+    const goPro = useCallback(async () => { try { await startBilling('pro'); } catch (e) { showToast((e as Error).message || 'Go Pro failed'); } }, []);
+    const goProPlus = useCallback(async () => { try { await startBilling('pro_plus'); } catch (e) { showToast((e as Error).message || 'Go Pro+ failed'); } }, []);
 
     return (
         <main className="w-full px-4 md:px-6 py-6">
             {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
-            {/* ▼ モーダル開いている間は背面の hover/クリックを遮断 */}
+            {/* モーダル開時は背面ブロック */}
             <div className={overlayActive ? 'pointer-events-none select-none' : ''} aria-hidden={overlayActive}>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6 items-start">
 
-                    {/* 左：プラン + ステータス（固定） */}
+                    {/* 左：プラン＋ステータス */}
                     <div className="md:col-span-3 space-y-4 md:sticky md:top-4 self-start">
-                        <CompactPlans
-                            tier={tier}
-                            onGoPro={goPro}
-                            onGoProPlus={goProPlus}
-                            onOpenPortal={openPortal}
-                        />
+                        <CompactPlans tier={tier} onGoPro={goPro} onGoProPlus={goProPlus} onOpenPortal={openPortal} />
                         <section className="rounded-2xl border bg-white p-3">
                             <h3 className="mb-2 text-sm font-medium">ステータス</h3>
                             <p className="text-sm text-neutral-700">
-                                {t('status')}: {remain ?? '—'} {isPro ? '(Pro)' : '(Free)'}
+                                {t('status')}: {remain ?? '—'} {isPro ? '(Pro)' : '(Free)'} {loggedIn ? '' : '(要ログイン)'}
                             </p>
                             {typeof subRemain === 'number' && typeof subCap === 'number' && (
-                                <p className="mt-1 text-xs text-neutral-500">
-                                    Subscription: {subRemain}/{subCap}
-                                </p>
+                                <p className="mt-1 text-xs text-neutral-500">Subscription: {subRemain}/{subCap}</p>
                             )}
                             {topupRemain > 0 && (
-                                <p className="mt-1 text-xs text-neutral-500">
-                                    追加パック残: {topupRemain}
-                                </p>
+                                <p className="mt-1 text-xs text-neutral-500">追加パック残: {topupRemain}</p>
                             )}
                             <div className="mt-3 flex gap-2">
-                                <button
-                                    className="rounded-lg border px-3 py-1.5 text-sm"
-                                    onClick={buyTopup300}
-                                >
-                                    追加パック 300
-                                </button>
-                                <button
-                                    className="rounded-lg border px-3 py-1.5 text-sm"
-                                    onClick={buyTopup1000}
-                                >
-                                    追加パック 1000
-                                </button>
+                                <button className="rounded-lg border px-3 py-1.5 text-sm" onClick={buyTopup300}>追加パック 300</button>
+                                <button className="rounded-lg border px-3 py-1.5 text-sm" onClick={buyTopup1000}>追加パック 1000</button>
                             </div>
                         </section>
                     </div>
 
-                    {/* 右9列：Input/Output と 条件式のネストグリッド */}
+                    {/* 右：入力/出力 */}
                     <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-9 md:grid-rows-[auto_auto] gap-6 items-start">
 
-                        {/* 中央：Input（左6, 1行目） */}
+                        {/* 入力 */}
                         <section className="md:col-span-6 row-start-1 self-start rounded-2xl border bg-white p-4 flex flex-col min-w-0">
                             <label className="mb-2 block text-sm font-medium">Input</label>
                             <textarea
@@ -288,39 +242,21 @@ export default function HomePage(_props: PageProps) {
                             </div>
                         </section>
 
-                        {/* 右：条件式（右3, 2行ぶち抜き） */}
+                        {/* 条件式 */}
                         <aside className="md:col-span-3 md:row-span-2 self-start rounded-2xl border bg-white p-4 space-y-4">
                             <h3 className="text-sm font-medium">条件式</h3>
-
-                            {/* Emphasis */}
                             <div>
                                 <label className="mb-1 block text-sm font-medium">Emphasis (comma-separated)</label>
-                                <input
-                                    className="w-full border rounded-lg p-2"
-                                    placeholder="short, brand-safe, ..."
-                                    value={emphasis}
-                                    onChange={(e) => setEmphasis(e.target.value)}
-                                />
-                                <p className="mt-1 text-[11px] text-neutral-500">
-                                    角括弧 [must include] で入力しても抽出されます（サーバ側で自動抽出）。
-                                </p>
+                                <input className="w-full border rounded-lg p-2" placeholder="short, brand-safe, ..." value={emphasis} onChange={(e) => setEmphasis(e.target.value)} />
+                                <p className="mt-1 text-[11px] text-neutral-500">角括弧 [must include] で入力しても抽出されます（サーバ側で自動抽出）。</p>
                             </div>
-
-                            {/* Tags */}
                             <div>
                                 <label className="mb-1 block text-sm font-medium">Tags</label>
                                 <div className="mb-2 flex flex-wrap gap-2">
                                     {dialogueTags.map((tag, i) => (
                                         <span key={`${tag}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
                                             {tag}
-                                            <button
-                                                type="button"
-                                                className="text-neutral-500 hover:text-neutral-800"
-                                                aria-label="remove"
-                                                onClick={() => setDialogueTags(dialogueTags.filter((_, idx) => idx !== i))}
-                                            >
-                                                ×
-                                            </button>
+                                            <button type="button" className="text-neutral-500 hover:text-neutral-800" aria-label="remove" onClick={() => setDialogueTags(dialogueTags.filter((_, idx) => idx !== i))}>×</button>
                                         </span>
                                     ))}
                                 </div>
@@ -337,22 +273,13 @@ export default function HomePage(_props: PageProps) {
                                     }}
                                 />
                             </div>
-
-                            {/* Styles */}
                             <div>
                                 <label className="mb-1 block text-sm font-medium">Styles</label>
                                 <div className="mb-2 flex flex-wrap gap-2">
                                     {genStyles.map((st, i) => (
                                         <span key={`${st}-${i}`} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
                                             {st}
-                                            <button
-                                                type="button"
-                                                className="text-neutral-500 hover:text-neutral-800"
-                                                aria-label="remove"
-                                                onClick={() => setGenStyles(genStyles.filter((_, idx) => idx !== i))}
-                                            >
-                                                ×
-                                            </button>
+                                            <button type="button" className="text-neutral-500 hover:text-neutral-800" aria-label="remove" onClick={() => setGenStyles(genStyles.filter((_, idx) => idx !== i))}>×</button>
                                         </span>
                                     ))}
                                 </div>
@@ -369,8 +296,6 @@ export default function HomePage(_props: PageProps) {
                                     }}
                                 />
                             </div>
-
-                            {/* 既存の Mode / Color / Ratio / Tone コントロール */}
                             <AdvancedControlsV2
                                 value={{ mode, color, ratio, tone, dialogueTags, genStyles }}
                                 onChange={(next: Partial<ControlsValue>) => {
@@ -384,21 +309,14 @@ export default function HomePage(_props: PageProps) {
                             />
                         </aside>
 
-                        {/* Output（左6, 2行目：Inputの直下） */}
+                        {/* 出力 */}
                         <section className="md:col-span-6 row-start-2 self-start rounded-2xl border bg-white p-4">
                             <h2 className="mb-2 text-sm font-semibold text-neutral-700">Output</h2>
                             <pre className="whitespace-pre-wrap border rounded-lg p-3 bg-neutral-50 min-h-[280px] md:min-h-[360px]">
                                 {output || '—'}
                             </pre>
                             <div className="mt-3 flex justify-end gap-2">
-                                <button
-                                    type="button"
-                                    className="rounded border px-3 py-1.5 text-sm"
-                                    onClick={() => navigator.clipboard?.writeText(output || '')}
-                                    disabled={!output}
-                                >
-                                    コピー
-                                </button>
+                                <button type="button" className="rounded border px-3 py-1.5 text-sm" onClick={() => navigator.clipboard?.writeText(output || '')} disabled={!output}>コピー</button>
                                 <button
                                     type="button"
                                     className="rounded border px-3 py-1.5 text-sm"
@@ -420,7 +338,7 @@ export default function HomePage(_props: PageProps) {
                 </div>
             </div>
 
-            {/* モーダル（別レイヤ。背面遮断の影響を受けない） */}
+            {/* モーダル（別レイヤ） */}
             <PlanDialog
                 open={planOpen}
                 onClose={() => setPlanOpen(false)}

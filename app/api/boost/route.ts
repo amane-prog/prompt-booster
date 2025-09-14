@@ -1,5 +1,4 @@
-﻿// app/api/boost/route.ts
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 import { isPro as isProDate } from '@/lib/plan'
 import { Redis } from '@upstash/redis'
@@ -193,20 +192,18 @@ export async function POST(req: Request): Promise<Response> {
         const isAd = url.searchParams.get('ad')
         const sb = await supabaseServer()
 
-        // auth
-        let userId: string | null = null
-        try {
-            const { data: { user } } = await sb.auth.getUser()
-            userId = user?.id ?? null
-        } catch {
-            userId = null
+        // ★ ログイン必須（広告ボーナス含め、すべて）
+        const { data: auth } = await sb.auth.getUser().catch(() => ({ data: { user: null } }))
+        const userId = auth?.user?.id ?? null
+        if (!userId) {
+            return NextResponse.json({ error: 'Sign-in required' }, { status: 401 })
         }
 
         // plan
         let planTier: PlanTier = 'free'
         let proUntil: string | null = null
 
-        if (userId) {
+        {
             const { data: billing } = await sb
                 .from('user_billing')
                 .select('pro_until, plan_tier')
@@ -220,12 +217,12 @@ export async function POST(req: Request): Promise<Response> {
             }
         }
 
-        // ad bonus (+1 free for today)
+        // ad bonus (+1 free for today) ※ログイン必須・freeのみ
         if (isAd) {
             if (planTier !== 'free') {
                 return NextResponse.json({ ok: true, remain: null, tier: planTier })
             }
-            if (userId && redis) {
+            if (redis) {
                 const today = jstDateString()
                 const bonusKey = `pb:b:${userId}:${today}`
                 const usageKey = `pb:q:${userId}:${today}`
@@ -235,17 +232,13 @@ export async function POST(req: Request): Promise<Response> {
                 const remaining = Math.max(0, FREE_DAILY_LIMIT + bonus - used)
                 return NextResponse.json({ ok: true, remain: remaining, tier: 'free' })
             }
-            // cookie path (no redis): just acknowledge
+            // Redisなし：記録できないが ACK は返す
             return NextResponse.json({ ok: true, remain: undefined, tier: 'free' })
         }
 
         // body
         let json: unknown = {}
-        try {
-            json = await req.json()
-        } catch {
-            json = {}
-        }
+        try { json = await req.json() } catch { json = {} }
         const parsed = parseBody(json)
         const rawInput = parsed.input ?? ''
         if (!rawInput) {
@@ -263,7 +256,7 @@ export async function POST(req: Request): Promise<Response> {
         let useTopup = false
 
         if (planTier === 'free') {
-            if (userId && redis) {
+            if (redis) {
                 const today = jstDateString()
                 const usageKey = `pb:q:${userId}:${today}`
                 const bonusKey = `pb:b:${userId}:${today}`
@@ -272,7 +265,7 @@ export async function POST(req: Request): Promise<Response> {
                 const left = Math.max(0, FREE_DAILY_LIMIT + bonus - used)
                 if (left > 0) useFree = true
                 else {
-                    // check topup (simple sum)
+                    // check topup
                     const nowIso = new Date().toISOString()
                     const { data: rows } = await sb
                         .from('user_topups')
@@ -296,11 +289,11 @@ export async function POST(req: Request): Promise<Response> {
                     }
                 }
             } else {
-                // no user or no redis: allow one (client cookie will count)
+                // Redis なし：記録できないが、とりあえず許可
                 useFree = true
             }
         } else {
-            if (userId && redis) {
+            if (redis) {
                 const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
                 const key = `pb:m:${userId}:${cycleId}`
                 const used = Number((await redis.get(key)) ?? 0)
@@ -331,7 +324,7 @@ export async function POST(req: Request): Promise<Response> {
                     }
                 }
             } else {
-                // no redis: allow (no counting)
+                // Redis なし：記録できないが、とりあえず許可
                 useMonthly = true
             }
         }
@@ -340,7 +333,7 @@ export async function POST(req: Request): Promise<Response> {
         const out = await callLLM(limitedText, allHighlights, parsed.options)
 
         // record usage
-        if (userId && redis) {
+        if (redis) {
             if (useFree) {
                 const today = jstDateString()
                 const usageKey = `pb:q:${userId}:${today}`
@@ -363,7 +356,8 @@ export async function POST(req: Request): Promise<Response> {
                     .returns<UserTopupRow[]>()
 
                 for (const r of rows ?? []) {
-                    const rem = typeof r.remain === 'number' ? r.remain
+                    const rem = typeof r.remain === 'number'
+                        ? r.remain
                         : (typeof r.amount === 'number' ? r.amount : 0)
                     if (rem > 0) {
                         const { data: updated, error } = await sb
