@@ -11,15 +11,13 @@ type Props = {
     canUseBoost?: boolean
     onWatchAd?: () => Promise<void> | void
     goProHref?: string
-    /**
-     * placement:
-     *  - 'fixed'  : fixed FAB at bottom-left
-     *  - 'inline' : inline button (use together with className)
-     */
     placement?: 'fixed' | 'inline'
-    /** extra class when placement='inline' */
     className?: string
     disabled?: boolean
+    /** モーダルなどが開いている時は FAB を非表示にしたい場合に渡す */
+    hiddenWhen?: boolean
+    /** 必要なら外から z-index を調整できるように */
+    zIndexClassName?: string // 例: 'z-40'
 }
 
 export default function ExecuteFab({
@@ -32,6 +30,8 @@ export default function ExecuteFab({
     placement = 'fixed',
     className,
     disabled = false,
+    hiddenWhen = false,
+    zIndexClassName = 'z-40', // ← 既定を z-40 に（モーダルの z を上回らないように）
 }: Props) {
     const [loading, setLoading] = useState(false)
     const [showDialog, setShowDialog] = useState(false)
@@ -64,17 +64,25 @@ export default function ExecuteFab({
         }
     }
 
+    if (hiddenWhen) return null // ← モーダル中などは描画しない
+
+    const btnBase =
+        'rounded-full bg-blue-600 text-white shadow ' +
+        'enabled:hover:bg-blue-700 ' + // ← hoverはenabled時のみ
+        'disabled:opacity-60 disabled:cursor-not-allowed'
+
     const Btn = (
         <button
             onClick={handleClick}
             className={
                 placement === 'fixed'
-                    ? 'fixed left-4 bottom-4 z-50 rounded-full px-5 py-3 shadow-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed'
-                    : `rounded-full bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed ${className ?? ''}`
+                    ? `fixed left-4 bottom-4 ${zIndexClassName} ${btnBase} px-5 py-3`
+                    : `${btnBase} px-4 py-2 ${className ?? ''}`
             }
             disabled={loading || disabled}
-            aria-label="実行"
+            aria-disabled={loading || disabled}
             type="button"
+            title={loading || disabled ? '現在は実行できません' : label}
         >
             {loading ? '処理中…' : label}
         </button>
@@ -86,21 +94,25 @@ export default function ExecuteFab({
 
             {showDialog && (
                 <div
-                    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
+                    className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-auto"
                     role="dialog"
                     aria-modal="true"
                 >
-                    <div className="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                    <div
+                        className="absolute inset-0 bg-black/40"
+                        aria-hidden
+                        onClick={() => setShowDialog(false)}
+                    />
+                    <div className="relative z-10 mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
                         <h2 className="text-lg font-semibold">本日のブーストは上限です</h2>
-                        <p className="mt-2 text-sm text-gray-600">
-                            本日の無料ブーストは使い切りました。
-                        </p>
+                        <p className="mt-2 text-sm text-gray-600">本日の無料ブーストは使い切りました。</p>
 
                         <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <button
                                 onClick={handleWatchAd}
-                                className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="rounded-xl border px-4 py-2 text-sm enabled:hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
                                 disabled={loading}
+                                aria-disabled={loading}
                             >
                                 {loading ? '処理中…' : '広告を見る（+1）'}
                             </button>
