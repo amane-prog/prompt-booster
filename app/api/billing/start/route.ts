@@ -5,7 +5,7 @@ import { supabaseServer } from '@/lib/supabaseServer'
 import { isPro as isProDate } from '@/lib/plan'
 
 export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic' // キャッシュ回避
+export const dynamic = 'force-dynamic' // 常に実行
 
 type Plan = 'pro' | 'pro_plus'
 type PlanTier = 'free' | 'pro' | 'pro_plus'
@@ -15,7 +15,7 @@ type BillingRow = {
     stripe_customer_id: string | null
 }
 
-// ---- helpers
+// ---------- helpers ----------
 function pick(...names: string[]): string | null {
     for (const n of names) {
         const v = process.env[n]
@@ -25,7 +25,7 @@ function pick(...names: string[]): string | null {
 }
 
 async function resolvePriceIds(stripe: Stripe): Promise<{ pro: string; proPlus: string }> {
-    // まずは環境変数（あなたの既存キー名もカバー）
+    // あなたの既存キー名も拾う
     const proEnv =
         pick('STRIPE_PRICE_PRO', 'STRIPE_PRICE_ID_PRO', 'PRICE_PRO', 'SUB_PRICE_PRO')
     const proPlusEnv =
@@ -34,7 +34,7 @@ async function resolvePriceIds(stripe: Stripe): Promise<{ pro: string; proPlus: 
     let pro = proEnv ?? null
     let proPlus = proPlusEnv ?? null
 
-    // どちらか欠けたら lookup_key で補完（任意で設定していれば使われる）
+    // どちらか欠けたら lookup_key で補完（設定していれば使われる）
     if (!pro || !proPlus) {
         const keyPro = pick('STRIPE_LOOKUP_PRO', 'PRICE_LOOKUP_PRO') ?? 'pro_monthly'
         const keyPlus = pick('STRIPE_LOOKUP_PRO_PLUS', 'PRICE_LOOKUP_PRO_PLUS') ?? 'pro_plus_monthly'
@@ -52,6 +52,7 @@ async function resolvePriceIds(stripe: Stripe): Promise<{ pro: string; proPlus: 
     return { pro, proPlus }
 }
 
+// ---------- handler ----------
 export async function POST(req: NextRequest) {
     try {
         // 必須ENV
@@ -60,6 +61,13 @@ export async function POST(req: NextRequest) {
         if (!secret || !baseUrl || !/^https?:\/\//.test(baseUrl)) {
             throw new Error('Server misconfigured')
         }
+
+        // ロケール付きURL組み立て（NEXT_LOCALE cookie）
+        const locale = req.cookies.get('NEXT_LOCALE')?.value ?? 'en'
+        const origin = baseUrl.replace(/\/$/, '')
+        const prefix = `${origin}/${locale}`
+        const successUrl = `${prefix}?ok=1`
+        const cancelUrl = `${prefix}/billing/canceled`
 
         // body（空でもOK）
         let plan: Plan | null = null
@@ -100,14 +108,14 @@ export async function POST(req: NextRequest) {
             )
         }
 
-        // 権利ベース判定（pro_until が未来なら active）
+        // 権利ベース判定
         const active = isProDate(billing?.pro_until ?? null)
 
         if (active) {
-            // 既存サブスクは Portal へ
+            // 既存サブスクは Portal
             const portal = await stripe.billingPortal.sessions.create({
                 customer: customerId!,
-                return_url: `${baseUrl}/account`,
+                return_url: `${prefix}`, // 例: /ja へ
             })
             return NextResponse.json({ url: portal.url })
         }
@@ -119,13 +127,12 @@ export async function POST(req: NextRequest) {
             mode: 'subscription',
             customer: customerId!,
             line_items: [{ price, quantity: 1 }],
-            success_url: `${baseUrl}/account?ok=1`,
-            cancel_url: `${baseUrl}/pricing?canceled=1`,
+            success_url: successUrl,
+            cancel_url: cancelUrl,
             allow_promotion_codes: true,
         })
         return NextResponse.json({ url: session.url })
     } catch (e) {
-        // 具体情報はログにだけ残し、クライアントには一般化
         console.error('[/api/billing/start] error:', e)
         return NextResponse.json({ error: 'Failed to start billing' }, { status: 500 })
     }
