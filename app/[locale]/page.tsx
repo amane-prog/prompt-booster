@@ -25,6 +25,8 @@ import CompactPlans from '@/components/CompactPlans';
 import PlanDialog from '@/components/PlanDialog';
 import CreditLimitModal from '@/components/CreditLimitModal';
 
+import { startBilling, handleTopup } from '@/utils/stripe'; // ★ 追加：統合関数を利用
+
 // ---- APIレスポンス型 ----
 type StatusResp = {
     planTier?: 'free' | 'pro' | 'pro_plus';
@@ -163,36 +165,47 @@ export default function HomePage(_props: PageProps) {
         }
     }, [input, emphasis, mode, color, ratio, tone, dialogueTags, genStyles, refreshStatus]);
 
-    // ---- Stripe: Portal / Topup ----
+    // ---- Stripe: Portal / Topup（統合APIに差し替え） ----
     const openPortal = useCallback(async () => {
         try {
-            const r = await fetch('/api/stripe/portal', { method: 'POST' });
-            const j = await r.json();
-            if (r.ok && j.url) { window.location.href = j.url; return; }
-            showToast(j.error ?? 'Failed to open portal');
-        } catch (e) { showToast((e as Error).message); }
+            // activeならPortalへ、freeならCheckout（plan既定pro）へ誘導。サーバ側で自動分岐
+            await startBilling(null);
+        } catch (e) {
+            showToast((e as Error).message || 'Failed to open billing');
+        }
     }, []);
 
     const buyTopup300 = useCallback(async () => {
         try {
-            const r = await fetch('/api/stripe/checkout/topup?kind=300', { method: 'POST' });
-            const j = await r.json();
-            if (r.ok && j.url) { window.location.href = j.url; return; }
-            showToast(j.error ?? 'Topup 300 failed');
-        } catch (e) { showToast((e as Error).message); }
+            await handleTopup('300');
+        } catch (e) {
+            showToast((e as Error).message || 'Topup 300 failed');
+        }
     }, []);
 
     const buyTopup1000 = useCallback(async () => {
         try {
-            const r = await fetch('/api/stripe/checkout/topup?kind=1000', { method: 'POST' });
-            const j = await r.json();
-            if (r.ok && j.url) { window.location.href = j.url; return; }
-            showToast(j.error ?? 'Topup 1000 failed');
-        } catch (e) { showToast((e as Error).message); }
+            await handleTopup('1000');
+        } catch (e) {
+            showToast((e as Error).message || 'Topup 1000 failed');
+        }
     }, []);
 
-    const goPro = useCallback(async () => { await openPortal(); }, [openPortal]);
-    const goProPlus = useCallback(async () => { await openPortal(); }, [openPortal]);
+    const goPro = useCallback(async () => {
+        try {
+            await startBilling('pro'); // free→Checkout(pro) / active→Portal
+        } catch (e) {
+            showToast((e as Error).message || 'Go Pro failed');
+        }
+    }, []);
+
+    const goProPlus = useCallback(async () => {
+        try {
+            await startBilling('pro_plus'); // free→Checkout(pro+) / active→Portal
+        } catch (e) {
+            showToast((e as Error).message || 'Go Pro+ failed');
+        }
+    }, []);
 
     return (
         <main className="w-full px-4 md:px-6 py-6">
@@ -414,6 +427,4 @@ export default function HomePage(_props: PageProps) {
             />
         </main>
     );
-
-
 }

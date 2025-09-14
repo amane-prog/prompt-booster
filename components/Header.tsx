@@ -1,4 +1,3 @@
-// components/Header.tsx
 'use client'
 
 import Link from 'next/link'
@@ -7,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import Toast from '@/components/Toast'
+import { startBilling } from '@/utils/stripe'
 
 type PlanTier = 'free' | 'pro' | 'pro_plus'
 type Status = { planTier?: PlanTier; freeRemaining?: number; isPro?: boolean }
@@ -42,69 +42,31 @@ export default function Header() {
                 if (alive) { setEmail(null); setUserId(null); setPlan('free') }
             }
         }
-        refresh()
+        void refresh()
         const { data: sub } = supabase.auth.onAuthStateChange((evt) => {
-            if (['SIGNED_IN', 'SIGNED_OUT', 'TOKEN_REFRESHED'].includes(evt)) refresh()
+            if (['SIGNED_IN', 'SIGNED_OUT', 'TOKEN_REFRESHED'].includes(evt)) void refresh()
         })
         return () => { alive = false; sub?.subscription?.unsubscribe() }
     }, [])
 
-    async function manageBilling() {
+    async function onBilling(planParam: CheckoutPlan | null) {
         try {
-            const res = await fetch('/api/stripe/portal', { method: 'POST' })
-            let data: { url?: string; error?: string } | null = null
-            try { data = await res.json() } catch { /* ignore */ }
-            if (res.ok && data?.url) {
-                location.href = data.url
-                return
-            }
-            const msg = data?.error ?? `Open portal failed (${res.status})`
-            showToast(msg)
-            console.error('portal failed:', { status: res.status, json: data })
+            await startBilling(planParam) // server側で free→Checkout / active→Portal を自動分岐
         } catch (e) {
-            const msg = e instanceof Error ? e.message : 'portal error'
+            const msg = e instanceof Error ? e.message : 'billing error'
             showToast(msg)
-            console.error('portal exception:', e)
-        }
-    }
-
-    async function goPro(planParam: CheckoutPlan) {
-        try {
-            const qs = new URLSearchParams({ plan: planParam }).toString()
-            const res = await fetch(`/api/stripe/checkout?${qs}`, { method: 'POST' })
-            let data: { url?: string; error?: string } | null = null
-            let rawText: string | null = null
-            try { data = await res.json() } catch { rawText = await res.text().catch(() => null) }
-
-            if (!res.ok || !data?.url) {
-                const msg = data?.error ?? `Checkout failed (${res.status})`
-                showToast(msg)
-                console.group('checkout failed')
-                console.log('plan:', planParam)
-                console.log('status:', res.status)
-                console.log('json:', data)
-                if (rawText) console.log('text:', rawText.slice(0, 800))
-                console.groupEnd()
-                return
-            }
-            location.href = data.url
-        } catch (e) {
-            const msg = e instanceof Error ? e.message : 'checkout error'
-            showToast(msg)
-            console.error('checkout exception:', e)
+            console.error('billing error:', e)
         }
     }
 
     const isPro = plan !== 'free'
     const appName = t.has('app.name') ? t('app.name') : 'Prompt Booster'
-
-    // UUIDの末尾だけ表示
     const shortId = userId ? `${userId.slice(0, 6)}…${userId.slice(-4)}` : null
 
     return (
         <>
             <header className="w-full border-b bg-white">
-                {/* サイト上部のバー */}
+                {/* Top bar */}
                 <div className="mx-auto px-4 py-3 max-w-screen-2xl 3xl:max-w-screen-3xl 4xl:max-w-screen-4xl flex items-center justify-between">
                     <Link href={`/${locale}`} className="flex items-center gap-2 font-semibold">
                         {appName}
@@ -118,7 +80,7 @@ export default function Header() {
                     <div className="flex items-center gap-3">
                         <LanguageSwitcher />
 
-                        {/* ユーザー情報（メールか短縮ID） */}
+                        {/* user info */}
                         {email ? (
                             <span className="text-sm text-neutral-600">{email}</span>
                         ) : shortId ? (
@@ -131,7 +93,7 @@ export default function Header() {
                                     <div className="flex items-center gap-2">
                                         {plan === 'pro' && (
                                             <button
-                                                onClick={() => goPro('pro_plus')}
+                                                onClick={() => onBilling('pro_plus')}
                                                 className="rounded bg-blue-600 px-2 py-1 text-xs text-white"
                                                 title={t.has('header.upgradeToProPlus') ? t('header.upgradeToProPlus') : 'Upgrade to Pro+'}
                                             >
@@ -139,7 +101,7 @@ export default function Header() {
                                             </button>
                                         )}
                                         <button
-                                            onClick={manageBilling}
+                                            onClick={() => onBilling(null)} // activeならPortalへ
                                             className="rounded bg-black px-2 py-1 text-xs text-white"
                                         >
                                             {t.has('nav.manage') ? t('nav.manage') : (t.has('header.manageBilling') ? t('header.manageBilling') : 'Manage')}
@@ -148,13 +110,13 @@ export default function Header() {
                                 ) : (
                                     <>
                                         <button
-                                            onClick={() => goPro('pro')}
+                                            onClick={() => onBilling('pro')}
                                             className="rounded bg-blue-600 px-2 py-1 text-xs text-white"
                                         >
                                             {t.has('nav.goPro') ? t('nav.goPro') : (t.has('billing.checkout.goPro') ? t('billing.checkout.goPro') : 'Go Pro')}
                                         </button>
                                         <button
-                                            onClick={() => goPro('pro_plus')}
+                                            onClick={() => onBilling('pro_plus')}
                                             className="rounded bg-blue-600 px-2 py-1 text-xs text-white"
                                         >
                                             {t.has('nav.goProPlus') ? t('nav.goProPlus') : (t.has('billing.checkout.goProPlus') ? t('billing.checkout.goProPlus') : 'Go Pro+')}
@@ -177,7 +139,7 @@ export default function Header() {
                     </div>
                 </div>
 
-                {/* サブバー */}
+                {/* Sub bar */}
                 <div className="border-t bg-neutral-50">
                     <div className="mx-auto max-w-screen-2xl 3xl:max-w-screen-3xl 4xl:max-w-screen-4xl px-4 py-2">
                         <p className="text-[13px] leading-snug text-neutral-800">
