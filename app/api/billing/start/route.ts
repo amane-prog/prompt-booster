@@ -46,9 +46,10 @@ function validateEnvBase() {
  */
 async function resolvePriceIds(stripe: Stripe): Promise<{ pro: string; proPlus: string }> {
     const proEnv =
-        pick('STRIPE_PRICE_PRO', 'STRIPE_PRO_PRICE_ID', 'SUB_PRICE_PRO', 'PRICE_PRO')
+        pick('STRIPE_PRICE_PRO', 'STRIPE_PRO_PRICE_ID', 'SUB_PRICE_PRO', 'PRICE_PRO','STRIPE_PRICE_ID_PRO')
     const proPlusEnv =
-        pick('STRIPE_PRICE_PRO_PLUS', 'STRIPE_PRO_PLUS_PRICE_ID', 'SUB_PRICE_PRO_PLUS', 'PRICE_PRO_PLUS')
+        pick('STRIPE_PRICE_PRO_PLUS', 'STRIPE_PRO_PLUS_PRICE_ID', 'SUB_PRICE_PRO_PLUS', 'PRICE_PRO_PLUS',
+            'STRIPE_PRICE_ID_PRO_PLUS')
 
     let pro = proEnv ?? null
     let proPlus = proPlusEnv ?? null
