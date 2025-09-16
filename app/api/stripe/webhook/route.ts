@@ -236,6 +236,9 @@ export async function POST(req: NextRequest) {
                         const tier = tierFromSubscription(sub);
                         if (tier) {
                             const until = toIso(subPeriodEnd(sub));
+                            const periodStart = (sub as any)?.current_period_start ? new Date((sub as any).current_period_start * 1000).toISOString() : null;
+                            const periodEnd = (sub as any)?.current_period_end ? new Date((sub as any).current_period_end * 1000).toISOString() : null;
+
                             await sb
                                 .from('user_billing')
                                 .upsert(
@@ -243,7 +246,9 @@ export async function POST(req: NextRequest) {
                                         user_id: userId,
                                         stripe_customer_id: customerId,
                                         plan_tier: tier,
-                                        pro_until: until,
+                                        pro_until: periodEnd,
+                                        cycle_start: periodStart,
+                                        cycle_end: periodEnd
                                     },
                                     { onConflict: 'user_id' }
                                 );

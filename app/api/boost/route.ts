@@ -1,4 +1,5 @@
-﻿import { NextResponse } from 'next/server'
+﻿// app/api/boost/route.ts
+import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 import { isPro as isProDate } from '@/lib/plan'
 import { Redis } from '@upstash/redis'
@@ -7,7 +8,7 @@ import { countGraphemes, sliceGraphemes } from '@/utils/grapheme'
 
 export const runtime = 'nodejs'
 
-// ----- env helpers -----
+// ===== env helpers =====
 function unquote(s: string | undefined | null) {
     if (!s) return ''
     return s.replace(/^"+|"+$/g, '').replace(/^'+|'+$/g, '')
@@ -78,7 +79,7 @@ type BoostBody = {
     }
 }
 
-// ===== Body/Highlight utilities =====
+// ===== Body utilities =====
 function parseBody(jsonUnknown: unknown): BoostBody {
     if (typeof jsonUnknown !== 'object' || jsonUnknown === null) return {}
     const rec = jsonUnknown as Record<string, unknown>
@@ -129,7 +130,7 @@ function normalizeHighlights(h: string[] | string | null | undefined): string[] 
     return out
 }
 
-function enforceCharLimit(text: string, tier: 'free' | 'pro' | 'pro_plus'): { text: string; truncated: boolean } {
+function enforceCharLimit(text: string, tier: PlanTier): { text: string; truncated: boolean } {
     const limit = tier === 'pro_plus' ? 2000 : 500
     const len = countGraphemes(text)
     if (len <= limit) return { text, truncated: false }
@@ -150,10 +151,6 @@ async function callLLM(userBrief: string, highlights: string[], options?: BoostB
         '- Style & Tone',
         '- Output format',
         '- Draft prompt (single block, ready to paste)',
-        '',
-        'Rules:',
-        '- If `Must-include` items are provided, reflect them verbatim in the Draft prompt.',
-        '- Keep it concise and actionable.',
     ].join('\n')
 
     const emphasis =
@@ -186,7 +183,7 @@ async function callLLM(userBrief: string, highlights: string[], options?: BoostB
     return resp.choices[0]?.message?.content ?? ''
 }
 
-// ----- handler -----
+// ===== handler =====
 export async function POST(req: Request): Promise<Response> {
     try {
         const redis = getRedis()
@@ -194,17 +191,16 @@ export async function POST(req: Request): Promise<Response> {
         const isAd = url.searchParams.get('ad')
         const sb = await supabaseServer()
 
-        // ★ ログイン必須（広告ボーナス含め、すべて）
+        // --- auth ---
         const { data: auth } = await sb.auth.getUser().catch(() => ({ data: { user: null } }))
         const userId = auth?.user?.id ?? null
         if (!userId) {
             return NextResponse.json({ error: 'Sign-in required' }, { status: 401 })
         }
 
-        // plan
+        // --- billing ---
         let planTier: PlanTier = 'free'
         let proUntil: string | null = null
-
         {
             const { data: billing } = await sb
                 .from('user_billing')
@@ -219,10 +215,10 @@ export async function POST(req: Request): Promise<Response> {
             }
         }
 
-        // ad bonus (+1 free for today) ※ログイン必須・freeのみ
+        // --- ad bonus ---
         if (isAd) {
             if (planTier !== 'free') {
-                return NextResponse.json({ ok: true, remain: null, tier: planTier })
+                return NextResponse.json({ ok: true, tier: planTier })
             }
             if (redis) {
                 const today = jstDateString()
@@ -234,13 +230,12 @@ export async function POST(req: Request): Promise<Response> {
                 const remaining = Math.max(0, FREE_DAILY_LIMIT + bonus - used)
                 return NextResponse.json({ ok: true, remain: remaining, tier: 'free' })
             }
-            // Redisなし：記録できないが ACK は返す
-            return NextResponse.json({ ok: true, remain: undefined, tier: 'free' })
+            return NextResponse.json({ ok: true, tier: 'free' })
         }
 
-        // body
+        // --- body parse ---
         let json: unknown = {}
-        try { json = await req.json() } catch { json = {} }
+        try { json = await req.json() } catch { }
         const parsed = parseBody(json)
         const rawInput = parsed.input ?? ''
         if (!rawInput) {
@@ -252,10 +247,9 @@ export async function POST(req: Request): Promise<Response> {
         const allHighlights = normalizeHighlights([...extracted.highlights, ...extraHi])
         const { text: limitedText, truncated } = enforceCharLimit(extracted.clean, planTier)
 
-        // quota check
-        let useFree = false
-        let useMonthly = false
-        let useTopup = false
+        // --- quota check ---
+        let useType: 'free' | 'monthly' | 'topup' | null = null
+        let remainCount: number | null = null
 
         if (planTier === 'free') {
             if (redis) {
@@ -265,34 +259,28 @@ export async function POST(req: Request): Promise<Response> {
                 const used = Number((await redis.get(usageKey)) ?? 0)
                 const bonus = Number((await redis.get(bonusKey)) ?? 0)
                 const left = Math.max(0, FREE_DAILY_LIMIT + bonus - used)
-                if (left > 0) useFree = true
-                else {
+                if (left > 0) {
+                    useType = 'free'
+                    remainCount = left
+                } else {
                     // check topup
                     const nowIso = new Date().toISOString()
                     const { data: rows } = await sb
                         .from('user_topups')
-                        .select('remain, amount, expire_at')
+                        .select('remain')
                         .eq('user_id', userId)
                         .gt('expire_at', nowIso)
                         .returns<UserTopupRow[]>()
-
-                    const total = (rows ?? []).reduce<number>((acc, r) => {
-                        const rem = typeof r.remain === 'number'
-                            ? r.remain
-                            : (typeof r.amount === 'number' ? r.amount : 0)
-                        return acc + rem
-                    }, 0)
-                    if (total > 0) useTopup = true
-                    else {
-                        return NextResponse.json(
-                            { error: 'Daily quota exceeded', remain: 0, resetInSec: secondsUntilJstMidnight(), tier: 'free' },
-                            { status: 402 }
-                        )
+                    const total = (rows ?? []).reduce((acc, r) => acc + (r.remain ?? 0), 0)
+                    if (total > 0) {
+                        useType = 'topup'
+                        remainCount = total
+                    } else {
+                        return NextResponse.json({ error: 'Daily quota exceeded', remain: 0, tier: 'free' }, { status: 402 })
                     }
                 }
             } else {
-                // Redis なし：記録できないが、とりあえず許可
-                useFree = true
+                useType = 'free'
             }
         } else {
             if (redis) {
@@ -300,85 +288,72 @@ export async function POST(req: Request): Promise<Response> {
                 const key = `pb:m:${userId}:${cycleId}`
                 const used = Number((await redis.get(key)) ?? 0)
                 const cap = 1000
-                if (used < cap) useMonthly = true
-                else {
+                const left = Math.max(0, cap - used)
+                if (left > 0) {
+                    useType = 'monthly'
+                    remainCount = left
+                } else {
                     // fallback to topup
                     const nowIso = new Date().toISOString()
                     const { data: rows } = await sb
                         .from('user_topups')
-                        .select('remain, amount, expire_at')
+                        .select('remain')
                         .eq('user_id', userId)
                         .gt('expire_at', nowIso)
                         .returns<UserTopupRow[]>()
-
-                    const total = (rows ?? []).reduce<number>((acc, r) => {
-                        const rem = typeof r.remain === 'number'
-                            ? r.remain
-                            : (typeof r.amount === 'number' ? r.amount : 0)
-                        return acc + rem
-                    }, 0)
-                    if (total > 0) useTopup = true
-                    else {
-                        return NextResponse.json(
-                            { error: 'Monthly quota exceeded', tier: planTier, resetAt: proUntil },
-                            { status: 402 }
-                        )
+                    const total = (rows ?? []).reduce((acc, r) => acc + (r.remain ?? 0), 0)
+                    if (total > 0) {
+                        useType = 'topup'
+                        remainCount = total
+                    } else {
+                        return NextResponse.json({ error: 'Monthly quota exceeded', tier: planTier }, { status: 402 })
                     }
                 }
             } else {
-                // Redis なし：記録できないが、とりあえず許可
-                useMonthly = true
+                useType = 'monthly'
             }
         }
 
-        // LLM
+        // --- LLM ---
         const out = await callLLM(limitedText, allHighlights, parsed.options)
 
-        // record usage
+        // --- consume ---
         if (redis) {
-            if (useFree) {
+            if (useType === 'free') {
                 const today = jstDateString()
                 const usageKey = `pb:q:${userId}:${today}`
                 const used = await redis.incr(usageKey)
                 if (used === 1) await redis.expire(usageKey, secondsUntilJstMidnight())
-            } else if (useMonthly) {
+                remainCount = Math.max(0, (remainCount ?? 1) - 1)
+            } else if (useType === 'monthly') {
                 const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
                 const key = `pb:m:${userId}:${cycleId}`
                 const used = await redis.incr(key)
                 if (used === 1) await redis.expire(key, secondsUntil(proUntil))
-            } else if (useTopup) {
-                // consume one (FIFO)
+                remainCount = Math.max(0, (remainCount ?? 1) - 1)
+            } else if (useType === 'topup') {
                 const nowIso = new Date().toISOString()
                 const { data: rows } = await sb
                     .from('user_topups')
-                    .select('id, remain, amount, expire_at')
+                    .select('id, remain')
                     .eq('user_id', userId)
                     .gt('expire_at', nowIso)
                     .order('expire_at', { ascending: true })
                     .returns<UserTopupRow[]>()
-
                 for (const r of rows ?? []) {
-                    const rem = typeof r.remain === 'number'
-                        ? r.remain
-                        : (typeof r.amount === 'number' ? r.amount : 0)
-                    if (rem > 0) {
-                        const { data: updated, error } = await sb
-                            .from('user_topups')
-                            .update({ remain: rem - 1 })
-                            .eq('id', r.id)
-                            .gt('remain', 0)
-                            .select('id')
-                            .maybeSingle<{ id: string }>()
-                        if (!error && updated) break
+                    if ((r.remain ?? 0) > 0) {
+                        await sb.from('user_topups').update({ remain: (r.remain ?? 1) - 1 }).eq('id', r.id)
+                        break
                     }
                 }
+                remainCount = Math.max(0, (remainCount ?? 1) - 1)
             }
         }
 
         return NextResponse.json({
             text: out,
             tier: planTier,
-            remain: planTier === 'free' ? undefined : null,
+            remain: remainCount,
             highlights: allHighlights,
             truncated: truncated || undefined,
         })
