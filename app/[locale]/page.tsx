@@ -27,14 +27,17 @@ import { countGraphemes, sliceGraphemes } from '@/utils/grapheme';
 // ---- API型 ----
 type StatusResp = {
     planTier?: 'free' | 'pro' | 'pro_plus';
+    tierLabel?: string; // APIが返してくれたら使う（無ければクライアント側で算出）
     proUntil?: string | null;
-    freeRemaining?: number;
-    remain?: number | null;
-    subCap?: number | null;
+
+    freeRemaining?: number;           // Free: 今日の残り
+    remain?: number | null;           // 互換: FreeはfreeRemaining、Pro系は base+topup 合計
+    subCap?: number | null;           // Pro/Pro+: 月のベース上限（仕様：pro=1000, pro+=1000）
     subUsed?: number | null;
-    subRemaining?: number | null;
-    topupRemain?: number;
+    subRemaining?: number | null;     // Pro/Pro+: 月のベース残
+    topupRemain?: number;             // 追加パック合計残
     topups?: { remain: number; expire_at: string }[];
+
     isPro?: boolean;
     loggedIn?: boolean;
 };
@@ -88,7 +91,7 @@ export default function HomePage(_props: PageProps) {
 
     const isPro = tier !== 'free';
 
-    // ★ 入力上限（tier による）＋カウント
+    // ★ 入力上限（仕様: Free=500 / Pro=500 / Pro+=2000）＋カウント
     const inputLimit = useMemo(() => (tier === 'pro_plus' ? 2000 : 500), [tier]);
     const inputCount = useMemo(() => countGraphemes(input), [input]);
     const remainingChars = inputLimit - inputCount;
@@ -132,7 +135,8 @@ export default function HomePage(_props: PageProps) {
         try {
             const res = await fetch('/api/boost/status', { cache: 'no-store' });
             const j = (await res.json()) as StatusResp;
-            setRemain(j.freeRemaining ?? j.remain ?? null);
+            // remain: FreeはfreeRemaining、Pro系はbase+topup合計（サーバ側で統一済み）
+            setRemain(j.remain ?? j.freeRemaining ?? null);
             setTier(j.planTier ?? 'free');
             setProUntil(j.proUntil ?? null);
             setSubRemain(j.subRemaining ?? null);
@@ -140,10 +144,18 @@ export default function HomePage(_props: PageProps) {
             setTopupRemain(j.topupRemain ?? 0);
             setTopups(j.topups ?? []);
             setLoggedIn(!!j.loggedIn);
-        } catch { /* noop */ }
+        } catch {
+            /* noop */
+        }
     }, []);
 
     useEffect(() => { void refreshStatus(); }, [refreshStatus]);
+
+    // ---- Tierラベル（サーバが返してなくても計算できるように） ----
+    const tierLabel = useMemo(
+        () => (tier === 'pro_plus' ? 'Pro+' : tier === 'pro' ? 'Pro' : 'Free'),
+        [tier]
+    );
 
     // ---- Boost 実行 ----
     const handleRun = useCallback(async () => {
@@ -201,8 +213,14 @@ export default function HomePage(_props: PageProps) {
         try { await handleTopup('1000'); }
         catch (e) { showToast((e as Error).message || 'Topup 1000 failed'); }
     }, []);
-    const goPro = useCallback(async () => { try { await startBilling('pro'); } catch (e) { showToast((e as Error).message || 'Go Pro failed'); } }, []);
-    const goProPlus = useCallback(async () => { try { await startBilling('pro_plus'); } catch (e) { showToast((e as Error).message || 'Go Pro+ failed'); } }, []);
+    const goPro = useCallback(async () => {
+        try { await startBilling('pro'); }
+        catch (e) { showToast((e as Error).message || 'Go Pro failed'); }
+    }, []);
+    const goProPlus = useCallback(async () => {
+        try { await startBilling('pro_plus'); }
+        catch (e) { showToast((e as Error).message || 'Go Pro+ failed'); }
+    }, []);
 
     return (
         <main className="w-full px-4 md:px-6 py-6">
@@ -214,11 +232,17 @@ export default function HomePage(_props: PageProps) {
 
                     {/* 左：プラン＋ステータス */}
                     <div className="md:col-span-3 space-y-4 md:sticky md:top-4 self-start">
-                        <CompactPlans tier={tier} onGoPro={goPro} onGoProPlus={goProPlus} onOpenPortal={openPortal} />
+                        <CompactPlans
+                            tier={tier}
+                            onGoPro={goPro}
+                            onGoProPlus={goProPlus}
+                            onOpenPortal={openPortal}
+                        />
+
                         <section className="rounded-2xl border bg-white p-3">
                             <h3 className="mb-2 text-sm font-medium">ステータス</h3>
                             <p className="text-sm text-neutral-700">
-                                {t('status')}: {remain ?? '—'} {isPro ? '(Pro)' : '(Free)'} {loggedIn ? '' : '(要ログイン)'}
+                                {t('status')}: {remain ?? '—'} ({tierLabel}) {loggedIn ? '' : '(要ログイン)'}
                             </p>
                             {typeof subRemain === 'number' && typeof subCap === 'number' && (
                                 <p className="mt-1 text-xs text-neutral-500">Subscription: {subRemain}/{subCap}</p>
@@ -241,13 +265,13 @@ export default function HomePage(_props: PageProps) {
                             <label className="mb-2 block text-sm font-medium">Input</label>
                             <textarea
                                 className="w-full h-40 md:h-56 resize-y border rounded-lg p-3 focus:outline-none focus:ring"
-                                placeholder={`最大 ${inputLimit} 文字（${tier === 'pro_plus' ? 'Pro+' : 'Free/Pro'}）`}
+                                placeholder={`最大 ${inputLimit} 文字（${tierLabel}）`}
                                 value={input}
                                 onChange={(e) => handleInputChange(e.target.value)}
                             />
                             <div className="mt-1 flex items-center justify-between">
                                 <span className="text-[11px] text-neutral-500">
-                                    {tier === 'pro_plus' ? 'Pro+ 上限' : 'Free/Pro 上限'}: {inputCount} / {inputLimit}
+                                    {tierLabel} 上限: {inputCount} / {inputLimit}
                                 </span>
                                 <span className={`text-[11px] ${remainingChars <= 50 ? 'text-rose-600' : 'text-neutral-400'}`}>
                                     残り {Math.max(0, remainingChars)} 文字
@@ -264,7 +288,7 @@ export default function HomePage(_props: PageProps) {
                             </div>
                         </section>
 
-                        {/* 条件式 */}
+                        {/* 条件式・コントロール */}
                         <aside className="md:col-span-3 md:row-span-2 self-start rounded-2xl border bg-white p-4 space-y-4">
                             <h3 className="text-sm font-medium">条件式</h3>
 
@@ -369,7 +393,7 @@ export default function HomePage(_props: PageProps) {
                                     onClick={() => navigator.clipboard?.writeText(output || '')}
                                     disabled={!output}
                                 >
-                                    コピー
+                                    コビー
                                 </button>
                                 <button
                                     type="button"
