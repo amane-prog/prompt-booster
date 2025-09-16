@@ -16,6 +16,9 @@ function unquote(s: string | undefined | null) {
 
 // ===== Config / Clients =====
 const FREE_DAILY_LIMIT = Number(process.env.FREE_DAILY_LIMIT ?? 3)
+const BASE_QUOTA_PRO = Number(process.env.BASE_QUOTA_PRO ?? 1000)
+const BASE_QUOTA_PRO_PLUS = Number(process.env.BASE_QUOTA_PRO_PLUS ?? 1000)
+
 const UPSTASH_URL = unquote(process.env.UPSTASH_REDIS_REST_URL)
 const UPSTASH_TOKEN = unquote(process.env.UPSTASH_REDIS_REST_TOKEN)
 const OPENAI_KEY = unquote(process.env.OPENAI_API_KEY)
@@ -131,10 +134,16 @@ function normalizeHighlights(h: string[] | string | null | undefined): string[] 
 }
 
 function enforceCharLimit(text: string, tier: PlanTier): { text: string; truncated: boolean } {
-    const limit = tier === 'pro_plus' ? 2000 : 500
+    const limit = tier === 'pro_plus' ? 2000 : tier === 'pro' ? 1000 : 500
     const len = countGraphemes(text)
     if (len <= limit) return { text, truncated: false }
     return { text: sliceGraphemes(text, limit), truncated: true }
+}
+
+function monthlyCap(tier: PlanTier) {
+    if (tier === 'pro_plus') return BASE_QUOTA_PRO_PLUS
+    if (tier === 'pro') return BASE_QUOTA_PRO
+    return 0
 }
 
 // ===== OpenAI call =====
@@ -208,10 +217,16 @@ export async function POST(req: Request): Promise<Response> {
                 .eq('user_id', userId)
                 .maybeSingle<UserBillingRow>()
 
-            const active = isProDate(billing?.pro_until ?? null)
-            if (active) {
-                planTier = billing?.plan_tier === 'pro_plus' ? 'pro_plus' : 'pro'
+            const tier = (billing?.plan_tier ?? 'free') as PlanTier
+            if (tier === 'pro' || tier === 'pro_plus') {
+                planTier = tier
                 proUntil = billing?.pro_until ?? null
+            } else {
+                // free でも pro_until が未来なら一時的に pro 扱い
+                if (isProDate(billing?.pro_until ?? null)) {
+                    planTier = 'pro'
+                    proUntil = billing?.pro_until ?? null
+                }
             }
         }
 
@@ -287,7 +302,7 @@ export async function POST(req: Request): Promise<Response> {
                 const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
                 const key = `pb:m:${userId}:${cycleId}`
                 const used = Number((await redis.get(key)) ?? 0)
-                const cap = 1000
+                const cap = monthlyCap(planTier)
                 const left = Math.max(0, cap - used)
                 if (left > 0) {
                     useType = 'monthly'
