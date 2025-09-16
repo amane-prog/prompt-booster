@@ -6,6 +6,8 @@ import { Redis } from '@upstash/redis'
 export const runtime = 'nodejs'
 
 const FREE_DAILY_LIMIT = Number(process.env.FREE_DAILY_LIMIT ?? 3)
+const BASE_QUOTA_PRO = Number(process.env.BASE_QUOTA_PRO ?? 1000)
+const BASE_QUOTA_PRO_PLUS = Number(process.env.BASE_QUOTA_PRO_PLUS ?? 1000)
 
 function getRedis(): Redis | null {
     const url = process.env.UPSTASH_REDIS_REST_URL
@@ -34,6 +36,7 @@ export async function GET(req: NextRequest) {
         const userId = authData?.user?.id ?? null
         const loggedIn = !!userId
 
+        // -------- プラン判定（plan_tier を最優先、pro_until は保険）--------
         let planTier: PlanTier = 'free'
         let proUntil: string | null = null
 
@@ -45,40 +48,40 @@ export async function GET(req: NextRequest) {
                 .maybeSingle()
 
             const billing = billingRaw as BillingRow | null
-            const active = isProDate(billing?.pro_until ?? null)
-            if (active) {
-                planTier = billing?.plan_tier === 'pro_plus' ? 'pro_plus' : 'pro'
+            const t = (billing?.plan_tier ?? 'free') as PlanTier
+            if (t === 'pro_plus' || t === 'pro') {
+                planTier = t
+                proUntil = billing?.pro_until ?? null
+            } else if (isProDate(billing?.pro_until ?? null)) {
+                // plan_tier が不明でも期間が未来なら一時的に pro 扱い
+                planTier = 'pro'
                 proUntil = billing?.pro_until ?? null
             }
         }
 
-        // Free の日次残数（※要ログイン。未ログインは 0 固定）
+        // -------- Free の日次残（ログイン時のみ）--------
         let freeRemaining: number | null = null
         if (planTier === 'free') {
             if (loggedIn && redis) {
                 const day = jstDateString()
-                const usedRaw = await redis.get<string | number>(`pb:q:${userId}:${day}`)
-                const bonusRaw = await redis.get<string | number>(`pb:b:${userId}:${day}`)
-                const used = Number(usedRaw ?? 0)
-                const bonus = Number(bonusRaw ?? 0)
+                const used = Number((await redis.get(`pb:q:${userId}:${day}`)) ?? 0)
+                const bonus = Number((await redis.get(`pb:b:${userId}:${day}`)) ?? 0)
                 freeRemaining = Math.max(0, FREE_DAILY_LIMIT + bonus - used)
             } else {
-                // 未ログイン or Redisなし → ログイン必須仕様のため 0
                 freeRemaining = 0
             }
         }
 
-        // Pro/Pro+ の月間使用状況
+        // -------- Pro/Pro+ の月間状況 --------
         let subCap: number | null = null
         let subUsed: number | null = null
         let subRemaining: number | null = null
         if (planTier !== 'free' && loggedIn) {
-            subCap = 1000
+            subCap = planTier === 'pro_plus' ? BASE_QUOTA_PRO_PLUS : BASE_QUOTA_PRO
             if (redis) {
-                const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle'
+                const cycleId = (proUntil ?? '').slice(0, 10) || 'cycle' // pro_until が無くても回るようフォールバック
                 const key = `pb:m:${userId}:${cycleId}`
-                const usedRaw = await redis.get<string | number>(key)
-                const usedNum = Number(usedRaw ?? 0)
+                const usedNum = Number((await redis.get(key)) ?? 0)
                 subUsed = usedNum
                 subRemaining = Math.max(0, (subCap ?? 0) - usedNum)
             } else {
@@ -87,7 +90,7 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        // Top-up
+        // -------- Top-up（未使用合計）--------
         let topupRemain = 0
         let topups: { remain: number; expire_at: string }[] = []
         if (loggedIn) {
@@ -111,18 +114,29 @@ export async function GET(req: NextRequest) {
             topupRemain = normalized.reduce((acc, r) => acc + r.remain, 0)
         }
 
+        // -------- remain の意味を統一 --------
+        // Free: 今日残り
+        // Pro/Pro+: 月のベース残 + Topup残 の合計（UIで分けて出すなら totalRemain を参照してもOK）
+        const baseRemain = planTier === 'free' ? (freeRemaining ?? 0) : (subRemaining ?? 0)
+        const totalRemain = baseRemain + (planTier === 'free' ? (topupRemain ?? 0) : (topupRemain ?? 0))
+        const remain = planTier === 'free' ? (freeRemaining ?? 0) : (subRemaining ?? 0) + (topupRemain ?? 0)
+
         return NextResponse.json({
             planTier,
             proUntil,
-            freeRemaining,
             isPro: planTier !== 'free',
-            remain: freeRemaining,
-            subCap,
-            subUsed,
-            subRemaining,
-            topupRemain,
-            topups,
-            // ★ 追加
+
+            // 互換
+            remain,
+
+            // 詳細
+            freeRemaining,         // Free用（今日の残り）
+            subCap, subUsed, subRemaining, // Pro/Pro+用（今期のベース枠）
+            topupRemain, topups,
+
+            // 補助
+            baseRemain,
+            totalRemain,
             loggedIn,
         })
     } catch (e) {
@@ -131,16 +145,14 @@ export async function GET(req: NextRequest) {
             {
                 planTier: 'free',
                 proUntil: null,
-                freeRemaining: 0,
                 isPro: false,
                 remain: 0,
-                topupRemain: 0,
-                topups: [],
+                freeRemaining: 0,
+                subCap: null, subUsed: null, subRemaining: null,
+                topupRemain: 0, topups: [],
+                baseRemain: 0, totalRemain: 0,
+                loggedIn: false,
                 error: msg,
-                subCap: null,
-                subUsed: null,
-                subRemaining: null,
-                loggedIn: false, // ★ 追加
             },
             { status: 200 }
         )
